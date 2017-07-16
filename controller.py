@@ -23,6 +23,8 @@ def get_vis(metar):
       return re.sub('SM', '', component)
   return 'INVALID'
 def get_vis_category(vis):
+  if vis == 'INVALID':
+    return 'INVALID'
   if '/' in vis:
     return 'LIFR'
   vis_int = int(vis)
@@ -64,17 +66,16 @@ def get_category(metar):
 airport_pins = {'KRNT':(3,5,7),
         'KSEA':(11,13,15),
         'KPLU':(19,21,23),
-        'KOLM':(29,31,33),
-        'KTIW':(32,35,37),
-        'KPWT':(36,38,40),
-        'KSHN':(8,10,12)}
+        'KOLMX':(29,31,33),
+        'KOXC':(32,35,37),
+        'K1YT':(36,38,40),
+        'KMMK':(8,10,12)}
 
 colors = {'RED':(GPIO.HIGH, GPIO.LOW, GPIO.LOW),
 'GREEN':(GPIO.LOW, GPIO.HIGH, GPIO.LOW),
 'BLUE':(GPIO.LOW, GPIO.LOW, GPIO.HIGH),
 'LOW':(GPIO.LOW, GPIO.LOW, GPIO.LOW)}
 
-airport_flasher = True
 airport_should_flash = {}
 airport_color = {}
 
@@ -101,16 +102,19 @@ def set_airport_display(airport, category):
 
 def refresh_airport_displays():
   for airport in airport_pins:
-    category = get_category(get_metar(airport))
+    print "Retrieving METAR for "+airport
+    metar = get_metar(airport)
+    print "METAR for "+airport+" = "+metar
+    category = get_category(metar)
+    print "Category for "+airport+" = "+category
     set_airport_display(airport, category)
 
-def render_airport_displays():
+def render_airport_displays(airport_flasher):
   for airport in airport_pins:
-    if airport_should_flash[airport] and airport_flasher == True:
+    if airport_should_flash[airport] and airport_flasher:
       setLed(airport_pins[airport], 'LOW')
     else:
       setLed(airport_pins[airport], airport_color[airport])
-  airport_flasher = bool(not airport_flasher)
 
 #VFR - Green
 #MVFR - Blue
@@ -129,13 +133,19 @@ def all_airports(color):
     setLed(airport_pins[airport], color)
 
 def render_thread():
+  print "Starting rendering thread"
   while(True):
-    render_airport_displays
+    print "render"
+    render_airport_displays(True)
+    time.sleep(1)
+    render_airport_displays(True)
     time.sleep(1)
 
 def refresh_thread():
+  print "Starting refresh thread"
   while(True):
-    refresh_airport_displays
+    print "Refreshing categories"
+    refresh_airport_displays()
     time.sleep(60)
 
 
@@ -147,10 +157,6 @@ all_airports('GREEN')
 time.sleep(2)
 
 all_airports('LOW')
-
-time.sleep(2)
-
-all_airports('GREEN')
 
 time.sleep(2)
 
