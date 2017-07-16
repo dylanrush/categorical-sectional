@@ -66,10 +66,14 @@ def get_category(metar):
 airport_pins = {'KRNT':(3,5,7),
         'KSEA':(11,13,15),
         'KPLU':(19,21,23),
-        'KOLMX':(29,31,33),
-        'KOXC':(32,35,37),
-        'K1YT':(36,38,40),
-        'KMMK':(8,10,12)}
+        'KOLM':(29,31,33),
+        'KTIW':(32,35,37),
+        'KPWT':(36,38,40),
+        'KSHN':(8,10,12)}
+
+overrides = {'KOLM':'VFR',
+             'KTIW':'MVFR',
+             'KPWT':'INVALID'}
 
 colors = {'RED':(GPIO.HIGH, GPIO.LOW, GPIO.LOW),
 'GREEN':(GPIO.LOW, GPIO.HIGH, GPIO.LOW),
@@ -106,6 +110,8 @@ def refresh_airport_displays():
     metar = get_metar(airport)
     print "METAR for "+airport+" = "+metar
     category = get_category(metar)
+    if airport in overrides:
+      category = overrides[airport]
     print "Category for "+airport+" = "+category
     set_airport_display(airport, category)
 
@@ -138,7 +144,7 @@ def render_thread():
     print "render"
     render_airport_displays(True)
     time.sleep(1)
-    render_airport_displays(True)
+    render_airport_displays(False)
     time.sleep(1)
 
 def refresh_thread():
