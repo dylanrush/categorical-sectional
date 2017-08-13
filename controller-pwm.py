@@ -1,3 +1,8 @@
+# Live Sectional Map controller
+# Dylan Rush 2017
+# dylanhrush.com
+# Uses RPi.GPIO library: https://sourceforge.net/p/raspberry-gpio-python/wiki/BasicUsage/
+
 import RPi.GPIO as GPIO
 import time
 import urllib
