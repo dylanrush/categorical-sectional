@@ -17,22 +17,34 @@ def get_metar(airport):
   finally:
     stream.close();
 def get_vis(metar):
-  components = metar.split(' ');
-  for component in components:
-    if 'SM' in component:
-      return re.sub('SM', '', component)
-  return 'INVALID'
-def get_vis_category(vis):
-  if vis == 'INVALID':
+  match = re.search('( [0-9] )?([0-9]/?[0-9]?SM)', metar)
+  if(match == None):
+    return 'INVAILD'
+  (g1, g2) = match.groups()
+  if(g2 == None):
     return 'INVALID'
-  if '/' in vis:
+  if(g1 != None):
+    return 'IFR'
+  if '/' in g2:
     return 'LIFR'
-  vis_int = int(vis)
+  vis = int(re.sub('SM','',g2))
   if vis < 3:
     return 'IFR'
-  if vis <= 5:
+  if vis <=5 :
     return 'MVFR'
   return 'VFR'
+
+#def get_vis_category(vis):
+#  if vis == 'INVALID':
+#    return 'INVALID'
+#  if '/' in vis:
+#    return 'LIFR'
+#  vis_int = int(vis)
+#  if vis < 3:
+#    return 'IFR'
+#  if vis <= 5:
+#    return 'MVFR'
+#  return 'VFR'
 def get_ceiling(metar):
   components = metar.split(' ' );
   minimum_ceiling = 10000
@@ -51,9 +63,9 @@ def get_ceiling_category(ceiling):
     return 'MVFR'
   return 'VFR'
 def get_category(metar):
-  vis = get_vis_category(get_vis(metar))
+  vis = get_vis(metar)
   ceiling = get_ceiling_category(get_ceiling(metar))
-  if(vis == 'INVALID' or ceiling == 'INVALID'):
+  if(ceiling == 'INVALID'):
     return 'INVALID'
   if(vis == 'LIFR' or ceiling == 'LIFR'):
     return 'LIFR'
@@ -156,9 +168,11 @@ def all_airports(color):
     print str(airport_pins[airport])
     setLed(airport, color)
 
+endtime = int(time.time()) + 14400
+
 def render_thread():
   print "Starting rendering thread"
-  while(True):
+  while(time.time() < endtime):
     print "render"
     render_airport_displays(True)
     time.sleep(1)
@@ -167,7 +181,7 @@ def render_thread():
 
 def refresh_thread():
   print "Starting refresh thread"
-  while(True):
+  while(time.time() < endtime):
     print "Refreshing categories"
     refresh_airport_displays()
     time.sleep(60)
