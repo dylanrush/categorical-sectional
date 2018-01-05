@@ -1,3 +1,4 @@
+# Free for personal use. Prohibited from commercial use without consent.
 import RPi.GPIO as GPIO
 import time
 import urllib

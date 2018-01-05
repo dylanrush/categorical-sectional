@@ -2,6 +2,7 @@
 # Dylan Rush 2017
 # dylanhrush.com
 # Uses RPi.GPIO library: https://sourceforge.net/p/raspberry-gpio-python/wiki/BasicUsage/
+# Free for personal use. Prohibited for commercial without consent
 
 import RPi.GPIO as GPIO
 import time

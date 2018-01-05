@@ -1,3 +1,4 @@
+# Free for personal use. Prohibited from commercial use without consent.
 import re
 def get_vis(metar):
   match = re.search('( [0-9] )?([0-9]/?[0-9]?SM)', metar)

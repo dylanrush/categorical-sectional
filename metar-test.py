@@ -1,3 +1,4 @@
+# Free for personal use. Prohibited from commercial use without consent.
 import urllib,re
 def get_metar(airport):
   try:

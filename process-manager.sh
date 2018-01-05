@@ -1,3 +1,4 @@
+# Free for personal use. Prohibited from commercial use without consent.
 #!/bin/bash
 while :
 do
