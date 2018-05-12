@@ -2,7 +2,7 @@
 #!/bin/bash
 while :
 do
-  python /home/pi/categorical-sectional/controller-pwm.py
+  python /home/pi/categorical-sectional/controller.py
   sleep 1
 done
 
