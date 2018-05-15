@@ -11,20 +11,20 @@ import Adafruit_GPIO.SPI as SPI
 
 
 # Configure the count of pixels:
-PIXEL_COUNT = 10
+PIXEL_COUNT = 25
 
 # The WS2801 library makes use of the BCM pin numbering scheme. See the README.md for details.
 
 # Specify a software SPI connection for Raspberry Pi on the following pins:
-PIXEL_CLOCK = 18
-PIXEL_DOUT = 23
-pixels = Adafruit_WS2801.WS2801Pixels(
-    PIXEL_COUNT, clk=PIXEL_CLOCK, do=PIXEL_DOUT)
+PIXEL_CLOCK = 14 # 23
+PIXEL_DOUT = 12 # 19
+# pixels = Adafruit_WS2801.WS2801Pixels(
+#    PIXEL_COUNT, clk=PIXEL_CLOCK, do=PIXEL_DOUT)
 
 # Alternatively specify a hardware SPI connection on /dev/spidev0.0:
-#SPI_PORT   = 0
-#SPI_DEVICE = 0
-#pixels = Adafruit_WS2801.WS2801Pixels(PIXEL_COUNT, spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
+SPI_PORT   = 0
+SPI_DEVICE = 0
+pixels = Adafruit_WS2801.WS2801Pixels(PIXEL_COUNT, spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
 
 # Clear all the pixels to turn them off.
 pixels.clear()
@@ -45,6 +45,10 @@ def wheel(pos):
 
 # Define rainbow cycle function to do a cycle of all hues.
 
+def set_all(r, g, b):
+    for i in range(pixels.count()):
+        pixels.set_pixel(i, Adafruit_WS2801.RGB_to_color(r, g, b))
+        pixels.show()
 
 def rainbow_cycle(pixels, wait=0):
     for j in range(256):  # one cycle of all 256 colors in the wheel
@@ -54,11 +58,18 @@ def rainbow_cycle(pixels, wait=0):
             # Then add in j which makes the colors go around per pixel
             # the % 96 is to make the wheel cycle around
             pixels.set_pixel(i, wheel(((i * 256 // pixels.count()) + j) % 256))
-            pixels.show()
-            if wait > 0:
-                time.sleep(wait)
+        pixels.show()
+        if wait > 0:
+            time.sleep(wait)
 
 
+print('Initializing R..')
+set_all(255, 0, 0)
+print('G ...')
+set_all(0, 255, 0)
+print('B...')
+set_all(0, 0, 255)
 print('Rainbow cycling, press Ctrl-C to quit...')
+
 while True:
-    rainbow_cycle(pixels)
+    rainbow_cycle(pixels, 0.1)
