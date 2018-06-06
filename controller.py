@@ -149,6 +149,18 @@ def render_airport_displays(airport_flasher):
 # Error - Flashing blue
 
 
+def init_leds():
+    index = 0
+    for airport in airport_render_config:
+        airport_render_data = airport_render_config[airport]
+        condition_index = index % 4
+        print "condition_index=" + str(condition_index)
+        rule = color_by_rules.keys()[condition_index]
+        print "rule=" + rule
+        color = color_by_rules[rule]
+        renderer.set_led(airport_render_data, color)
+        index += 1
+        
 def all_airports(color):
     """
     Sets all of the airports to the given color
@@ -187,9 +199,15 @@ def refresh_thread():
 
 if __name__ == '__main__':
     # Test LEDS on startup
-    all_airports(weather.GREEN)
+    init_leds()
 
-    time.sleep(2)
+    colors_to_init = (weather.LOW, weather.RED, weather.BLUE, weather.GREEN, weather.OFF)
+
+    for color in colors_to_init:
+        print "Setting to " + color
+        all_airports(color)
+        time.sleep(2)
+
 
     all_airports(weather.LOW)
 

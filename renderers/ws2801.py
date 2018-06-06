@@ -1,5 +1,4 @@
-# Simple demo of of the WS2801/SPI-like addressable RGB LED lights.
-# Will animate a rainbow color cycle on all pixels.
+# Simple driver of the WS2801/SPI-like addressable RGB LED lights.
 # Based on the AdaFruit code by Tony DiCola
 # License: Public Domain
 from __future__ import division
@@ -25,6 +24,11 @@ class Ws2801Renderer(object):
             self.pixels.clear()
             self.pixels.show()  # Make sure to call show() after changing any pixels!
 
+            for pixel in range(0, self.pixel_count):
+                self.pixels.set_pixel(pixel, Adafruit_WS2801.RGB_to_color(0, 0, 0))
+
+            self.pixels.show()
+
     def set_led(self, render_data, color):
         """
         Sets the given airport to the given color
@@ -37,3 +41,4 @@ class Ws2801Renderer(object):
         if not local_debug.is_debug():
             self.pixels.set_pixel(pixel_index, Adafruit_WS2801.RGB_to_color(
                 color[0], color[1], color[2]))
+            self.pixels.show()

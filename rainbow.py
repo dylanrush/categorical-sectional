@@ -46,8 +46,8 @@ def set_all(r, g, b):
 
     Arguments:
         r {int} -- RED value : 0 to 255
-        g {[type]} -- GREEN value : 0 to 255
-        b {[type]} -- BLUE value : 0 to 255
+        g {int} -- GREEN value : 0 to 255
+        b {int} -- BLUE value : 0 to 255
     """
 
     for i in range(pixels.count()):
