@@ -11,6 +11,7 @@ RED = 'RED'
 GREEN = 'GREEN'
 BLUE = 'BLUE'
 LOW = 'LOW'
+OFF = 'OFF'
 
 
 def get_metar(airport_iaco_code):

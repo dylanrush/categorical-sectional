@@ -1,0 +1,8 @@
+{
+  "mode": "ws2801",
+  "pixel_count": 50,
+  "spi_device": 0,
+  "spi_port": 0,
+  "pwm_frequency": 100,
+  "airports_file": "data/south_sound.json"
+}

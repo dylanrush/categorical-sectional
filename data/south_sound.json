@@ -1,5 +1,5 @@
 {
-  "airports": [
+  "pwm": [
     { "KRNT": [3, 5, 7] },
     { "KSEA": [11, 13, 15] },
     { "KPLU": [19, 21, 23] },
@@ -7,5 +7,32 @@
     { "KTIW": [32, 35, 37] },
     { "KPWT": [36, 38, 40] },
     { "KSHN": [8, 10, 12] }
+  ],
+  "ws2801": [
+    { "KRNT": { "neopixel": 0, "utc_offset": -8 } },
+    { "KSEA": { "neopixel": 2, "utc_offset": -8 } },
+    { "KPLU": { "neopixel": 4, "utc_offset": -8 } },
+    { "KOLM": { "neopixel": 6, "utc_offset": -8 } },
+    { "KTIW": { "neopixel": 8, "utc_offset": -8 } },
+    { "KPWT": { "neopixel": 10, "utc_offset": -8 } },
+    { "KSHN": { "neopixel": 12, "utc_offset": -8 } },
+    { "KPAE": { "neopixel": 14, "utc_offset": -8 } },
+    { "KAWO": { "neopixel": 16, "utc_offset": -8 } },
+    { "KELN": { "neopixel": 17, "utc_offset": -8 } },
+    { "KEAT": { "neopixel": 18, "utc_offset": -8 } },
+    { "KCOE": { "neopixel": 19, "utc_offset": -8 } },
+    { "KMSO": { "neopixel": 21, "utc_offset": -8 } },
+    { "KHLN": { "neopixel": 22, "utc_offset": -8 } },
+    { "35MT": { "neopixel": 23, "utc_offset": -8 } },
+    { "KMLS": { "neopixel": 24, "utc_offset": -8 } },
+    { "KDIK": { "neopixel": 25, "utc_offset": -8 } },
+    { "KBIS": { "neopixel": 26, "utc_offset": -8 } },
+    { "KFAR": { "neopixel": 27, "utc_offset": -8 } },
+    { "KMSP": { "neopixel": 28, "utc_offset": -8 } },
+    { "9WN6": { "neopixel": 29, "utc_offset": -8 } },
+    { "WS17": { "neopixel": 30, "utc_offset": -8 } },
+    { "KAUM": { "neopixel": 31, "utc_offset": -8 } },
+    { "KRAP": { "neopixel": 32, "utc_offset": -8 } },
+    { "KSHR": { "neopixel": 33, "utc_offset": -8 } }   
   ]
 }
