@@ -1,3 +1,7 @@
+"""
+Handles controlling standard LEDs.
+"""
+
 import weather
 import lib.local_debug as local_debug
 
@@ -14,7 +18,7 @@ class LedRenderer(object):
     the GPIO pins using Pulse Width Modulation (PWM).
     """
 
-    def set_led(self, pins, color):
+    def set_led(self, airport_pins, color):
         """
         Sets the color of a LED based on the pins for that LED
 
@@ -24,8 +28,8 @@ class LedRenderer(object):
         """
 
         if not local_debug.is_debug():
-            GPIO.setup(pins, GPIO.OUT)
-            GPIO.output(pins, color)
+            GPIO.setup(airport_pins, GPIO.OUT)
+            GPIO.output(airport_pins, color)
 
     def __init__(self, airport_pins):
         """

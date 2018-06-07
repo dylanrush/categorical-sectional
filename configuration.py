@@ -1,3 +1,7 @@
+"""
+Handles configuration loading and constants.
+"""
+
 import json
 import weather
 import unicodedata
@@ -32,7 +36,16 @@ def get_mode():
     return CONFIG['mode']
 
 
-def get_render_mode():
+def get_airport_configuration_section():
+    """
+    Returns the proper section of the configuration file
+    to load the airport configuration from.
+    
+    Returns:
+        string -- The key in the configuration JSON to
+        load the airport configuration from.
+    """
+
     mode = get_mode()
 
     if mode == STANDARD:
@@ -142,7 +155,7 @@ def __load_gpio_airport_pins__(config_file):
     with open(config_file) as gpio_config_file:
         json_config_text = gpio_config_file.read()
         json_config = json.loads(json_config_text)
-        airports = json_config[get_render_mode()]
+        airports = json_config[get_airport_configuration_section()]
 
         for airport_data in airports:
             airport_code = airport_data.keys()[0]
@@ -154,6 +167,17 @@ def __load_gpio_airport_pins__(config_file):
 
 
 def __load_airport_ws2801__(config_file):
+    """
+    Loads the configuration for WS2801/neopixel based setups.
+    
+    Arguments:
+        config_file {string} -- The file name & location to load.
+    
+    Returns:
+        dictionary -- A dictionary keyed by airport identitifier
+                      that holds the pixel index and a reserved value.
+    """
+
     out_airport_map = {}
     with open(config_file) as ws2801_config_file:
         json_config_text = ws2801_config_file.read()

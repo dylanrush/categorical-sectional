@@ -1,6 +1,9 @@
-# Simple driver of the WS2801/SPI-like addressable RGB LED lights.
-# Based on the AdaFruit code by Tony DiCola
-# License: Public Domain
+"""
+Simple driver of the WS2801/SPI-like addressable RGB LED lights.
+Based on the AdaFruit code by Tony DiCola
+License: Public Domain
+"""
+
 from __future__ import division
 import time
 
@@ -13,6 +16,15 @@ import Adafruit_GPIO.SPI as SPI
 
 class Ws2801Renderer(object):
     def __init__(self, pixel_count, spi_port, spi_device):
+        """
+        Create a new controller for the WS2801 based lights
+        
+        Arguments:
+            pixel_count {int} -- The total number of neopixels. Probably a multple of 25.
+            spi_port {int} -- The SPI port the neopixels are on.
+            spi_device {int} -- The SPI device on the port that the neopixels are on.
+        """
+
         self.pixel_count = pixel_count
 
         if not local_debug.is_debug():

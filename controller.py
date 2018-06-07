@@ -55,7 +55,8 @@ color_by_rules = {
     weather.IFR: colors[weather.RED],
     weather.VFR: colors[weather.GREEN],
     weather.MVFR: colors[weather.BLUE],
-    weather.LIFR: colors[weather.LOW]
+    weather.LIFR: colors[weather.LOW],
+    weather.INVALID: colors[weather.BLUE]
 }
 
 # Overrides can be used to test different conditions
@@ -122,7 +123,12 @@ def set_airport_display(airport, category):
     airport_conditions[airport] = (category, should_flash)
 
 
-def refresh_airport_displays():
+def refresh_station_weather():
+    """
+    Attempts to get the latest weather for all stations and
+    categorize the reports.
+    """
+
     for airport in airport_render_config:
         print "Retrieving METAR for " + airport
         metar = weather.get_metar(airport)
@@ -136,11 +142,14 @@ def refresh_airport_displays():
 
 def render_airport_displays(airport_flasher):
     for airport in airport_render_config:
-        color_to_render = color_by_rules[airport_conditions[airport][0]]
-        if airport_conditions[airport][1] and airport_flasher:
-            color_to_render = colors[weather.OFF]
+        try:
+            color_to_render = color_by_rules[airport_conditions[airport][0]]
+            if airport_conditions[airport][1] and airport_flasher:
+                color_to_render = colors[weather.OFF]
 
-        renderer.set_led(airport_render_config[airport], color_to_render)
+            renderer.set_led(airport_render_config[airport], color_to_render)
+        except:
+            print "Error attempting to render " + airport
 
 #VFR - Green
 #MVFR - Blue
@@ -148,18 +157,6 @@ def render_airport_displays(airport_flasher):
 # LIFR - Flashing red
 # Error - Flashing blue
 
-
-def init_leds():
-    index = 0
-    for airport in airport_render_config:
-        airport_render_data = airport_render_config[airport]
-        condition_index = index % 4
-        print "condition_index=" + str(condition_index)
-        rule = color_by_rules.keys()[condition_index]
-        print "rule=" + rule
-        color = color_by_rules[rule]
-        renderer.set_led(airport_render_data, color)
-        index += 1
         
 def all_airports(color):
     """
@@ -171,7 +168,6 @@ def all_airports(color):
     """
 
     for airport in airport_render_config:
-        print str(airport_render_config[airport])
         airport_render_data = airport_render_config[airport]
         renderer.set_led(airport_render_data, colors[color])
 
@@ -183,24 +179,30 @@ def render_thread():
             render_airport_displays(True)
             time.sleep(1)
             render_airport_displays(False)
+        except KeyboardInterrupt:
+            quit()
         finally:
             time.sleep(1)
 
 
 def refresh_thread():
+    """
+    Helper to refresh the weather from all of the stations.
+    """
+
     print "Starting refresh thread"
     while True:
         try:
             print "Refreshing categories"
-            refresh_airport_displays()
+            refresh_station_weather()
+        except KeyboardInterrupt:
+            quit()
         finally:
             time.sleep(60)
 
 
 if __name__ == '__main__':
     # Test LEDS on startup
-    init_leds()
-
     colors_to_init = (weather.LOW, weather.RED, weather.BLUE, weather.GREEN, weather.OFF)
 
     for color in colors_to_init:

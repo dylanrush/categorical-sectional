@@ -1,3 +1,7 @@
+"""
+Handles controlling Pulse Width Modulation LEDs.
+"""
+
 import weather
 import lib.local_debug as local_debug
 
@@ -28,13 +32,21 @@ class LedPwmRenderer(object):
                 pin_number, self.pwm_frequency)
             self.airport_pwm_matrix[pin_number].start(0.0)
 
-    def set_led(self, airport, color):
-        for pin_number in airport:
+    def set_led(self, airport_pins, color):
+        """
+        Sets the color of an airport using LED/PWM
+        
+        Arguments:
+            airport_pins {array of int} -- An array holding the pin used for R, G, B colors. In that order
+            color {array} -- Three number array that corresponds to each RGB pin to set the PWM power to.
+        """
+
+        for pin_number in airport_pins:
             self.__create_pwm_for_pin__(pin_number)
 
-        self.airport_pwm_matrix[airport[0]].ChangeDutyCycle(color[0])
-        self.airport_pwm_matrix[airport[1]].ChangeDutyCycle(color[1])
-        self.airport_pwm_matrix[airport[2]].ChangeDutyCycle(color[2])
+        self.airport_pwm_matrix[airport_pins[0]].ChangeDutyCycle(color[0])
+        self.airport_pwm_matrix[airport_pins[1]].ChangeDutyCycle(color[1])
+        self.airport_pwm_matrix[airport_pins[2]].ChangeDutyCycle(color[2])
 
     def __init__(self, airport_pins):
         """
