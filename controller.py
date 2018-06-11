@@ -99,10 +99,6 @@ def get_renderer():
 
 renderer = get_renderer()
 
-for airport in airport_render_config:
-    airport_conditions[airport] = (weather.MVFR, True)
-
-
 def get_color_from_condition(category):
     """
     From a condition, returns the color it should be rendered as, and if it should flash.
@@ -185,6 +181,22 @@ def refresh_all_weather_stations():
         LOGGER.log_info_message("Category for " + airport + " = " + category)
         set_airport_display(airport, category)
 
+def get_airport_condition(airport):
+    """
+    Safely get the conditions at an airport
+    
+    Arguments:
+        airport {str} -- The airport identifier
+    
+    Returns:
+        tuple -- condition, should_blink
+    """
+
+    try:
+        if airport in airport_conditions:
+            return airport_conditions[airport][0], airport_conditions[airport][1]
+    except:
+        return weather.INVALID, True
 
 def render_airport_displays(airport_flasher):
     """
@@ -200,8 +212,9 @@ def render_airport_displays(airport_flasher):
 
         for airport in airport_render_config:
             try:
-                color_to_render = color_by_rules[airport_conditions[airport][0]]
-                if airport_conditions[airport][1] and airport_flasher:
+                condition, blink = get_airport_condition(airport)
+                color_to_render = color_by_rules[condition]
+                if blink and airport_flasher:
                     color_to_render = colors[weather.OFF]
 
                 renderer.set_led(
@@ -316,9 +329,9 @@ if __name__ == '__main__':
         all_airports(color)
         time.sleep(2)
 
-    all_airports(weather.OFF)
+    all_airports(weather.YELLOW)
 
-    wait_for_all_airports()
+    # wait_for_all_airports()
 
     render_task = RecurringTask('Render', 0, render_thread, None, True)
 
