@@ -24,21 +24,23 @@
 #
 
 
+import logging
+import logging.handlers
+import json
+import re
 import time
 import urllib
-import re
-import json
 from threading import Thread
-import lib.local_debug as local_debug
-from lib.recurring_task import RecurringTask
-from renderers import ws2801
-from renderers import led
-from renderers import led_pwm
-import weather
+
 import configuration
+import lib.local_debug as local_debug
+from lib.logger import Logger
+import weather
+from lib.recurring_task import RecurringTask
+from renderers import led, led_pwm, ws2801
 
 airport_conditions = {}
-
+LOGGER = logging.getLogger("weathermap")
 
 if local_debug.is_debug():
     from lib.local_debug import PWM
