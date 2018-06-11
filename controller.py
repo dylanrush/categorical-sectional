@@ -45,7 +45,8 @@ python_logger.setLevel(logging.DEBUG)
 LOGGER = Logger(python_logger)
 HANDLER = logging.handlers.RotatingFileHandler(
     "weathermap.log", maxBytes=1048576, backupCount=3)
-HANDLER.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+HANDLER.setFormatter(logging.Formatter(
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 python_logger.addHandler(HANDLER)
 
 thread_lock_object = threading.Lock()
@@ -120,22 +121,48 @@ def get_color_from_condition(category):
     elif category == weather.IFR:
         return (weather.RED, False)
     elif category == weather.LIFR:
-        return (weather.RED, True)
+        # Only blink for normal LEDs.
+        # PWM and WS2801 have their own color.
+        return (weather.LOW, configuration.get_mode() == configuration.STANDARD)
     elif category == weather.NIGHT:
         return (weather.YELLOW, False)
 
-    return (weather.BLUE, True)
+    ## Error
+    return (weather.WHITE, True)
 
 
 def set_airport_display(airport, category):
+    """
+    Sets the given airport to have the given flight rules category.
+    
+    Arguments:
+        airport {str} -- The airport identifier.
+        category {string} -- The flight rules category.
+    
+    Returns:
+        bool -- True if the flight category changed (or was set for the first time).
+    """
+
+    changed = False
     try:
         color_and_flash = get_color_from_condition(category)
         should_flash = color_and_flash[1]
 
         thread_lock_object.acquire()
+
+        if airport in airport_conditions:
+            changed = airport_conditions[airport][0] != category
+        else:
+            changed = True
+
         airport_conditions[airport] = (category, should_flash)
     finally:
         thread_lock_object.release()
+
+    if changed:
+        LOGGER.log_info_message(airport + " now " + category)
+    
+    return changed
 
 
 def refresh_all_weather_stations():
@@ -160,6 +187,14 @@ def refresh_all_weather_stations():
 
 
 def render_airport_displays(airport_flasher):
+    """
+    Sets the LEDs for all of the airports based on their flight rules.
+    Does this independant of the LED type.
+    
+    Arguments:
+        airport_flasher {bool} -- Is this on the "off" cycle of blinking.
+    """
+
     try:
         thread_lock_object.acquire()
 
@@ -169,9 +204,11 @@ def render_airport_displays(airport_flasher):
                 if airport_conditions[airport][1] and airport_flasher:
                     color_to_render = colors[weather.OFF]
 
-                renderer.set_led(airport_render_config[airport], color_to_render)
+                renderer.set_led(
+                    airport_render_config[airport], color_to_render)
             except:
-                LOGGER.log_warning_message("Error attempting to render " + airport)
+                LOGGER.log_warning_message(
+                    "Error attempting to render " + airport)
     finally:
         thread_lock_object.release()
 
@@ -228,15 +265,49 @@ def refresh_thread():
             time.sleep(60)
 
 
+def wait_for_all_airports():
+    """
+    Waits for all of the airports to have been given a chance to initialize.
+    If an airport had an error, then that still counts.
+    """
+
+    airport_missing = True
+
+    while airport_missing:
+        airport_missing = False
+
+        thread_lock_object.acquire()
+        try:
+            for airport in airport_render_config:
+                if airport not in airport_conditions:
+                    airport_missing = True
+                    LOGGER.log_info_message("Waiting on " + airport)
+                    break
+        except:
+            LOGGER.log_warning_message("Error while waiting for boot")
+        finally:
+            thread_lock_object.release()
+
+        time.sleep(0.5)
+    
+    return True
+
+
 if __name__ == '__main__':
+    # Start loading the METARs in the background
+    # while going through the self-test
+    LOGGER.log_info_message("Initialize weather for all airports")
+    refresh_task = RecurringTask('Refresh', 0, refresh_thread, None, True)
+
     # Test LEDS on startup
     colors_to_init = (
         weather.LOW,
-        weather.GRAY,
         weather.RED,
         weather.BLUE,
         weather.GREEN,
         weather.YELLOW,
+        weather.WHITE,
+        weather.GRAY,
         weather.OFF
     )
 
@@ -247,13 +318,9 @@ if __name__ == '__main__':
 
     all_airports(weather.OFF)
 
-    LOGGER.log_info_message("Initialize weather for all airports")
-    refresh_all_weather_stations()
-
-    time.sleep(2)
+    wait_for_all_airports()
 
     render_task = RecurringTask('Render', 0, render_thread, None, True)
-    refresh_task = RecurringTask('Refresh', 0, refresh_thread, None, True)
 
     while True:
         try:
