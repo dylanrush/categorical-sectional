@@ -196,7 +196,9 @@ def get_airport_condition(airport):
         if airport in airport_conditions:
             return airport_conditions[airport][0], airport_conditions[airport][1]
     except:
-        return weather.INVALID, True
+        pass
+    
+    return weather.INVALID, True
 
 def render_airport_displays(airport_flasher):
     """
@@ -331,7 +333,7 @@ if __name__ == '__main__':
 
     all_airports(weather.YELLOW)
 
-    # wait_for_all_airports()
+    wait_for_all_airports()
 
     render_task = RecurringTask('Render', 0, render_thread, None, True)
 
