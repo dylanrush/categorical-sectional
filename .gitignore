@@ -1,3 +1,4 @@
 .vscode/
 *.pyc
 .*swp
+weathermap.log
