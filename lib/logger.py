@@ -1,0 +1,43 @@
+"""
+Simple wrapper around a logger.
+"""
+
+from datetime import datetime
+
+def __escape__(text):
+    """
+    Replaces escape sequences do they can be printed.
+
+    Funny story. PyDoc can't unit test strings with a CR or LF...
+    It gives a white space error.
+
+    >>> __escape__("text")
+    'text'
+    >>> __escape__("")
+    ''
+    """
+
+    return str(text).replace('\r', '\\r').replace('\n', '\\n').replace('\x1a', '\\x1a')
+
+class Logger(object):
+    """
+    Wrapper around a normal logger so stuff gets printed too.
+    """
+
+    def log_info_message(self, message_to_log, print_to_screen=True):
+        """ Log and print at Info level """
+        if print_to_screen:
+            print (str(datetime.utcnow())) + " INFO: " + __escape__(message_to_log)
+        self.__logger__.info(__escape__(message_to_log))
+
+        return message_to_log
+
+    def log_warning_message(self, message_to_log):
+        """ Log and print at Warning level """
+        print (str(datetime.utcnow())) + " WARN: " + message_to_log
+        self.__logger__.warning(__escape__(message_to_log))
+
+        return message_to_log
+
+    def __init__(self, logger):
+        self.__logger__ = logger

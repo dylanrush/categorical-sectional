@@ -27,6 +27,7 @@ OFF = 'OFF'
 
 __rest_session__ = requests.Session()
 __daylight_cache__ = {}
+__metar_report_cache__ = {}
 
 
 def __load_airport_data__(airport_data_file="./data/airports.csv"):
@@ -72,6 +73,48 @@ def __get_utc_datetime__(datetime_string):
 
     return datetime.strptime(datetime_string, "%Y-%m-%dT%H:%M:%S+00:00")
 
+def __set_cache__(airport_iaco_code, cache, value):
+    """
+    Sets the given cache to have the given value.
+    Automatically sets the cache saved time.
+    
+    Arguments:
+        airport_iaco_code {str} -- The code of the station to cache the results for.
+        cache {dictionary} -- The cache keyed by airport code.
+        value {object} -- The value to store in the cache.
+    """
+
+    cache[airport_iaco_code] = (datetime.utcnow(), value)
+
+def __is_cache_valid__(airport_iaco_code, cache, cache_life_in_minutes=15):
+    """
+    Returns TRUE and the cached value if the cached value
+    can still be used.
+
+    Arguments:
+        airport_iaco_code {str} -- The airport code to get from the cache.
+        cache {dictionary} -- Tuple of last update time and value keyed by airport code.
+        cache_life_in_minutes {int} -- How many minutes until the cached value expires
+
+    Returns:
+        [type] -- [description]
+    """
+
+    if cache is None:
+        return (False, None)
+
+    now = datetime.utcnow()
+
+    if airport_iaco_code in cache:
+        time_since_last_fetch = now - cache[airport_iaco_code][0]
+
+        if ((time_since_last_fetch.total_seconds()) / 60.0) < cache_life_in_minutes:
+            return (True, cache[airport_iaco_code][1])
+        else:
+            return (False, cache[airport_iaco_code][1])
+
+    return (False, None)
+
 
 def get_civil_twilight(airport_iaco_code):
     """
@@ -85,18 +128,17 @@ def get_civil_twilight(airport_iaco_code):
     """
 
     utc_time = datetime.utcnow()
-    now = datetime.utcnow()
 
     # Make sure that we are getting the sunrise/sunset for the current date
     # not the next day...
     if utc_time.hour < 12:
         utc_time = utc_time - timedelta(days=1)
 
-    if airport_iaco_code in __daylight_cache__:
-        time_since_last_fetch = now - __daylight_cache__[airport_iaco_code][0]
+    is_cache_valid, cached_value = __is_cache_valid__(
+        airport_iaco_code, __daylight_cache__, 60)
 
-        if ((time_since_last_fetch.total_seconds()) / 60.0) / 60.0 < 4:
-            return __daylight_cache__[airport_iaco_code][1]
+    if is_cache_valid:
+        return cached_value
 
     # Using "formatted=0" returns the times in a full datetime format
     # Otherwise you need to do some silly math to figure out the date
@@ -112,7 +154,7 @@ def get_civil_twilight(airport_iaco_code):
     if json_result is not None and "status" in json_result and json_result["status"] == "OK" and "results" in json_result:
         sunrise_and_sunet = (__get_utc_datetime__(
             json_result["results"]["sunrise"]), __get_utc_datetime__(json_result["results"]["sunset"]))
-        __daylight_cache__[airport_iaco_code] = (now, sunrise_and_sunet)
+        __set_cache__(airport_iaco_code, __daylight_cache__, sunrise_and_sunet)
 
         return sunrise_and_sunet
 
@@ -140,7 +182,7 @@ def is_daylight(airport_iaco_code):
     return True
 
 
-def get_metar(airport_iaco_code, return_night):
+def get_metar(airport_iaco_code):
     """
     Returns the (RAW) METAR for the given station
 
@@ -152,18 +194,21 @@ def get_metar(airport_iaco_code, return_night):
         and error occurs or the station does not exist.
     """
 
-    try:
-        if return_night and not is_daylight(airport_iaco_code):
-            return NIGHT
-    except:
-        pass
+    is_cache_valid, cached_metar = __is_cache_valid__(
+        airport_iaco_code, __metar_report_cache__)
+
+    if is_cache_valid and cached_metar != INVALID:
+        return cached_metar
 
     try:
         stream = urllib.urlopen('http://www.aviationweather.gov/metar/data?ids=' +
                                 airport_iaco_code + '&format=raw&hours=0&taf=off&layout=off&date=0')
         for line in stream:
             if '<!-- Data starts here -->' in line:
-                return re.sub('<[^<]+?>', '', stream.readline())
+                metar = re.sub('<[^<]+?>', '', stream.readline())
+                __set_cache__(airport_iaco_code, __metar_report_cache__, metar)
+
+                return metar
         return INVALID
     except Exception, e:
         print str(e)
@@ -245,16 +290,24 @@ def get_ceiling_category(ceiling):
     return VFR
 
 
-def get_category(metar):
+def get_category(airport_iaco_code, metar, return_night):
     """
     Returns the flight rules classification based on the entire RAW metar.
 
     Arguments:
+        airport_iaco_code -- The airport or weather station that we want to get a category for.
         metar {string} -- The RAW weather report in METAR format.
+        return_night {boolean} -- Should we return a category for NIGHT?
 
     Returns:
         string -- The flight rules classification, or INVALID in case of an error.
     """
+    try:
+        if return_night and not is_daylight(airport_iaco_code):
+            return NIGHT
+    except:
+        pass
+
     if metar == INVALID:
         return INVALID
 

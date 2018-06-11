@@ -24,20 +24,31 @@
 #
 
 
+import json
+import logging
+import logging.handlers
+import re
 import time
 import urllib
-import re
-import json
-from threading import Thread
-import lib.local_debug as local_debug
-from lib.recurring_task import RecurringTask
-from renderers import ws2801
-from renderers import led
-from renderers import led_pwm
-import weather
+import threading
+
 import configuration
+import lib.local_debug as local_debug
+import weather
+from lib.logger import Logger
+from lib.recurring_task import RecurringTask
+from renderers import led, led_pwm, ws2801
 
 airport_conditions = {}
+python_logger = logging.getLogger("weathermap")
+python_logger.setLevel(logging.DEBUG)
+LOGGER = Logger(python_logger)
+HANDLER = logging.handlers.RotatingFileHandler(
+    "weathermap.log", maxBytes=1048576, backupCount=3)
+HANDLER.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+python_logger.addHandler(HANDLER)
+
+thread_lock_object = threading.Lock()
 
 
 if local_debug.is_debug():
@@ -117,42 +128,52 @@ def get_color_from_condition(category):
 
 
 def set_airport_display(airport, category):
-    color_and_flash = get_color_from_condition(category)
-    should_flash = color_and_flash[1]
+    try:
+        color_and_flash = get_color_from_condition(category)
+        should_flash = color_and_flash[1]
 
-    airport_conditions[airport] = (category, should_flash)
+        thread_lock_object.acquire()
+        airport_conditions[airport] = (category, should_flash)
+    finally:
+        thread_lock_object.release()
 
 
-def refresh_station_weather():
+def refresh_all_weather_stations():
     """
     Attempts to get the latest weather for all stations and
     categorize the reports.
     """
 
     for airport in airport_render_config:
-        print "Retrieving METAR for " + airport
-        metar = weather.get_metar(airport, configuration.get_night_lights())
+        LOGGER.log_info_message("Retrieving METAR for " + airport)
+        metar = weather.get_metar(airport)
 
-        if metar == weather.NIGHT:
-            category = weather.NIGHT
-        else:
-            print "METAR for " + airport + " = " + metar
-            category = weather.get_category(metar)
+        LOGGER.log_info_message("METAR for " + airport + " = " + metar)
+        try:
+            category = weather.get_category(
+                airport, metar, configuration.get_night_lights())
+        except:
+            category = weather.INVALID
 
-        print "Category for " + airport + " = " + category
+        LOGGER.log_info_message("Category for " + airport + " = " + category)
         set_airport_display(airport, category)
 
 
 def render_airport_displays(airport_flasher):
-    for airport in airport_render_config:
-        try:
-            color_to_render = color_by_rules[airport_conditions[airport][0]]
-            if airport_conditions[airport][1] and airport_flasher:
-                color_to_render = colors[weather.OFF]
+    try:
+        thread_lock_object.acquire()
 
-            renderer.set_led(airport_render_config[airport], color_to_render)
-        except:
-            print "Error attempting to render " + airport
+        for airport in airport_render_config:
+            try:
+                color_to_render = color_by_rules[airport_conditions[airport][0]]
+                if airport_conditions[airport][1] and airport_flasher:
+                    color_to_render = colors[weather.OFF]
+
+                renderer.set_led(airport_render_config[airport], color_to_render)
+            except:
+                LOGGER.log_warning_message("Error attempting to render " + airport)
+    finally:
+        thread_lock_object.release()
 
 #VFR - Green
 #MVFR - Blue
@@ -176,7 +197,8 @@ def all_airports(color):
 
 
 def render_thread():
-    print "Starting rendering thread"
+    LOGGER.log_info_message("Starting rendering thread")
+
     while True:
         try:
             render_airport_displays(True)
@@ -193,11 +215,13 @@ def refresh_thread():
     Helper to refresh the weather from all of the stations.
     """
 
-    print "Starting refresh thread"
+    LOGGER.log_info_message("Starting refresh thread")
+
     while True:
         try:
-            print "Refreshing categories"
-            refresh_station_weather()
+            LOGGER.log_info_message("Refreshing categories")
+
+            refresh_all_weather_stations()
         except KeyboardInterrupt:
             quit()
         finally:
@@ -217,11 +241,14 @@ if __name__ == '__main__':
     )
 
     for color in colors_to_init:
-        print "Setting to " + color
+        LOGGER.log_info_message("Setting to " + color)
         all_airports(color)
         time.sleep(2)
 
-    all_airports(weather.LOW)
+    all_airports(weather.OFF)
+
+    LOGGER.log_info_message("Initialize weather for all airports")
+    refresh_all_weather_stations()
 
     time.sleep(2)
 

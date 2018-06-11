@@ -22,7 +22,7 @@
     { "KGCC": { "neopixel": 19 } },
     { "KMLS": { "neopixel": 20 } },
     { "KDIK": { "neopixel": 21 } },
-    { "KLEM": { "neopixel": 22 } },
+    { "KHEI": { "neopixel": 22 } },
     { "KBIS": { "neopixel": 23 } },
     { "KMBG": { "neopixel": 24 } },
     { "KJMS": { "neopixel": 25 } },
@@ -48,7 +48,7 @@
     { "KRAP": { "neopixel": 45 } },
     { "KCDR": { "neopixel": 46 } },
     { "KCPR": { "neopixel": 47 } },
-    { "KTHP": { "neopixel": 48 } },
+    { "KRIW": { "neopixel": 48 } },
     { "KIDA": { "neopixel": 49 } }
   ]
 }
