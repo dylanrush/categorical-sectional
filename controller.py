@@ -112,6 +112,8 @@ def get_color_from_condition(category):
         return (weather.RED, False)
     elif category == weather.LIFR:
         return (weather.RED, True)
+    elif category == weather.NIGHT:
+        return (weather.YELLOW, False)
 
     return (weather.BLUE, True)
 
@@ -133,8 +135,11 @@ def refresh_station_weather():
         print "Retrieving METAR for " + airport
         metar = weather.get_metar(airport, configuration.get_night_lights())
 
-        print "METAR for " + airport + " = " + metar
-        category = weather.get_category(metar)
+        if metar == weather.NIGHT:
+            category = weather.NIGHT
+        else:
+            print "METAR for " + airport + " = " + metar
+            category = weather.get_category(metar)
 
         print "Category for " + airport + " = " + category
         set_airport_display(airport, category)
