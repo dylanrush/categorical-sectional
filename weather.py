@@ -2,12 +2,14 @@
 Handles fetching and decoding weather.
 """
 
-import re
-import urllib
 import csv
 import json
-import requests
+import os
+import re
+import urllib
 from datetime import datetime, timedelta
+
+import requests
 
 INVALID = 'INVALID'
 VFR = 'VFR'
@@ -42,8 +44,9 @@ def __load_airport_data__(airport_data_file="./data/airports.csv"):
     Returns:
         dictionary -- A map of the airport data keyed by IACO code.
     """
+    full_file_path = os.path.join(os.path.realpath('.'), os.path.normpath(airport_data_file))
 
-    csvfile = open(airport_data_file, 'r')
+    csvfile = open(full_file_path, 'r')
 
     fieldnames = ("id", "ident", "type", "name", "latitude_deg", "longitude_deg", "elevation_ft", "continent", "iso_country", "iso_region",
                   "municipality", "scheduled_service", "gps_code", "iata_code", "local_code", "home_link", "wikipedia_link", "keywords")
