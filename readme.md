@@ -160,9 +160,15 @@ This is the first file loaded. It tells the software what type of lights are bei
   "spi_device": 0,
   "spi_port": 0,
   "pwm_frequency": 100,
-  "airports_file": "data/south_sound.json"
+  "airports_file": "data/south_sound.json",
+  "night_lights": true
 }
 ```
+
+#### night_lights
+Set this to true if you would like the airports to switch to yellow when the airport is past sunset but not yet to sunrise.
+
+Switches to normal flight category colors during daylight hours.
 
 #### mode
 
@@ -208,13 +214,13 @@ This shows the two sections for an example airport file.
     { "KSHN": [8, 10, 12] }
   ],
   "ws2801": [
-    { "KRNT": { "neopixel": 0, "utc_offset": -8 } },
-    { "KSEA": { "neopixel": 2, "utc_offset": -8 } },
-    { "KPLU": { "neopixel": 4, "utc_offset": -8 } },
-    { "KOLM": { "neopixel": 6, "utc_offset": -8 } },
-    { "KTIW": { "neopixel": 8, "utc_offset": -8 } },
-    { "KPWT": { "neopixel": 10, "utc_offset": -8 } },
-    { "KSHN": { "neopixel": 12, "utc_offset": -8 } }
+    { "KRNT": { "neopixel": 0} },
+    { "KSEA": { "neopixel": 2} },
+    { "KPLU": { "neopixel": 4} },
+    { "KOLM": { "neopixel": 6} },
+    { "KTIW": { "neopixel": 8} },
+    { "KPWT": { "neopixel": 10} },
+    { "KSHN": { "neopixel": 12} }
   ]
 }
 ```
@@ -245,7 +251,6 @@ Next to contains a "neopixel" identifier. This is the order of the light on the 
 
 Due to the way your lights may need to be arranged to fit on the map, some lights may need to be skipped, so keep track of your lights.
 
-The utc_offset value is not currently used. Future versions _may_ offer the feature of turning off the lights if the airport is past civil twilight.
 
 ##### Illustration of Numbering
 
@@ -279,3 +284,8 @@ Blinking red is LIFR.
 
 <https://learn.adafruit.com/12mm-led-pixels/wiring>
 <https://tutorials-raspberrypi.com/how-to-control-a-raspberry-pi-ws2801-rgb-led-strip/>
+
+## Credits
+
+Airport Location data from <http://ourairports.com/data/>
+Airport sunrise/sunset data from <https://sunrise-sunset.org/api>

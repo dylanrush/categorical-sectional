@@ -36,11 +36,27 @@ def get_mode():
     return CONFIG['mode']
 
 
+def get_night_lights():
+    """
+    Should we light airports that are in Night differently?
+
+    Returns:
+        boolean -- True if we should light airports that are in the dark
+        differently.
+    """
+
+    try:
+        if CONFIG is not None and 'night_lights' in CONFIG:
+            return CONFIG['night_lights']
+    except:
+        return False
+
+
 def get_airport_configuration_section():
     """
     Returns the proper section of the configuration file
     to load the airport configuration from.
-    
+
     Returns:
         string -- The key in the configuration JSON to
         load the airport configuration from.
@@ -83,8 +99,10 @@ def __get_led_colors__():
         weather.RED: (HIGH, LOW, LOW),
         weather.GREEN: (LOW, HIGH, LOW),
         weather.BLUE: (LOW, LOW, HIGH),
-        weather.LOW: (LOW, LOW, LOW),
-        weather.OFF: (LOW, LOW, LOW)
+        weather.LOW: (HIGH, LOW, LOW),
+        weather.OFF: (LOW, LOW, LOW),
+        weather.YELLOW: (HIGH, HIGH, LOW),
+        weather.GRAY: (LOW, LOW, LOW)
     }
 
 
@@ -100,7 +118,9 @@ def __get_pwm_colors__():
         weather.GREEN: (0.0, 50.0, 0.0),
         weather.BLUE: (0.0, 0.0, 100.0),
         weather.LOW: (20.0, 0.0, 100.0),
-        weather.OFF: (0.0, 0.0, 0.0)
+        weather.OFF: (0.0, 0.0, 0.0),
+        weather.GRAY: (10.0, 20.0, 40.0),
+        weather.YELLOW: (20.0, 50.0, 0.0)
     }
 
 
@@ -114,15 +134,10 @@ def __get_ws2801_colors__():
         weather.GREEN: (0, 255, 0),
         weather.BLUE: (0, 0, 255),
         weather.LOW: (255, 0, 255),
-        weather.OFF: (0, 0, 0)
+        weather.OFF: (0, 0, 0),
+        weather.GRAY: (50, 50, 50),
+        weather.YELLOW: (255, 255, 00)
     }
-
-
-def get_overrides():
-    # {'KOLM': 'VFR',
-    #  'KTIW': 'MVFR',
-    #  'KPWT': 'INVALID'}
-    return {}
 
 
 def get_airport_configs():
@@ -169,10 +184,10 @@ def __load_gpio_airport_pins__(config_file):
 def __load_airport_ws2801__(config_file):
     """
     Loads the configuration for WS2801/neopixel based setups.
-    
+
     Arguments:
         config_file {string} -- The file name & location to load.
-    
+
     Returns:
         dictionary -- A dictionary keyed by airport identitifier
                       that holds the pixel index and a reserved value.
@@ -186,7 +201,6 @@ def __load_airport_ws2801__(config_file):
 
         for airport_data in airports:
             airport_code = airport_data.keys()[0]
-            out_airport_map[airport_code.upper()] = (
-                airport_data[airport_code]['neopixel'], airport_data[airport_code]['utc_offset'])
+            out_airport_map[airport_code.upper()] = airport_data[airport_code]['neopixel']
 
         return out_airport_map

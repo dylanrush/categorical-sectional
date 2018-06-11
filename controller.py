@@ -56,11 +56,9 @@ color_by_rules = {
     weather.VFR: colors[weather.GREEN],
     weather.MVFR: colors[weather.BLUE],
     weather.LIFR: colors[weather.LOW],
+    weather.NIGHT: colors[weather.YELLOW],
     weather.INVALID: colors[weather.BLUE]
 }
-
-# Overrides can be used to test different conditions
-overrides = configuration.get_overrides()
 
 
 def get_renderer():
@@ -131,11 +129,11 @@ def refresh_station_weather():
 
     for airport in airport_render_config:
         print "Retrieving METAR for " + airport
-        metar = weather.get_metar(airport)
+        metar = weather.get_metar(airport, configuration.get_night_lights())
+
         print "METAR for " + airport + " = " + metar
         category = weather.get_category(metar)
-        if airport in overrides:
-            category = overrides[airport]
+
         print "Category for " + airport + " = " + category
         set_airport_display(airport, category)
 
@@ -157,7 +155,7 @@ def render_airport_displays(airport_flasher):
 # LIFR - Flashing red
 # Error - Flashing blue
 
-        
+
 def all_airports(color):
     """
     Sets all of the airports to the given color
@@ -203,13 +201,20 @@ def refresh_thread():
 
 if __name__ == '__main__':
     # Test LEDS on startup
-    colors_to_init = (weather.LOW, weather.RED, weather.BLUE, weather.GREEN, weather.OFF)
+    colors_to_init = (
+        weather.LOW,
+        weather.GRAY,
+        weather.RED,
+        weather.BLUE,
+        weather.GREEN,
+        weather.YELLOW,
+        weather.OFF
+    )
 
     for color in colors_to_init:
         print "Setting to " + color
         all_airports(color)
         time.sleep(2)
-
 
     all_airports(weather.LOW)
 

@@ -41,7 +41,7 @@ class Ws2801Renderer(object):
 
             self.pixels.show()
 
-    def set_led(self, render_data, color):
+    def set_led(self, pixel_index, color):
         """
         Sets the given airport to the given color
 
@@ -49,7 +49,6 @@ class Ws2801Renderer(object):
             pixel_index {int} -- The index of the pixel to set
             color {int array} -- The RGB (0-255) array of the color we want to set.
         """
-        pixel_index = render_data[0]
         if not local_debug.is_debug():
             self.pixels.set_pixel(pixel_index, Adafruit_WS2801.RGB_to_color(
                 color[0], color[1], color[2]))
