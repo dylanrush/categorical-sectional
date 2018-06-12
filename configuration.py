@@ -1,11 +1,12 @@
 """
 Handles configuration loading and constants.
 """
-
 import json
-import weather
+import os
 import unicodedata
+
 import lib.local_debug as local_debug
+import weather
 
 if local_debug.is_debug():
     HIGH = 1
@@ -16,6 +17,8 @@ else:
     LOW = GPIO.LOW
 
 CONFIG_FILE = "./data/config.json"
+__working_dir__ = os.path.dirname(os.path.abspath(__file__))
+__full_config__ = os.path.join(__working_dir__, os.path.normpath(CONFIG_FILE))
 
 # Modes
 STANDARD = 'led'
@@ -23,7 +26,7 @@ PWM = 'pwm'
 WS2801 = 'ws2801'
 
 
-with open(CONFIG_FILE) as config_file:
+with open(__full_config__) as config_file:
     config_text = config_file.read()
     CONFIG = json.loads(config_text)
 
@@ -75,7 +78,9 @@ def get_airport_file():
     Returns the file that contains the airport config
     """
 
-    return CONFIG['airports_file']
+    full_config = os.path.join(__working_dir__, os.path.normpath(CONFIG['airports_file']))
+
+    return full_config
 
 
 def get_colors():
@@ -102,7 +107,8 @@ def __get_led_colors__():
         weather.LOW: (HIGH, LOW, LOW),
         weather.OFF: (LOW, LOW, LOW),
         weather.YELLOW: (HIGH, HIGH, LOW),
-        weather.GRAY: (LOW, LOW, LOW)
+        weather.GRAY: (LOW, LOW, LOW),
+        weather.WHITE: (HIGH, HIGH, HIGH)
     }
 
 
@@ -120,7 +126,8 @@ def __get_pwm_colors__():
         weather.LOW: (20.0, 0.0, 100.0),
         weather.OFF: (0.0, 0.0, 0.0),
         weather.GRAY: (10.0, 20.0, 40.0),
-        weather.YELLOW: (20.0, 50.0, 0.0)
+        weather.YELLOW: (20.0, 50.0, 0.0),
+        weather.WHITE: (20.0, 50, 100.0)
     }
 
 
@@ -136,7 +143,8 @@ def __get_ws2801_colors__():
         weather.LOW: (255, 0, 255),
         weather.OFF: (0, 0, 0),
         weather.GRAY: (50, 50, 50),
-        weather.YELLOW: (255, 255, 00)
+        weather.YELLOW: (255, 255, 0),
+        weather.WHITE: (255, 255, 255)
     }
 
 

@@ -1,8 +1,10 @@
 """
 Simple wrapper around a logger.
 """
-
+import threading
 from datetime import datetime
+
+__lock__ = threading.Lock()
 
 def __escape__(text):
     """
@@ -26,16 +28,26 @@ class Logger(object):
 
     def log_info_message(self, message_to_log, print_to_screen=True):
         """ Log and print at Info level """
-        if print_to_screen:
-            print (str(datetime.utcnow())) + " INFO: " + __escape__(message_to_log)
-        self.__logger__.info(__escape__(message_to_log))
+        try:
+            __lock__.acquire()
+
+            if print_to_screen:
+                print (str(datetime.utcnow())) + " INFO: " + __escape__(message_to_log)
+            self.__logger__.info(__escape__(message_to_log))
+        finally:
+            __lock__.release()
 
         return message_to_log
 
     def log_warning_message(self, message_to_log):
         """ Log and print at Warning level """
-        print (str(datetime.utcnow())) + " WARN: " + message_to_log
-        self.__logger__.warning(__escape__(message_to_log))
+        try:
+            __lock__.acquire()
+
+            print (str(datetime.utcnow())) + " WARN: " + message_to_log
+            self.__logger__.warning(__escape__(message_to_log))
+        finally:
+            __lock__.release()
 
         return message_to_log
 

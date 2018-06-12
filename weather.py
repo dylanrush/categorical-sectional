@@ -2,12 +2,14 @@
 Handles fetching and decoding weather.
 """
 
-import re
-import urllib
 import csv
 import json
-import requests
+import os
+import re
+import urllib
 from datetime import datetime, timedelta
+
+import requests
 
 INVALID = 'INVALID'
 VFR = 'VFR'
@@ -21,6 +23,7 @@ GREEN = 'GREEN'
 BLUE = 'BLUE'
 GRAY = 'GRAY'
 YELLOW = 'YELLOW'
+WHITE = 'WHITE'
 LOW = 'LOW'
 OFF = 'OFF'
 
@@ -30,7 +33,8 @@ __daylight_cache__ = {}
 __metar_report_cache__ = {}
 
 
-def __load_airport_data__(airport_data_file="./data/airports.csv"):
+def __load_airport_data__(working_directory=os.path.dirname(os.path.abspath(__file__)),
+                          airport_data_file="./data/airports.csv"):
     """
     Loads all of the airport and weather station data from the included CSV file
     then places it into a dictionary for easy use.
@@ -41,8 +45,9 @@ def __load_airport_data__(airport_data_file="./data/airports.csv"):
     Returns:
         dictionary -- A map of the airport data keyed by IACO code.
     """
+    full_file_path = os.path.join(working_directory, os.path.normpath(airport_data_file))
 
-    csvfile = open(airport_data_file, 'r')
+    csvfile = open(full_file_path, 'r')
 
     fieldnames = ("id", "ident", "type", "name", "latitude_deg", "longitude_deg", "elevation_ft", "continent", "iso_country", "iso_region",
                   "municipality", "scheduled_service", "gps_code", "iata_code", "local_code", "home_link", "wikipedia_link", "keywords")
@@ -73,11 +78,12 @@ def __get_utc_datetime__(datetime_string):
 
     return datetime.strptime(datetime_string, "%Y-%m-%dT%H:%M:%S+00:00")
 
+
 def __set_cache__(airport_iaco_code, cache, value):
     """
     Sets the given cache to have the given value.
     Automatically sets the cache saved time.
-    
+
     Arguments:
         airport_iaco_code {str} -- The code of the station to cache the results for.
         cache {dictionary} -- The cache keyed by airport code.
@@ -85,6 +91,7 @@ def __set_cache__(airport_iaco_code, cache, value):
     """
 
     cache[airport_iaco_code] = (datetime.utcnow(), value)
+
 
 def __is_cache_valid__(airport_iaco_code, cache, cache_life_in_minutes=15):
     """
