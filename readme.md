@@ -37,11 +37,11 @@ A parts manifest lists a Raspberry Pi Zero due to its size and lower power consu
 
 | Description                                  | Cost   | Link                                                                                                                                                                 |
 |----------------------------------------------|--------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Raspberry Pi Zero W                          | $29.99 | https://www.amazon.com/CanaKit-Raspberry-Wireless-Starter-Official/dp/B06XJQV162/ref=sr_1_7?s=electronics&ie=UTF8&qid=1528557992&sr=1-7&keywords=raspberry+pi+zero+w |
-| 5 volt, 4 amp power supply                   | $12.99 | https://www.amazon.com/gp/product/B00MRGKPH8/ref=oh_aui_detailpage_o06_s00?ie=UTF8&psc=1                                                                             |
-| Barrel jack adapters                         | $7.99  | https://www.amazon.com/gp/product/B01M4RBARQ/ref=oh_aui_detailpage_o06_s01?ie=UTF8&psc=1                                                                             |
-| Individually addressable LEDs (WS2801 based) | $39.95 | https://www.amazon.com/12mm-Diffused-Digital-Pixels-Strand/dp/B073MZWBYS/ref=sr_1_1?ie=UTF8&qid=1528558371&sr=8-1&keywords=adafruit+ws2801                           |
-| 4 Pin JST SM Plugs                           | $7.99  | https://www.amazon.com/Visdoll-Pairs-Female-Connector-Cable/dp/B075K48BD9/ref=sr_1_8?ie=UTF8&qid=1528559351&sr=8-8&keywords=4+Pin+JST+SM+Plug                        |
+| Raspberry Pi Zero W                          | $29.99 | <https://www.amazon.com/CanaKit-Raspberry-Wireless-Starter-Official/dp/B06XJQV162/ref=sr_1_7?s=electronics&ie=UTF8&qid=1528557992&sr=1-7&keywords=raspberry+pi+zero+w> |
+| 5 volt, 4 amp power supply                   | $12.99 | <https://www.amazon.com/gp/product/B00MRGKPH8/ref=oh_aui_detailpage_o06_s00?ie=UTF8&psc=1>                                                                             |
+| Barrel jack adapters                         | $7.99  | <https://www.amazon.com/gp/product/B01M4RBARQ/ref=oh_aui_detailpage_o06_s01?ie=UTF8&psc=1>                                                                             |
+| Individually addressable LEDs (WS2801 based) | $39.95 | <https://www.amazon.com/12mm-Diffused-Digital-Pixels-Strand/dp/B073MZWBYS/ref=sr_1_1?ie=UTF8&qid=1528558371&sr=8-1&keywords=adafruit+ws2801>                           |
+| 4 Pin JST SM Plugs                           | $7.99  | <https://www.amazon.com/Visdoll-Pairs-Female-Connector-Cable/dp/B075K48BD9/ref=sr_1_8?ie=UTF8&qid=1528559351&sr=8-8&keywords=4+Pin+JST+SM+Plug>                        |
 
 ### Bootstrapping The Raspberry Pi
 
@@ -55,7 +55,7 @@ A full tutorial on how to install the Operating System is available at: <https:/
 2. You will be given a choice of operating systems to install. You will also be asked for your WiFi network and password.
 3. Choose the WiFi network that will be used when the project is completed.
 4. Choose "Raspbian" as the operating system.
-5. When it is finished, login with the username:pi password:raspberry 
+5. When it is finished, login with the username:pi password:raspberry
 
 #### Get The Code
 
@@ -68,6 +68,7 @@ git clone https://github.com/JohnMarzulli/categorical-sectional.git
 This will install this software onto the Raspberry Pi.
 
 #### Python Package Install
+
 From a terminal on the Raspberry Pi
 
 ```bash
@@ -142,7 +143,6 @@ Solder them to the board.
 * Add the SD card to the Pi.
 * Plug inthe NeoPixels first, then the Raspberry Pi.
 
-
 ## Understanding The Configuration Files
 
 All of the configuration files will be in the "data" sub directory.
@@ -166,6 +166,7 @@ This is the first file loaded. It tells the software what type of lights are bei
 ```
 
 #### night_lights
+
 Set this to true if you would like the airports to switch to yellow when the airport is past sunset but not yet to sunrise.
 
 Switches to normal flight category colors during daylight hours.
@@ -251,7 +252,6 @@ Next to contains a "neopixel" identifier. This is the order of the light on the 
 
 Due to the way your lights may need to be arranged to fit on the map, some lights may need to be skipped, so keep track of your lights.
 
-
 ##### Illustration of Numbering
 
 Using the first few lines of the ws2801 section from above, this shows how the numbering works.
@@ -269,6 +269,24 @@ The third light will show SeaTac aiport.
            0/KRNT    Skipped     2/KSEA    Skipped
 ```
 
+## Running It At Boot
+
+To run it at boot, perform the following steps:
+
+1. Log into the device as the user "pi" with password "raspberry".
+2. Type "crontab -e"
+3. Select "Nano" (Option 1)
+4. Enter the following text at the _bottom_ of the file:
+
+  ```code
+  @reboot python /home/pi/categorical-sectional/controller.py &
+  ```
+
+5. Save the file and exit.
+6. sudo reboot now
+
+Capitalization counts. The map lights should come on with each boot now.
+
 ## Default Colors
 
 This project uses the standard airport coloring for flight rules category.
@@ -284,6 +302,7 @@ Blinking red is LIFR.
 
 <https://learn.adafruit.com/12mm-led-pixels/wiring>
 <https://tutorials-raspberrypi.com/how-to-control-a-raspberry-pi-ws2801-rgb-led-strip/>
+<https://www.raspberrypi.org/documentation/linux/usage/cron.md>
 
 ## Credits
 
