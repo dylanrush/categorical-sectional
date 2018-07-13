@@ -26,6 +26,12 @@ class Logger(object):
     Wrapper around a normal logger so stuff gets printed too.
     """
 
+    def info(self, message_to_log):
+        self.log_info_message(message_to_log, True)
+    
+    def warn(self, message_to_log):
+        self.log_warning_message(message_to_log)
+
     def log_info_message(self, message_to_log, print_to_screen=True):
         """ Log and print at Info level """
         try:
