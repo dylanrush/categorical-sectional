@@ -69,7 +69,7 @@ color_by_rules = {
     weather.MVFR: colors[weather.BLUE],
     weather.LIFR: colors[weather.LOW],
     weather.NIGHT: colors[weather.YELLOW],
-    weather.INVALID: colors[weather.BLUE]
+    weather.INVALID: colors[weather.WHITE]
 }
 
 
@@ -99,6 +99,7 @@ def get_renderer():
 
 renderer = get_renderer()
 
+
 def get_color_from_condition(category):
     """
     From a condition, returns the color it should be rendered as, and if it should flash.
@@ -123,18 +124,18 @@ def get_color_from_condition(category):
     elif category == weather.NIGHT:
         return (weather.YELLOW, False)
 
-    ## Error
+    # Error
     return (weather.WHITE, True)
 
 
 def set_airport_display(airport, category):
     """
     Sets the given airport to have the given flight rules category.
-    
+
     Arguments:
         airport {str} -- The airport identifier.
         category {string} -- The flight rules category.
-    
+
     Returns:
         bool -- True if the flight category changed (or was set for the first time).
     """
@@ -157,14 +158,23 @@ def set_airport_display(airport, category):
 
     if changed:
         LOGGER.log_info_message(airport + " now " + category)
-    
+
     return changed
 
 
-def refresh_all_weather_stations():
+def update_weather_for_all_stations():
     """
-    Attempts to get the latest weather for all stations and
-    categorize the reports.
+    Updates the weather for all of the stations.
+    This does not update the conditions or category.
+    """
+
+    weather.get_metars(airport_render_config.keys())
+
+
+def update_all_station_categorizations():
+    """
+    Takes the latest reports (probably in cache) and then
+    updates the categorization of the airports.
     """
 
     for airport in airport_render_config:
@@ -181,13 +191,14 @@ def refresh_all_weather_stations():
         LOGGER.log_info_message("Category for " + airport + " = " + category)
         set_airport_display(airport, category)
 
+
 def get_airport_condition(airport):
     """
     Safely get the conditions at an airport
-    
+
     Arguments:
         airport {str} -- The airport identifier
-    
+
     Returns:
         tuple -- condition, should_blink
     """
@@ -197,14 +208,15 @@ def get_airport_condition(airport):
             return airport_conditions[airport][0], airport_conditions[airport][1]
     except:
         pass
-    
+
     return weather.INVALID, True
+
 
 def render_airport_displays(airport_flasher):
     """
     Sets the LEDs for all of the airports based on their flight rules.
     Does this independant of the LED type.
-    
+
     Arguments:
         airport_flasher {bool} -- Is this on the "off" cycle of blinking.
     """
@@ -231,7 +243,7 @@ def render_airport_displays(airport_flasher):
 #MVFR - Blue
 #IFR - Red
 # LIFR - Flashing red
-# Error - Flashing blue
+# Error - Flashing white
 
 
 def all_airports(color):
@@ -262,24 +274,6 @@ def render_thread():
             time.sleep(1)
 
 
-def refresh_thread():
-    """
-    Helper to refresh the weather from all of the stations.
-    """
-
-    LOGGER.log_info_message("Starting refresh thread")
-
-    while True:
-        try:
-            LOGGER.log_info_message("Refreshing categories")
-
-            refresh_all_weather_stations()
-        except KeyboardInterrupt:
-            quit()
-        finally:
-            time.sleep(60)
-
-
 def wait_for_all_airports():
     """
     Waits for all of the airports to have been given a chance to initialize.
@@ -304,7 +298,7 @@ def wait_for_all_airports():
             thread_lock_object.release()
 
         time.sleep(0.5)
-    
+
     return True
 
 
@@ -312,7 +306,8 @@ if __name__ == '__main__':
     # Start loading the METARs in the background
     # while going through the self-test
     LOGGER.log_info_message("Initialize weather for all airports")
-    refresh_task = RecurringTask('Refresh', 0, refresh_thread, None, True)
+
+    weather.get_metars(airport_render_config.keys())
 
     # Test LEDS on startup
     colors_to_init = (
@@ -333,9 +328,14 @@ if __name__ == '__main__':
 
     all_airports(weather.YELLOW)
 
+    update_weather_task = RecurringTask(
+        'UpdateWeather', 10 * 60, LOGGER, True)
+    update_categories_task = RecurringTask(
+        'UpdateCategorizations', 60, update_all_station_categorizations, LOGGER, True)
+
     wait_for_all_airports()
 
-    render_task = RecurringTask('Render', 0, render_thread, None, True)
+    render_task = RecurringTask('Render', 0, render_thread, LOGGER, True)
 
     while True:
         try:
