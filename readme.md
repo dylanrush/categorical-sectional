@@ -308,3 +308,9 @@ Blinking red is LIFR.
 
 Airport Location data from <http://ourairports.com/data/>
 Airport sunrise/sunset data from <https://sunrise-sunset.org/api>
+
+## License
+
+This project is covered by the GPL v3 liscense.
+
+Please see [LISCENSE.md](LISCENSE.md)
