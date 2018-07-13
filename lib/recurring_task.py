@@ -69,7 +69,7 @@ class RecurringTask(object):
                     # + sys.exc_info()[0]
                     error_mesage = "EX(" + self.__task_name__ + ")"
                     if self.__logger__ is not None:
-                        self.__logger__.info(error_mesage)
+                        self.__logger__.warn(error_mesage)
                     else:
                         print error_mesage
 
