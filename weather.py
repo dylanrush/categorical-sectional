@@ -145,6 +145,11 @@ def get_civil_twilight(airport_iaco_code, current_utc_time=None, use_cache=True)
 
     is_cache_valid, cached_value = __is_cache_valid__(
         airport_iaco_code, __daylight_cache__, 60)
+    
+    # Make sure that the sunrise time we are using is still valid...
+    if is_cache_valid:
+        hours_since_sunrise = (current_utc_time - cached_value[0]).total_seconds() / 3600
+        is_cache_valid = hours_since_sunrise < 24
 
     if is_cache_valid and use_cache:
         return cached_value
@@ -400,14 +405,16 @@ def get_category(airport_iaco_code, metar, return_night):
 
 if __name__ == '__main__':
     starting_date_time = datetime.utcnow()
-    starting_date_time.replace(hour=12)
+    utc_offset = starting_date_time - datetime.now()
+    starting_date_time = starting_date_time.replace(hour=12)
 
     metars = get_metars(['KAWO', 'KSEA'])
     get_metar('KAWO', False)
 
-    for hours_ahead in range(0, 24):
+    for hours_ahead in range(0, 25):
         time_to_fetch = starting_date_time + timedelta(hours=hours_ahead)
+        local_fetch_time = time_to_fetch - utc_offset
         result = get_civil_twilight("KAWO", time_to_fetch, False)
         is_lit = is_daylight("KAWO", time_to_fetch)
 
-        print("t={}, is_lit={}".format(time_to_fetch, is_lit))
+        print("t={}/{}, is_lit={}".format(time_to_fetch, local_fetch_time, is_lit))
