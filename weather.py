@@ -144,7 +144,7 @@ def get_civil_twilight(airport_iaco_code, current_utc_time=None, use_cache=True)
         current_utc_time = current_utc_time - timedelta(days=1)
 
     is_cache_valid, cached_value = __is_cache_valid__(
-        airport_iaco_code, __daylight_cache__, 60)
+        airport_iaco_code, __daylight_cache__, 4 * 60)
     
     # Make sure that the sunrise time we are using is still valid...
     if is_cache_valid:
