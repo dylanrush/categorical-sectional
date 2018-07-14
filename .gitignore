@@ -1,0 +1,5 @@
+.vscode/
+*.pyc
+.*swp
+weathermap.log
+weathermap.log.*
