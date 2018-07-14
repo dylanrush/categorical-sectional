@@ -24,6 +24,7 @@
 #
 
 
+from datetime import datetime
 import json
 import logging
 import logging.handlers
@@ -44,7 +45,7 @@ python_logger = logging.getLogger("weathermap")
 python_logger.setLevel(logging.DEBUG)
 LOGGER = Logger(python_logger)
 HANDLER = logging.handlers.RotatingFileHandler(
-    "weathermap.log", maxBytes=1048576, backupCount=3)
+    "weathermap.log", maxBytes=10485760, backupCount=10)
 HANDLER.setFormatter(logging.Formatter(
     '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 python_logger.addHandler(HANDLER)
@@ -177,16 +178,23 @@ def update_all_station_categorizations():
     updates the categorization of the airports.
     """
 
+    utc_offset = datetime.utcnow() - datetime.now()
+
     for airport in airport_render_config:
         LOGGER.log_info_message("Retrieving METAR for " + airport)
         metar = weather.get_metar(airport)
 
         LOGGER.log_info_message("METAR for " + airport + " = " + metar)
+        category = weather.INVALID
+
         try:
             category = weather.get_category(
                 airport, metar, configuration.get_night_lights())
-        except:
-            category = weather.INVALID
+            twilight = weather.get_civil_twilight(airport)
+            LOGGER.log_info_message("{} - Rise(UTC):{}, Set(UTC):{}".format(airport, twilight[0], twilight[1]))
+            LOGGER.log_info_message("{} - Rise(HERE):{}, Set(HERE):{}".format(airport, twilight[0] - utc_offset, twilight[1] - utc_offset))
+        except Exception as e:
+            LOGGER.log_warning_message("Exception while attempting to categorize. EX:{}".format(e))
 
         LOGGER.log_info_message("Category for " + airport + " = " + category)
         set_airport_display(airport, category)
