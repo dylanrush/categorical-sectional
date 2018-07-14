@@ -94,7 +94,7 @@ def __set_cache__(airport_iaco_code, cache, value):
     cache[airport_iaco_code] = (datetime.utcnow(), value)
 
 
-def __is_cache_valid__(airport_iaco_code, cache, cache_life_in_minutes=15):
+def __is_cache_valid__(airport_iaco_code, cache, cache_life_in_minutes=8):
     """
     Returns TRUE and the cached value if the cached value
     can still be used.
