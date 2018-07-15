@@ -45,7 +45,8 @@ def __load_airport_data__(working_directory=os.path.dirname(os.path.abspath(__fi
     Returns:
         dictionary -- A map of the airport data keyed by IACO code.
     """
-    full_file_path = os.path.join(working_directory, os.path.normpath(airport_data_file))
+    full_file_path = os.path.join(
+        working_directory, os.path.normpath(airport_data_file))
 
     csvfile = open(full_file_path, 'r')
 
@@ -93,7 +94,7 @@ def __set_cache__(airport_iaco_code, cache, value):
     cache[airport_iaco_code] = (datetime.utcnow(), value)
 
 
-def __is_cache_valid__(airport_iaco_code, cache, cache_life_in_minutes=15):
+def __is_cache_valid__(airport_iaco_code, cache, cache_life_in_minutes=8):
     """
     Returns TRUE and the cached value if the cached value
     can still be used.
@@ -123,7 +124,7 @@ def __is_cache_valid__(airport_iaco_code, cache, cache_life_in_minutes=15):
     return (False, None)
 
 
-def get_civil_twilight(airport_iaco_code):
+def get_civil_twilight(airport_iaco_code, current_utc_time=None, use_cache=True):
     """
     Gets the civil twilight time for the given airport
 
@@ -134,17 +135,22 @@ def get_civil_twilight(airport_iaco_code):
         When civil sunrise and sunset are in UTC
     """
 
-    utc_time = datetime.utcnow()
-
-    # Make sure that we are getting the sunrise/sunset for the current date
-    # not the next day...
-    if utc_time.hour < 12:
-        utc_time = utc_time - timedelta(days=1)
+    if current_utc_time is None:
+        current_utc_time = datetime.utcnow()
 
     is_cache_valid, cached_value = __is_cache_valid__(
-        airport_iaco_code, __daylight_cache__, 60)
+        airport_iaco_code, __daylight_cache__, 4 * 60)
 
+    # Make sure that the sunrise time we are using is still valid...
     if is_cache_valid:
+        hours_since_sunrise = (
+            current_utc_time - cached_value[0]).total_seconds() / 3600
+        if hours_since_sunrise > 24:
+            is_cache_valid = False
+            print("Twilight cache for {} had a HARD miss with delta={}".format(
+                airport_iaco_code, hours_since_sunrise))
+
+    if is_cache_valid and use_cache:
         return cached_value
 
     # Using "formatted=0" returns the times in a full datetime format
@@ -153,7 +159,7 @@ def get_civil_twilight(airport_iaco_code):
     url = "https://api.sunrise-sunset.org/json?lat=" + \
         str(__airport_locations__[airport_iaco_code]["lat"]) + \
         "&lng=" + str(__airport_locations__[airport_iaco_code]["long"]) + \
-        "&date=" + str(utc_time.year) + "-" + str(utc_time.month) + "-" + str(utc_time.day) + \
+        "&date=" + str(current_utc_time.year) + "-" + str(current_utc_time.month) + "-" + str(current_utc_time.day) + \
         "&formatted=0"
 
     json_result = __rest_session__.get(url, timeout=2).json()
@@ -168,7 +174,7 @@ def get_civil_twilight(airport_iaco_code):
     return None
 
 
-def is_daylight(airport_iaco_code):
+def is_daylight(airport_iaco_code, current_utc_time=None, use_cache=True):
     """
     Returns TRUE if the airport is currently in daylight
 
@@ -179,52 +185,125 @@ def is_daylight(airport_iaco_code):
         boolean -- True if the airport is currently in daylight.
     """
 
-    light_times = get_civil_twilight(airport_iaco_code)
+    if current_utc_time is None:
+        current_utc_time = datetime.utcnow()
+
+    light_times = get_civil_twilight(
+        airport_iaco_code, current_utc_time, use_cache)
 
     if light_times is not None:
-        utc_time = datetime.utcnow()
+        # Deal with day old data...
+        hours_since_sunrise = (
+            current_utc_time - light_times[0]).total_seconds() / 3600
+        if hours_since_sunrise > 24:
+            print("is_daylight had a hard miss with delta={}".format(
+                hours_since_sunrise))
+            return True
 
-        return light_times[0] < utc_time and utc_time < light_times[1]
+        return light_times[0] < current_utc_time and current_utc_time < light_times[1]
 
     return True
 
 
-def get_metar(airport_iaco_code):
+def extract_metar_from_html_line(metar):
+    """
+    Takes a raw line of HTML from the METAR report and extracts the METAR from it.
+    NOTE: A "$" at the end of the line indicates a "maintainence check" and is part of the report.
+
+    Arguments:
+        metar {string} -- The raw HTML line that may include BReaks and other HTML elements.
+
+    Returns:
+        string -- The extracted METAR.
+    """
+
+    metar = metar.split('<')[0]
+    metar = re.sub('<[^<]+?>', '', metar)
+    metar = metar.replace('\n', '')
+    metar = metar.strip()
+
+    return metar
+
+
+def get_metars(airport_iaco_codes):
+    """
+    Returns the (RAW) METAR for the given station
+
+    Arguments:
+        airport_iaco_codes {string} -- The list of IACO code for the weather station.
+
+    Returns:
+        dictionary - A dictionary (keyed by airport code) of the RAW metars.
+        Returns INVALID as the value for the key if an error occurs.
+    """
+
+    metar_list = " ".join(airport_iaco_codes)
+    metars = {}
+
+    try:
+        stream = urllib.urlopen(
+            'https://www.aviationweather.gov/metar/data?ids={}&format=raw&hours=0&taf=off&layout=off&date=0'.format(metar_list))
+        data_found = False
+        stream_lines = stream.readlines()
+        stream.close()
+        for line in stream_lines:
+            if '<!-- Data starts here -->' in line:
+                data_found = True
+                continue
+            elif '<!-- Data ends here -->' in line:
+                break
+            elif data_found:
+                metar = ''
+                try:
+                    metar = extract_metar_from_html_line(line)
+
+                    if(len(metar) < 1):
+                        continue
+
+                    identifier = metar.split(' ')[0]
+                    __set_cache__(identifier, __metar_report_cache__, metar)
+                except:
+                    metar = INVALID
+
+                metars[identifier] = metar
+    except Exception, e:
+        print('EX:{}'.format(e))
+
+    return metars
+
+
+def get_metar(airport_iaco_code, use_cache=True):
     """
     Returns the (RAW) METAR for the given station
 
     Arguments:
         airport_iaco_code {string} -- The IACO code for the weather station.
 
-    Returns:
-        string -- The RAW metar (if any) for the given station. Returns INVALID if
-        and error occurs or the station does not exist.
+    Keyword Arguments:
+        use_cache {bool} -- Should we use the cache? Set to false to bypass the cache. (default: {True})
     """
 
     is_cache_valid, cached_metar = __is_cache_valid__(
         airport_iaco_code, __metar_report_cache__)
 
-    if is_cache_valid and cached_metar != INVALID:
+    if is_cache_valid and cached_metar != INVALID and use_cache:
         return cached_metar
 
     try:
-        stream = urllib.urlopen('http://www.aviationweather.gov/metar/data?ids=' +
-                                airport_iaco_code + '&format=raw&hours=0&taf=off&layout=off&date=0')
-        for line in stream:
-            if '<!-- Data starts here -->' in line:
-                metar = re.sub('<[^<]+?>', '', stream.readline())
-                __set_cache__(airport_iaco_code, __metar_report_cache__, metar)
+        metars = get_metars([airport_iaco_code])
 
-                return metar
-        return INVALID
+        if metars is None:
+            return INVALID
+
+        if airport_iaco_code not in metars:
+            return INVALID
+
+        return metars[airport_iaco_code]
+
     except Exception, e:
-        print str(e)
+        print("EX:{}".format(e))
+
         return INVALID
-    finally:
-        try:
-            stream.close()
-        except:
-            print "Error closing stream"
 
 
 def get_visibilty(metar):
@@ -333,5 +412,20 @@ def get_category(airport_iaco_code, metar, return_night):
 
 
 if __name__ == '__main__':
-    result = get_civil_twilight("KAWO")
-    is_lit = is_daylight("KAWO")
+    starting_date_time = datetime.utcnow()
+    utc_offset = starting_date_time - datetime.now()
+
+    metars = get_metars(['KAWO', 'KSEA'])
+    get_metar('KAWO', False)
+
+    for hours_ahead in range(0, 48):
+        print('----')
+        time_to_fetch = starting_date_time + timedelta(hours=hours_ahead)
+        local_fetch_time = time_to_fetch - utc_offset
+
+        print("UTC={}, LOCAL={}".format(time_to_fetch, local_fetch_time))
+
+        for airport in ['KAWO', 'KCOE', 'KMSP', 'KOSH']:
+            is_lit = is_daylight(airport, time_to_fetch)
+
+            print("{}: is_lit={}".format(airport, is_lit))
