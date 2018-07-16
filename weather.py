@@ -185,6 +185,8 @@ def is_daylight(airport_iaco_code, current_utc_time=None, use_cache=True):
         boolean -- True if the airport is currently in daylight.
     """
 
+    print("------")
+
     if current_utc_time is None:
         current_utc_time = datetime.utcnow()
 
@@ -195,12 +197,23 @@ def is_daylight(airport_iaco_code, current_utc_time=None, use_cache=True):
         # Deal with day old data...
         hours_since_sunrise = (
             current_utc_time - light_times[0]).total_seconds() / 3600
+
+        if hours_since_sunrise < 0:
+            light_times = get_civil_twilight(
+                airport_iaco_code, current_utc_time - timedelta(hours=24), False)
+        
         if hours_since_sunrise > 24:
             print("is_daylight had a hard miss with delta={}".format(
                 hours_since_sunrise))
             return True
+        
+        print("SUNRISE:{}".format(light_times[0]))
+        print("CURRENT:{}".format(current_utc_time))
+        print("SUNSET:{}".format(light_times[1]))
+        is_after_sunrise = light_times[0] < current_utc_time
+        is_before_sunset = current_utc_time < light_times[1]
 
-        return light_times[0] < current_utc_time and current_utc_time < light_times[1]
+        return is_after_sunrise and is_before_sunset
 
     return True
 
@@ -418,7 +431,7 @@ if __name__ == '__main__':
     metars = get_metars(['KAWO', 'KSEA'])
     get_metar('KAWO', False)
 
-    for hours_ahead in range(0, 48):
+    for hours_ahead in range(0, 1):
         print('----')
         time_to_fetch = starting_date_time + timedelta(hours=hours_ahead)
         local_fetch_time = time_to_fetch - utc_offset
