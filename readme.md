@@ -74,7 +74,7 @@ From a terminal on the Raspberry Pi
 
 ```bash
 cd ~/categorical-sectional
-python3 setup.py develop
+sudo python3 setup.py develop
 ```
 
 #### Raspberry Pi Settings
@@ -269,7 +269,7 @@ To run it at boot, perform the following steps:
 4. Enter the following text at the _bottom_ of the file:
 
   ```code
-  @reboot python /home/pi/categorical-sectional/controller.py &
+  @reboot python3 /home/pi/categorical-sectional/controller.py &
   ```
 
 5. Save the file and exit.
