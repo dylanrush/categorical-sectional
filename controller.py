@@ -25,6 +25,7 @@
 
 
 from datetime import datetime
+import sys
 import json
 import logging
 import logging.handlers
@@ -51,7 +52,6 @@ HANDLER.setFormatter(logging.Formatter(
 python_logger.addHandler(HANDLER)
 
 thread_lock_object = threading.Lock()
-
 
 if local_debug.is_debug():
     from lib.local_debug import PWM
@@ -191,10 +191,13 @@ def update_all_station_categorizations():
             category = weather.get_category(
                 airport, metar, configuration.get_night_lights())
             twilight = weather.get_civil_twilight(airport)
-            LOGGER.log_info_message("{} - Rise(UTC):{}, Set(UTC):{}".format(airport, twilight[0], twilight[1]))
-            LOGGER.log_info_message("{} - Rise(HERE):{}, Set(HERE):{}".format(airport, twilight[0] - utc_offset, twilight[1] - utc_offset))
+            LOGGER.log_info_message(
+                "{} - Rise(UTC):{}, Set(UTC):{}".format(airport, twilight[0], twilight[1]))
+            LOGGER.log_info_message("{} - Rise(HERE):{}, Set(HERE):{}".format(
+                airport, twilight[0] - utc_offset, twilight[1] - utc_offset))
         except Exception as e:
-            LOGGER.log_warning_message("Exception while attempting to categorize. EX:{}".format(e))
+            LOGGER.log_warning_message(
+                "Exception while attempting to categorize. EX:{}".format(e))
 
         LOGGER.log_info_message("Category for " + airport + " = " + category)
         set_airport_display(airport, category)
@@ -348,7 +351,9 @@ if __name__ == '__main__':
     while True:
         try:
             time.sleep(0.1)
-        except KeyboardInterrupt, SystemExit:
+        except KeyboardInterrupt:
+            break
+        except SystemExit:
             break
 
     if not local_debug.is_debug():

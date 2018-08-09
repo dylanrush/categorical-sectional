@@ -78,7 +78,8 @@ def get_airport_file():
     Returns the file that contains the airport config
     """
 
-    full_config = os.path.join(__working_dir__, os.path.normpath(CONFIG['airports_file']))
+    full_config = os.path.join(
+        __working_dir__, os.path.normpath(CONFIG['airports_file']))
 
     return full_config
 
@@ -175,7 +176,7 @@ def __load_gpio_airport_pins__(config_file):
     """
 
     out_airport_pins_map = {}
-    with open(config_file) as gpio_config_file:
+    with open(config_file, encoding='UTF8') as gpio_config_file:
         json_config_text = gpio_config_file.read()
         json_config = json.loads(json_config_text)
         airports = json_config[get_airport_configuration_section()]
@@ -202,13 +203,17 @@ def __load_airport_ws2801__(config_file):
     """
 
     out_airport_map = {}
-    with open(config_file) as ws2801_config_file:
+    with open(config_file, encoding='UTF8') as ws2801_config_file:
         json_config_text = ws2801_config_file.read()
         json_config = json.loads(json_config_text)
         airports = json_config[WS2801]
 
         for airport_data in airports:
-            airport_code = airport_data.keys()[0]
-            out_airport_map[airport_code.upper()] = airport_data[airport_code]['neopixel']
+            keylist = []
+            keylist.extend(iter(airport_data.keys()))
+            airport_code = keylist[0]
+
+            out_airport_map[airport_code.upper(
+            )] = airport_data[airport_code]['neopixel']
 
         return out_airport_map

@@ -71,7 +71,7 @@ class RecurringTask(object):
                     if self.__logger__ is not None:
                         self.__logger__.warn(error_mesage)
                     else:
-                        print error_mesage
+                        print(error_mesage)
 
             time.sleep(int(self.__task_interval__))
 
@@ -117,7 +117,7 @@ if __name__ == '__main__':
     TEST = TimerTest()
 
     while True:
-        print "A:" + str(TEST.a)
-        print "B:" + str(TEST.b)
+        print("A:{}".format(TEST.a))
+        print("B:{}".format(TEST.b))
 
         time.sleep(1)

@@ -4,7 +4,25 @@ RaspberryPi specific code to enable for
 debugging on a Mac or Windows host.
 """
 
-from sys import platform
+from sys import platform, version_info
+
+REQUIRED_PYTHON_VERSION = 3.5
+
+
+def validate_python_version():
+    """
+    Checks to make sure that the correct version of Python is being used.
+
+    Raises:
+        Exception -- If the  version of Python is not new enough.
+    """
+
+    python_version = float('{}.{}'.format(version_info.major, version_info.minor))
+    error_text = 'Requires Python {}'.format(REQUIRED_PYTHON_VERSION)
+
+    if python_version < REQUIRED_PYTHON_VERSION:
+        print(error_text)
+        raise Exception(error_text)
 
 
 def is_debug():
@@ -33,7 +51,7 @@ class PWM:
             freq {float} -- How often the pin should be given voltage.
         """
 
-        print "Pin " + str(self.pin) + ' started with ' + str(freq)
+        print("Pin " + str(self.pin) + ' started with ' + str(freq))
 
     def ChangeDutyCycle(self, cycle):
         """
@@ -43,4 +61,7 @@ class PWM:
             cycle {float} -- How often the pin should be given voltage.
         """
 
-        print "Pin " + str(self.pin) + ' changing duty cycle to ' + str(cycle)
+        print("Pin " + str(self.pin) + ' changing duty cycle to ' + str(cycle))
+
+
+validate_python_version()
