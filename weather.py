@@ -426,13 +426,14 @@ def get_category(airport_iaco_code, metar, return_night):
 
 
 if __name__ == '__main__':
+    airports_to_test = ['KAWO', 'KOSH', 'KBVS', 'KDOESNTEXIST']
     starting_date_time = datetime.utcnow()
     utc_offset = starting_date_time - datetime.now()
 
-    metars = get_metars(['KAWO', 'KOSH'])
+    metars = get_metars(airports_to_test)
     get_metar('KAWO', False)
 
-    for identifier in ['KAWO', 'KOSH']:
+    for identifier in airports_to_test:
         metar = get_metar(identifier)
         flight_category = get_category(identifier, metar, False)
         print('{}: {}: {}'.format(identifier, flight_category, metar))
