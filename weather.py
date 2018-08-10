@@ -364,7 +364,7 @@ def get_ceiling(metar):
     minimum_ceiling = 10000
     for component in components:
         if 'BKN' in component or 'OVC' in component:
-            ceiling = int(filter(str.isdigit, component)) * 100
+            ceiling = int(''.join(filter(str.isdigit, component))) * 100
             if(ceiling < minimum_ceiling):
                 minimum_ceiling = ceiling
     return minimum_ceiling
@@ -431,6 +431,11 @@ if __name__ == '__main__':
 
     metars = get_metars(['KAWO', 'KOSH'])
     get_metar('KAWO', False)
+
+    for identifier in ['KAWO', 'KOSH']:
+        metar = get_metar(identifier)
+        flight_category = get_category(identifier, metar, False)
+        print('{}: {}: {}'.format(identifier, flight_category, metar))
 
     for hours_ahead in range(0, 24):
         print('----')
