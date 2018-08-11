@@ -254,8 +254,8 @@ def get_metars(airport_iaco_codes):
     metars = {}
 
     try:
-        stream = urllib.request.urlopen(
-            'https://www.aviationweather.gov/metar/data?ids={}&format=raw&hours=0&taf=off&layout=off&date=0'.format(metar_list))
+        request_url = 'https://www.aviationweather.gov/metar/data?ids={}&format=raw&hours=0&taf=off&layout=off&date=0'.format(metar_list)
+        stream = urllib.request.urlopen(request_url, timeout = 2)
         data_found = False
         stream_lines = stream.readlines()
         stream.close()
