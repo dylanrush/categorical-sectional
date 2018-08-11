@@ -180,12 +180,36 @@ def update_all_station_categorizations():
 
     utc_offset = datetime.utcnow() - datetime.now()
 
+    LOGGER.log_info_message("Updating all airports at LOCAL={}, UTC={}".format(
+        datetime.now(), datetime.utcnow()))
+
     for airport in airport_render_config:
+        try:
+            category = get_airport_category(airport, utc_offset)
+            set_airport_display(airport, category)
+        except Exception as e:
+            LOGGER.log_warning_message(
+                'While attempting to get category for {}, got EX={}'.format(airport, e))
+
+
+def get_airport_category(airport, utc_offset):
+    """
+    Gets the category of a single airport.
+
+    Arguments:
+        airport {string} -- The airport identifier.
+        utc_offset {int} -- The offset from UTC to local for the airport.
+
+    Returns:
+        string -- The weather category for the airport.
+    """
+    category = weather.INVALID
+
+    try:
         LOGGER.log_info_message("Retrieving METAR for " + airport)
         metar = weather.get_metar(airport)
 
         LOGGER.log_info_message("METAR for " + airport + " = " + metar)
-        category = weather.INVALID
 
         try:
             category = weather.get_category(
@@ -198,9 +222,14 @@ def update_all_station_categorizations():
         except Exception as e:
             LOGGER.log_warning_message(
                 "Exception while attempting to categorize. EX:{}".format(e))
+    except Exception as e:
+        LOGGER.log_info_message(
+            "Captured EX while attempting to get category for {} EX={}".format(airport, e))
+        category = weather.INVALID
 
-        LOGGER.log_info_message("Category for " + airport + " = " + category)
-        set_airport_display(airport, category)
+    LOGGER.log_info_message("Category for " + airport + " = " + category)
+
+    return category
 
 
 def get_airport_condition(airport):
