@@ -38,7 +38,8 @@ class Logger(object):
             __lock__.acquire()
 
             if print_to_screen:
-                print (str(datetime.utcnow())) + " INFO: " + __escape__(message_to_log)
+                text = "{} INFO: {}".format(datetime.utcnow(), __escape__(message_to_log))
+                print(text)
             self.__logger__.info(__escape__(message_to_log))
         finally:
             __lock__.release()
@@ -50,8 +51,8 @@ class Logger(object):
         try:
             __lock__.acquire()
 
-            print (str(datetime.utcnow())) + " WARN: " + message_to_log
-            self.__logger__.warning(__escape__(message_to_log))
+            text = "{} WARN: {}".format(datetime.utcnow(), message_to_log)
+            self.__logger__.warning(__escape__(text))
         finally:
             __lock__.release()
 

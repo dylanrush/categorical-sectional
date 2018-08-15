@@ -62,6 +62,7 @@ A full tutorial on how to install the Operating System is available at: <https:/
 From the command line, after logging in:
 
 ```bash
+cd ~
 git clone https://github.com/JohnMarzulli/categorical-sectional.git
 ```
 
@@ -72,19 +73,8 @@ This will install this software onto the Raspberry Pi.
 From a terminal on the Raspberry Pi
 
 ```bash
-sudo pip install Adafruit-GPIO
-```
-
-```bash
-sudo pip install RPi-GPIO
-```
-
-```bash
-sudo pip install pytest
-```
-
-```bash
-sudo pip install Adafruit_WS2801
+cd ~/categorical-sectional
+sudo python3 setup.py develop
 ```
 
 #### Raspberry Pi Settings
@@ -279,7 +269,7 @@ To run it at boot, perform the following steps:
 4. Enter the following text at the _bottom_ of the file:
 
   ```code
-  @reboot python /home/pi/categorical-sectional/controller.py &
+  @reboot python3 /home/pi/categorical-sectional/controller.py &
   ```
 
 5. Save the file and exit.

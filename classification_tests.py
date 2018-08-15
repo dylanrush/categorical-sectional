@@ -87,8 +87,8 @@ def get_visibilty(metar):
 if __name__ == '__main__':
     import doctest
 
-    print "Starting tests."
+    print("Starting tests.")
 
     doctest.testmod()
 
-    print "Tests finished"
+    print("Tests finished")

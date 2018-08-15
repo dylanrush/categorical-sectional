@@ -6,7 +6,7 @@ import csv
 import json
 import os
 import re
-import urllib
+import urllib.request
 from datetime import datetime, timedelta
 
 import requests
@@ -48,7 +48,7 @@ def __load_airport_data__(working_directory=os.path.dirname(os.path.abspath(__fi
     full_file_path = os.path.join(
         working_directory, os.path.normpath(airport_data_file))
 
-    csvfile = open(full_file_path, 'r')
+    csvfile = open(full_file_path, 'r', encoding='utf-8')
 
     fieldnames = ("id", "ident", "type", "name", "latitude_deg", "longitude_deg", "elevation_ft", "continent", "iso_country", "iso_region",
                   "municipality", "scheduled_service", "gps_code", "iata_code", "local_code", "home_link", "wikipedia_link", "keywords")
@@ -201,12 +201,12 @@ def is_daylight(airport_iaco_code, current_utc_time=None, use_cache=True):
         if hours_since_sunrise < 0:
             light_times = get_civil_twilight(
                 airport_iaco_code, current_utc_time - timedelta(hours=24), False)
-        
+
         if hours_since_sunrise > 24:
             print("is_daylight had a hard miss with delta={}".format(
                 hours_since_sunrise))
             return True
-        
+
         print("SUNRISE:{}".format(light_times[0]))
         print("CURRENT:{}".format(current_utc_time))
         print("SUNSET:{}".format(light_times[1]))
@@ -250,25 +250,26 @@ def get_metars(airport_iaco_codes):
         Returns INVALID as the value for the key if an error occurs.
     """
 
-    metar_list = " ".join(airport_iaco_codes)
+    metar_list = "%20".join(airport_iaco_codes)
     metars = {}
 
     try:
-        stream = urllib.urlopen(
-            'https://www.aviationweather.gov/metar/data?ids={}&format=raw&hours=0&taf=off&layout=off&date=0'.format(metar_list))
+        request_url = 'https://www.aviationweather.gov/metar/data?ids={}&format=raw&hours=0&taf=off&layout=off&date=0'.format(metar_list)
+        stream = urllib.request.urlopen(request_url, timeout = 2)
         data_found = False
         stream_lines = stream.readlines()
         stream.close()
         for line in stream_lines:
-            if '<!-- Data starts here -->' in line:
+            line_as_string = line.decode("utf-8")
+            if '<!-- Data starts here -->' in line_as_string:
                 data_found = True
                 continue
-            elif '<!-- Data ends here -->' in line:
+            elif '<!-- Data ends here -->' in line_as_string:
                 break
             elif data_found:
                 metar = ''
                 try:
-                    metar = extract_metar_from_html_line(line)
+                    metar = extract_metar_from_html_line(line_as_string)
 
                     if(len(metar) < 1):
                         continue
@@ -279,7 +280,7 @@ def get_metars(airport_iaco_codes):
                     metar = INVALID
 
                 metars[identifier] = metar
-    except Exception, e:
+    except Exception as e:
         print('EX:{}'.format(e))
 
     return metars
@@ -313,7 +314,7 @@ def get_metar(airport_iaco_code, use_cache=True):
 
         return metars[airport_iaco_code]
 
-    except Exception, e:
+    except Exception as e:
         print("EX:{}".format(e))
 
         return INVALID
@@ -363,7 +364,7 @@ def get_ceiling(metar):
     minimum_ceiling = 10000
     for component in components:
         if 'BKN' in component or 'OVC' in component:
-            ceiling = int(filter(str.isdigit, component)) * 100
+            ceiling = int(''.join(filter(str.isdigit, component))) * 100
             if(ceiling < minimum_ceiling):
                 minimum_ceiling = ceiling
     return minimum_ceiling
@@ -425,17 +426,24 @@ def get_category(airport_iaco_code, metar, return_night):
 
 
 if __name__ == '__main__':
+    airports_to_test = ['KAWO', 'KOSH', 'KBVS', 'KDOESNTEXIST']
     starting_date_time = datetime.utcnow()
     utc_offset = starting_date_time - datetime.now()
 
-    metars = get_metars(['KAWO', 'KSEA'])
+    metars = get_metars(airports_to_test)
     get_metar('KAWO', False)
 
-    for hours_ahead in range(0, 1):
+    for identifier in airports_to_test:
+        metar = get_metar(identifier)
+        flight_category = get_category(identifier, metar, False)
+        print('{}: {}: {}'.format(identifier, flight_category, metar))
+
+    for hours_ahead in range(0, 24):
         print('----')
         time_to_fetch = starting_date_time + timedelta(hours=hours_ahead)
         local_fetch_time = time_to_fetch - utc_offset
 
+        print("+{}".format(hours_ahead))
         print("UTC={}, LOCAL={}".format(time_to_fetch, local_fetch_time))
 
         for airport in ['KAWO', 'KCOE', 'KMSP', 'KOSH']:
