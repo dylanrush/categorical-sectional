@@ -18,6 +18,7 @@ MVFR = 'M' + VFR
 IFR = 'IFR'
 LIFR = 'L' + IFR
 NIGHT = 'NIGHT'
+SMOKE = 'SMOKE'
 
 RED = 'RED'
 GREEN = 'GREEN'
@@ -173,7 +174,11 @@ def get_civil_twilight(airport_iaco_code, current_utc_time=None, use_cache=True)
         "&date=" + str(current_utc_time.year) + "-" + str(current_utc_time.month) + "-" + str(current_utc_time.day) + \
         "&formatted=0"
 
-    json_result = __rest_session__.get(url, timeout=2).json()
+    json_result = []
+    try:
+        json_result = __rest_session__.get(url, timeout=2).json()
+    except:
+        return []
 
     if json_result is not None and "status" in json_result and json_result["status"] == "OK" and "results" in json_result:
         sunrise = __get_utc_datetime__(json_result["results"]["sunrise"])
@@ -463,19 +468,29 @@ def get_visibilty(metar):
     """
 
     match = re.search('( [0-9] )?([0-9]/?[0-9]?SM)', metar)
+    is_smoke = re.search('.* FU .*', metar) is not None
     if(match == None):
         return INVALID
     (g1, g2) = match.groups()
     if(g2 == None):
         return INVALID
     if(g1 != None):
+        if is_smoke:
+            return SMOKE
         return IFR
     if '/' in g2:
+        if is_smoke:
+            return SMOKE
         return LIFR
     vis = int(re.sub('SM', '', g2))
     if vis < 3:
+        if is_smoke:
+            return SMOKE
         return IFR
     if vis <= 5:
+        if is_smoke:
+            return SMOKE
+
         return MVFR
     return VFR
 
@@ -540,6 +555,8 @@ def get_category(airport_iaco_code, metar):
     ceiling = get_ceiling_category(get_ceiling(metar))
     if ceiling == INVALID:
         return INVALID
+    if vis == SMOKE:
+        return SMOKE
     if vis == LIFR or ceiling == LIFR:
         return LIFR
     if vis == IFR or ceiling == IFR:
