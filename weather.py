@@ -165,11 +165,21 @@ def get_civil_twilight(airport_iaco_code, current_utc_time=None, use_cache=True)
     json_result = __rest_session__.get(url, timeout=2).json()
 
     if json_result is not None and "status" in json_result and json_result["status"] == "OK" and "results" in json_result:
-        sunrise_and_sunet = (__get_utc_datetime__(
-            json_result["results"]["sunrise"]), __get_utc_datetime__(json_result["results"]["sunset"]))
-        __set_cache__(airport_iaco_code, __daylight_cache__, sunrise_and_sunet)
+        sunrise = __get_utc_datetime__(json_result["results"]["sunrise"])
+        sunset = __get_utc_datetime__(json_result["results"]["sunset"])
+        sunrise_start = __get_utc_datetime__(
+            json_result["results"]["civil_twilight_begin"])
+        sunset_end = __get_utc_datetime__(
+            json_result["results"]["civil_twilight_end"])
+        sunrise_length = sunrise - sunrise_start
+        sunset_length = sunset_end - sunset
+        avg_transition_time = (sunrise_length.seconds +
+                               sunset_length.seconds) / 2
+        sunrise_and_sunset = (sunrise, sunset, avg_transition_time)
+        __set_cache__(airport_iaco_code, __daylight_cache__,
+                      sunrise_and_sunset)
 
-        return sunrise_and_sunet
+        return sunrise_and_sunset
 
     return None
 
@@ -254,8 +264,9 @@ def get_metars(airport_iaco_codes):
     metars = {}
 
     try:
-        request_url = 'https://www.aviationweather.gov/metar/data?ids={}&format=raw&hours=0&taf=off&layout=off&date=0'.format(metar_list)
-        stream = urllib.request.urlopen(request_url, timeout = 2)
+        request_url = 'https://www.aviationweather.gov/metar/data?ids={}&format=raw&hours=0&taf=off&layout=off&date=0'.format(
+            metar_list)
+        stream = urllib.request.urlopen(request_url, timeout=2)
         data_found = False
         stream_lines = stream.readlines()
         stream.close()
