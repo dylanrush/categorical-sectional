@@ -74,6 +74,8 @@ color_by_rules = {
     weather.INVALID: colors[weather.WHITE]
 }
 
+airport_render_last_logged_by_station = {}
+
 
 def get_renderer():
     """
@@ -288,10 +290,44 @@ def render_airport(airport, airport_flasher):
     if blink and airport_flasher:
         color_by_category = colors[weather.OFF]
 
+    proportions, color_to_render = get_mix_and_color(
+        color_by_category, airport)
+
+    log = airport not in airport_render_last_logged_by_station
+
+    if airport in airport_render_last_logged_by_station:
+        time_since_last = datetime.utcnow(
+        ) - airport_render_last_logged_by_station[airport]
+        log = time_since_last.total_seconds() > 60
+
+    if log:
+        message_format = 'STATION={}, CAT={:4}, BLINK={}, COLOR={:3}:{:3}:{:3}, P_O2N={:.1f}, P_N2C{:.1f}, RENDER={:3}:{:3}:{:3}'
+        LOGGER.log_info_message(message_format.format(airport, condition, blink,
+                                                      color_by_category[0], color_by_category[1], color_by_category[2],
+                                                      proportions[0], proportions[1],
+                                                      color_to_render[0], color_to_render[1], color_to_render[2]))
+        airport_render_last_logged_by_station[airport] = datetime.utcnow()
+
+    renderer.set_led(
+        airport_render_config[airport], color_to_render)
+
+
+def get_mix_and_color(color_by_category, airport):
+    """
+    Gets the proportion of color mixes (dark to NIGHT, NIGHT to color) and the final color to render.
+
+    Arguments:
+        color_by_category {tuple} -- the initial color decided upon by weather.
+        airport {string} -- The station identifier.
+
+    Returns:
+        tuple -- proportion, color to render
+    """
+
     color_to_render = color_by_category
+    proportions = weather.get_twilight_transition(airport)
 
     if configuration.get_night_lights():
-        proportions = weather.get_twilight_transition(airport)
         if proportions[0] <= 0.0 and proportions[1] <= 0.0:
             color_to_render = colors[weather.OFF]
         # Do not allow color mixing for standard LEDs
@@ -309,9 +345,7 @@ def render_airport(airport, airport_flasher):
         elif proportions[1] > 0.0:
             color_to_render = colors_lib.get_color_mix(
                 color_by_rules[weather.NIGHT], color_by_category, proportions[1])
-
-    renderer.set_led(
-        airport_render_config[airport], color_to_render)
+    return proportions, color_to_render
 
 #VFR - Green
 #MVFR - Blue
@@ -400,7 +434,7 @@ if __name__ == '__main__':
         all_airports(color)
         time.sleep(2)
 
-    all_airports(weather.YELLOW)
+    all_airports(weather.OFF)
 
     update_weather_task = RecurringTask(
         'UpdateWeather', 10 * 60, LOGGER, True)
