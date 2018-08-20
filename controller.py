@@ -36,6 +36,7 @@ import threading
 
 import configuration
 import lib.local_debug as local_debug
+import lib.colors as colors_lib
 import weather
 from lib.logger import Logger
 from lib.recurring_task import RecurringTask
@@ -212,8 +213,7 @@ def get_airport_category(airport, utc_offset):
         LOGGER.log_info_message("METAR for " + airport + " = " + metar)
 
         try:
-            category = weather.get_category(
-                airport, metar, configuration.get_night_lights())
+            category = weather.get_category(airport, metar)
             twilight = weather.get_civil_twilight(airport)
             LOGGER.log_info_message(
                 "{} - Rise(UTC):{}, Set(UTC):{}".format(airport, twilight[0], twilight[1]))
@@ -266,18 +266,52 @@ def render_airport_displays(airport_flasher):
 
         for airport in airport_render_config:
             try:
-                condition, blink = get_airport_condition(airport)
-                color_to_render = color_by_rules[condition]
-                if blink and airport_flasher:
-                    color_to_render = colors[weather.OFF]
-
-                renderer.set_led(
-                    airport_render_config[airport], color_to_render)
+                render_airport(airport, airport_flasher)
             except:
                 LOGGER.log_warning_message(
                     "Error attempting to render " + airport)
     finally:
         thread_lock_object.release()
+
+
+def render_airport(airport, airport_flasher):
+    """
+    Renders an airport.
+
+    Arguments:
+        airport {string} -- The identifier of the station.
+        airport_flasher {bool} -- Is this a flash (off) cycle?
+    """
+
+    condition, blink = get_airport_condition(airport)
+    color_by_category = color_by_rules[condition]
+    if blink and airport_flasher:
+        color_by_category = colors[weather.OFF]
+
+    color_to_render = color_by_category
+
+    if configuration.get_night_lights():
+        proportions = weather.get_twilight_transition(airport)
+        if proportions[0] <= 0.0 and proportions[1] <= 0.0:
+            color_to_render = colors[weather.OFF]
+        # Do not allow color mixing for standard LEDs
+        # Instead if we are going to render NIGHT then
+        # have the NIGHT color represent that the station
+        # is in a twilight period.
+        elif configuration.get_mode() == configuration.STANDARD:
+            if proportions[0] > 0.0 or proportions[1] < 1.0:
+                color_to_render = color_by_rules[weather.NIGHT]
+            elif proportions[0] <= 0.0 and proportions[1] <= 0.0:
+                color_to_render = colors[weather.OFF]
+        elif proportions[0] > 0.0:
+            color_to_render = colors_lib.get_color_mix(
+                colors[weather.OFF], color_by_rules[weather.NIGHT], proportions[0])
+        elif proportions[1] > 0.0:
+            color_to_render = colors_lib.get_color_mix(
+                color_by_rules[weather.NIGHT], color_by_category, proportions[1])
+
+    renderer.set_led(
+        airport_render_config[airport], color_to_render)
 
 #VFR - Green
 #MVFR - Blue

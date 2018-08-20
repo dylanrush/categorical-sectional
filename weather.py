@@ -132,7 +132,13 @@ def get_civil_twilight(airport_iaco_code, current_utc_time=None, use_cache=True)
         airport_iaco_code {string} -- The IACO code of the airport.
 
     Returns:
-        When civil sunrise and sunset are in UTC
+        An array that describes the following:
+        0 - When sunrise starts
+        1 - when sunrise is
+        2 - when sunrise is finished
+        3 - when sunset starts
+        4 - when sunset is
+        5 - when sunset is finished
     """
 
     if current_utc_time is None:
@@ -173,9 +179,14 @@ def get_civil_twilight(airport_iaco_code, current_utc_time=None, use_cache=True)
             json_result["results"]["civil_twilight_end"])
         sunrise_length = sunrise - sunrise_start
         sunset_length = sunset_end - sunset
-        avg_transition_time = (sunrise_length.seconds +
-                               sunset_length.seconds) / 2
-        sunrise_and_sunset = (sunrise, sunset, avg_transition_time)
+        avg_transition_time = timedelta(seconds=(sunrise_length.seconds +
+                                                 sunset_length.seconds) / 2)
+        sunrise_and_sunset = [sunrise - avg_transition_time,
+                              sunrise,
+                              sunrise + avg_transition_time,
+                              sunset - avg_transition_time,
+                              sunset,
+                              sunset + avg_transition_time]
         __set_cache__(airport_iaco_code, __daylight_cache__,
                       sunrise_and_sunset)
 
@@ -195,7 +206,54 @@ def is_daylight(airport_iaco_code, current_utc_time=None, use_cache=True):
         boolean -- True if the airport is currently in daylight.
     """
 
-    print("------")
+    # print("------")
+
+    if current_utc_time is None:
+        current_utc_time = datetime.utcnow()
+
+    light_times = get_civil_twilight(
+        airport_iaco_code, current_utc_time, use_cache)
+
+    if light_times is not None:
+        # Deal with day old data...
+        hours_since_sunrise = (
+            current_utc_time - light_times[1]).total_seconds() / 3600
+
+        if hours_since_sunrise < 0:
+            light_times = get_civil_twilight(
+                airport_iaco_code, current_utc_time - timedelta(hours=24), False)
+
+        if hours_since_sunrise > 24:
+            print("is_daylight had a hard miss with delta={}".format(
+                hours_since_sunrise))
+            return True
+
+        # print("SUNRISE:{}".format(light_times[0]))
+        # print("CURRENT:{}".format(current_utc_time))
+        # print("SUNSET:{}".format(light_times[1]))
+
+        # Make sure the time between takes into account
+        # The amount of time sunrise or sunset takes
+        is_after_sunrise = light_times[2] < current_utc_time
+        is_before_sunset = current_utc_time < light_times[3]
+
+        return is_after_sunrise and is_before_sunset
+
+    return True
+
+
+def is_night(airport_iaco_code, current_utc_time=None, use_cache=True):
+    """
+    Returns TRUE if the airport is currently in night
+
+    Arguments:
+        airport_iaco_code {string} -- The airport code to test.
+
+    Returns:
+        boolean -- True if the airport is currently in night.
+    """
+
+    # print("------")
 
     if current_utc_time is None:
         current_utc_time = datetime.utcnow()
@@ -215,17 +273,79 @@ def is_daylight(airport_iaco_code, current_utc_time=None, use_cache=True):
         if hours_since_sunrise > 24:
             print("is_daylight had a hard miss with delta={}".format(
                 hours_since_sunrise))
-            return True
+            return False
 
-        print("SUNRISE:{}".format(light_times[0]))
-        print("CURRENT:{}".format(current_utc_time))
-        print("SUNSET:{}".format(light_times[1]))
-        is_after_sunrise = light_times[0] < current_utc_time
-        is_before_sunset = current_utc_time < light_times[1]
+        # print("SUNRISE:{}".format(light_times[0]))
+        # print("CURRENT:{}".format(current_utc_time))
+        # print("SUNSET:{}".format(light_times[1]))
 
-        return is_after_sunrise and is_before_sunset
+        # Make sure the time between takes into account
+        # The amount of time sunrise or sunset takes
+        is_before_sunrise = current_utc_time < light_times[0]
+        is_after_sunset = current_utc_time > light_times[5]
 
-    return True
+        return is_before_sunrise or is_after_sunset
+
+    return False
+
+
+def get_proportion_between_times(start, current, end):
+    total_delta = (end - start).total_seconds()
+    time_in = (current - start).total_seconds()
+
+    return time_in / total_delta
+
+
+def get_twilight_transition(airport_iaco_code, current_utc_time=None, use_cache=True):
+    """
+    Returns the mix of dark & color fade for twilight transitions.
+
+    Arguments:
+        airport_iaco_code {string} -- The IACO code of the weather station.
+
+    Keyword Arguments:
+        current_utc_time {datetime} -- The time in UTC to calculate the mix for. (default: {None})
+        use_cache {bool} -- Should the cache be used to determine the sunrise/sunset/transition data. (default: {True})
+
+    Returns:
+        tuple -- (proportion_off_to_night, proportion_night_to_category)
+    """
+
+    if current_utc_time is None:
+        current_utc_time = datetime.utcnow()
+
+    if is_daylight(airport_iaco_code, current_utc_time, use_cache):
+        return 0.0, 1.0
+
+    if is_night(airport_iaco_code, current_utc_time, use_cache):
+        return 0.0, 0.0
+
+    light_times = get_civil_twilight(
+        airport_iaco_code, current_utc_time, use_cache)
+
+    proportion_off_to_night = 0.0
+    proportion_night_to_color = 0.0
+
+    # Sunsetting: Night to off
+    if current_utc_time >= light_times[4]:
+        proportion_off_to_night = 1.0 - \
+            get_proportion_between_times(
+                light_times[4], current_utc_time, light_times[5])
+    # Sunsetting: Color to night
+    elif current_utc_time >= light_times[3]:
+        proportion_night_to_color = 1.0 - \
+            get_proportion_between_times(
+                light_times[3], current_utc_time, light_times[4])
+    # Sunrising: Night to color
+    elif current_utc_time >= light_times[1]:
+        proportion_night_to_color = get_proportion_between_times(
+            light_times[1], current_utc_time, light_times[2])
+    # Sunrising: off to night
+    else:
+        proportion_off_to_night = get_proportion_between_times(
+            light_times[0], current_utc_time, light_times[1])
+
+    return proportion_off_to_night, proportion_night_to_color
 
 
 def extract_metar_from_html_line(metar):
@@ -401,7 +521,7 @@ def get_ceiling_category(ceiling):
     return VFR
 
 
-def get_category(airport_iaco_code, metar, return_night):
+def get_category(airport_iaco_code, metar):
     """
     Returns the flight rules classification based on the entire RAW metar.
 
@@ -413,12 +533,6 @@ def get_category(airport_iaco_code, metar, return_night):
     Returns:
         string -- The flight rules classification, or INVALID in case of an error.
     """
-    try:
-        if return_night and not is_daylight(airport_iaco_code):
-            return NIGHT
-    except:
-        pass
-
     if metar == INVALID:
         return INVALID
 
@@ -446,18 +560,18 @@ if __name__ == '__main__':
 
     for identifier in airports_to_test:
         metar = get_metar(identifier)
-        flight_category = get_category(identifier, metar, False)
+        flight_category = get_category(identifier, metar)
         print('{}: {}: {}'.format(identifier, flight_category, metar))
 
-    for hours_ahead in range(0, 24):
-        print('----')
+    for hours_ahead in range(0, 240):
+        hours_ahead *= 0.1
         time_to_fetch = starting_date_time + timedelta(hours=hours_ahead)
         local_fetch_time = time_to_fetch - utc_offset
 
-        print("+{}".format(hours_ahead))
-        print("UTC={}, LOCAL={}".format(time_to_fetch, local_fetch_time))
-
-        for airport in ['KAWO', 'KCOE', 'KMSP', 'KOSH']:
+        for airport in ['KAWO']:  # , 'KCOE', 'KMSP', 'KOSH']:
             is_lit = is_daylight(airport, time_to_fetch)
+            is_dark = is_night(airport, time_to_fetch)
+            transition = get_twilight_transition(airport, time_to_fetch)
 
-            print("{}: is_lit={}".format(airport, is_lit))
+            print("DELTA=+{0:.1f}, LOCAL={1}, AIRPORT={2}: is_day={3}, is_night={4}, p_dark:{5:.1f}, p_color:{6:.1f}".format(
+                hours_ahead, local_fetch_time, airport, is_lit, is_dark, transition[0], transition[1]))
