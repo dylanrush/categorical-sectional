@@ -292,6 +292,23 @@ def is_night(airport_iaco_code, light_times, current_utc_time=None, use_cache=Tr
 
 
 def get_proportion_between_times(start, current, end):
+    """
+    Gets the "distance" (0.0 to 1.0) between the start and the end where the current time is.
+    IE:
+        If the CurrentTime is the same as StartTime, then the result will be 0.0
+        If the CurrentTime is the same as the EndTime, then the result will be 1.0
+        If the CurrentTime is halfway between StartTime and EndTime, then the result will be 0.5
+
+
+    Arguments:
+        start {datetime} -- The starting time.
+        current {datetime} -- The time we want to get the proportion for.
+        end {datetime} -- The end time to calculate the interpolaton for.
+
+    Returns:
+        float -- The amount of interpolaton for Current between Start and End
+    """
+
     total_delta = (end - start).total_seconds()
     time_in = (current - start).total_seconds()
 
@@ -413,9 +430,14 @@ def get_metars(airport_iaco_codes):
                     identifier = metar.split(' ')[0]
                     __set_cache__(identifier, __metar_report_cache__, metar)
                 except:
-                    metar = INVALID
+                    metar = None
 
-                metars[identifier] = metar
+                # Allow for the metar to be skipped if there was a connection error.
+                # By not adding it, we are allowing for a retry later.
+                # If the result continues to not be available, then the METAR
+                # will age out.
+                if metar is not None:
+                    metars[identifier] = metar
     except Exception as e:
         print('EX:{}'.format(e))
 
@@ -454,6 +476,39 @@ def get_metar(airport_iaco_code, use_cache=True):
         print("EX:{}".format(e))
 
         return INVALID
+
+
+def get_metar_age(metar):
+    """
+    Returns the age of the METAR
+
+    Arguments:
+        metar {string} -- The METAR to get the age from.
+
+    Returns:
+        timedelta -- The age of the metar, None if it can not be determined.
+    """
+
+    try:
+        partial_date_time = re.search(r'^\w{4}\s(.{6})Z', metar)[
+            0].split(' ')[1].split('Z')[0]
+        day_number = int(partial_date_time[:2])
+        hour = int(partial_date_time[2:4])
+        minute = int(partial_date_time[4:6])
+        current_time = datetime.utcnow()
+
+        metar_date = datetime(
+            current_time.year, current_time.month, current_time.day, hour, minute)
+
+        # Assume that the report is from the past, and work backwards.
+        days_back = 0
+        while metar_date.day != day_number and days_back <= 31:
+            metar_date -= timedelta(days=1)
+            days_back += 1
+
+        return current_time - metar_date
+    except:
+        return None
 
 
 def get_visibilty(metar):
@@ -548,12 +603,18 @@ def get_category(airport_iaco_code, metar):
     Returns:
         string -- The flight rules classification, or INVALID in case of an error.
     """
-    if metar == INVALID:
+    if metar is None or metar == INVALID:
+        return INVALID
+
+    metar_age = get_metar_age(metar)
+
+    # Allow the metar to "age out" if we have not had a report for a while.
+    if metar_age is None or (metar_age.total_seconds() / 60.0) > 60.0:
         return INVALID
 
     vis = get_visibilty(metar)
     ceiling = get_ceiling_category(get_ceiling(metar))
-    if ceiling == INVALID:
+    if ceiling == INVALID or vis == INVALID:
         return INVALID
     if vis == SMOKE:
         return SMOKE
@@ -577,6 +638,7 @@ if __name__ == '__main__':
 
     for identifier in airports_to_test:
         metar = get_metar(identifier)
+        age = get_metar_age(metar)
         flight_category = get_category(identifier, metar)
         print('{}: {}: {}'.format(identifier, flight_category, metar))
 
