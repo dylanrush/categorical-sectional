@@ -25,6 +25,7 @@ GREEN = 'GREEN'
 BLUE = 'BLUE'
 GRAY = 'GRAY'
 YELLOW = 'YELLOW'
+DARK_YELLOW = 'DARK YELLOW'
 WHITE = 'WHITE'
 LOW = 'LOW'
 OFF = 'OFF'
@@ -430,14 +431,9 @@ def get_metars(airport_iaco_codes):
                     identifier = metar.split(' ')[0]
                     __set_cache__(identifier, __metar_report_cache__, metar)
                 except:
-                    metar = None
+                    metar = INVALID
 
-                # Allow for the metar to be skipped if there was a connection error.
-                # By not adding it, we are allowing for a retry later.
-                # If the result continues to not be available, then the METAR
-                # will age out.
-                if metar is not None:
-                    metars[identifier] = metar
+                metars[identifier] = metar
     except Exception as e:
         print('EX:{}'.format(e))
 

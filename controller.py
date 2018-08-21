@@ -332,7 +332,7 @@ def get_mix_and_color(color_by_category, airport):
 
     if configuration.get_night_lights():
         if proportions[0] <= 0.0 and proportions[1] <= 0.0:
-            color_to_render = colors[weather.OFF]
+            color_to_render = colors[weather.DARK_YELLOW]
         # Do not allow color mixing for standard LEDs
         # Instead if we are going to render NIGHT then
         # have the NIGHT color represent that the station
@@ -341,10 +341,10 @@ def get_mix_and_color(color_by_category, airport):
             if proportions[0] > 0.0 or proportions[1] < 1.0:
                 color_to_render = color_by_rules[weather.NIGHT]
             elif proportions[0] <= 0.0 and proportions[1] <= 0.0:
-                color_to_render = colors[weather.OFF]
+                color_to_render = colors[weather.DARK_YELLOW]
         elif proportions[0] > 0.0:
             color_to_render = colors_lib.get_color_mix(
-                colors[weather.OFF], color_by_rules[weather.NIGHT], proportions[0])
+                colors[weather.DARK_YELLOW], color_by_rules[weather.NIGHT], proportions[0])
         elif proportions[1] > 0.0:
             color_to_render = colors_lib.get_color_mix(
                 color_by_rules[weather.NIGHT], color_by_category, proportions[1])
@@ -434,6 +434,7 @@ if __name__ == '__main__':
         weather.YELLOW,
         weather.WHITE,
         weather.GRAY,
+        weather.DARK_YELLOW,
         weather.OFF
     )
 
