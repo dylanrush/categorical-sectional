@@ -396,8 +396,9 @@ def wait_for_all_airports():
     """
 
     airport_missing = True
+    start_time = datetime.utcnow()
 
-    while airport_missing:
+    while airport_missing and (datetime.utcnow() - start_time).total_seconds() < 60:
         airport_missing = False
 
         thread_lock_object.acquire()
