@@ -304,7 +304,7 @@ def render_airport(airport, airport_flasher):
         log = time_since_last.total_seconds() > 60
 
     if log:
-        message_format = 'STATION={}, CAT={:4}, BLINK={}, COLOR={:3}:{:3}:{:3}, P_O2N={:.1f}, P_N2C={:.1f}, RENDER={:3}:{:3}:{:3}'
+        message_format = 'STATION={}, CAT={:5}, BLINK={}, COLOR={:3}:{:3}:{:3}, P_O2N={:.1f}, P_N2C={:.1f}, RENDER={:3}:{:3}:{:3}'
         LOGGER.log_info_message(message_format.format(airport, condition, blink,
                                                       color_by_category[0], color_by_category[1], color_by_category[2],
                                                       proportions[0], proportions[1],
@@ -372,6 +372,10 @@ def all_airports(color):
 
 
 def render_thread():
+    """
+    Main logic loop for rendering the lights.
+    """
+
     LOGGER.log_info_message("Starting rendering thread")
 
     while True:
