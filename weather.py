@@ -606,15 +606,15 @@ def get_category(airport_iaco_code, metar):
     if metar is None or metar == INVALID:
         return INVALID
 
-    metar_age = get_metar_age(metar)
-
-    # Allow the metar to "age out" if we have not had a report for a while.
-    if metar_age is None:
-        print('No METAR available in AGE CHECK - returning INVALID')
-        return INVALID
-    elif (metar_age.total_seconds() / 60.0) > 60.0:
-        print('Aging out METAR due to an age of {:.1} minutes - returning INVALID'.format(metar_age.total_seconds() / 60.0))
-        return INVALID
+    # metar_age = get_metar_age(metar)
+    #
+    # # Allow the metar to "age out" if we have not had a report for a while.
+    # if metar_age is None:
+    #     print('No METAR available in AGE CHECK - returning INVALID')
+    #     return INVALID
+    # elif (metar_age.total_seconds() / 60.0) > 60.0:
+    #     print('Aging out METAR due to an age of {:.1} minutes - returning INVALID'.format(metar_age.total_seconds() / 60.0))
+    #     return INVALID
 
     vis = get_visibilty(metar)
     ceiling = get_ceiling_category(get_ceiling(metar))
