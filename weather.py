@@ -219,8 +219,6 @@ def is_daylight(airport_iaco_code, light_times, current_utc_time=None, use_cache
         boolean -- True if the airport is currently in daylight.
     """
 
-    # print("------")
-
     if current_utc_time is None:
         current_utc_time = datetime.utcnow()
 
@@ -235,10 +233,6 @@ def is_daylight(airport_iaco_code, light_times, current_utc_time=None, use_cache
 
         if hours_since_sunrise > 24:
             return True
-
-        # print("SUNRISE:{}".format(light_times[0]))
-        # print("CURRENT:{}".format(current_utc_time))
-        # print("SUNSET:{}".format(light_times[1]))
 
         # Make sure the time between takes into account
         # The amount of time sunrise or sunset takes
@@ -261,8 +255,6 @@ def is_night(airport_iaco_code, light_times, current_utc_time=None, use_cache=Tr
         boolean -- True if the airport is currently in night.
     """
 
-    # print("------")
-
     if current_utc_time is None:
         current_utc_time = datetime.utcnow()
 
@@ -277,10 +269,6 @@ def is_night(airport_iaco_code, light_times, current_utc_time=None, use_cache=Tr
 
         if hours_since_sunrise > 24:
             return False
-
-        # print("SUNRISE:{}".format(light_times[0]))
-        # print("CURRENT:{}".format(current_utc_time))
-        # print("SUNSET:{}".format(light_times[1]))
 
         # Make sure the time between takes into account
         # The amount of time sunrise or sunset takes
@@ -452,9 +440,11 @@ def get_metars(airport_iaco_codes):
         # still have an old report, then use the old
         # report.
         if identifier in __metar_report_cache__:
+            print("Falling back to cached METAR for {}".format(identifier))
             metars[identifier] = __metar_report_cache__[identifier]
         # Fall back to an "INVALID" if everything else failed.
         else:
+            print("METAR for {} being set to INVALID".format(identifier))
             metars[identifier] = INVALID
 
     return metars
@@ -546,11 +536,12 @@ def get_metar_age(metar):
 
     try:
         current_time = datetime.utcnow()
-        embedded_dates = re.search(r'^\w{4}\s(.{6})Z', metar)
         metar_date = current_time - timedelta(days=31)
 
-        if embedded_dates is not None:
-            partial_date_time = embedded_dates[0].split(' ')[1].split('Z')[0]
+        if metar is not None and metar != INVALID:
+            partial_date_time = metar.split(' ')[1]
+            partial_date_time = partial_date_time.split('Z')[0]
+
             day_number = int(partial_date_time[:2])
             hour = int(partial_date_time[2:4])
             minute = int(partial_date_time[4:6])
@@ -565,7 +556,8 @@ def get_metar_age(metar):
                 days_back += 1           
         
         return current_time - metar_date
-    except:
+    except Exception as e:
+        print("Exception while getting METAR age:{}".format(e))
         return None
 
 
@@ -676,7 +668,10 @@ def get_category(airport_iaco_code, metar):
 
     metar_age = get_metar_age(metar)
 
-    print("{} - Issued {:.1f} minutes ago".format(airport_iaco_code, metar_age.total_seconds() / 60))
+    if metar_age is not None:
+        print("{} - Issued {:.1f} minutes ago".format(airport_iaco_code, metar_age.total_seconds() / 60))
+    else:
+        print("{} - Unknown METAR age".format(airport_iaco_code))
 
     vis = get_visibilty(metar)
     ceiling = get_ceiling_category(get_ceiling(metar))
