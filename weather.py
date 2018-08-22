@@ -36,9 +36,9 @@ __rest_session__ = requests.Session()
 __daylight_cache__ = {}
 __metar_report_cache__ = {}
 
-DEFAULT_READ_SECONDS = 4
+DEFAULT_READ_SECONDS = 15
 DEFAULT_METAR_LIFESPAN_MINUTES = 60
-DEFAULT_METAR_INVALIDATE_MINUTES = 90
+DEFAULT_METAR_INVALIDATE_MINUTES = DEFAULT_METAR_LIFESPAN_MINUTES * 2
 
 
 def __safe_log(logger, message):
@@ -766,7 +766,7 @@ def get_category(airport_iaco_code, metar, logger=None):
 
 
 if __name__ == '__main__':
-    airports_to_test = ['KELN', 'KAWO', 'KOSH', 'KBVS', 'KDOESNTEXIST']
+    airports_to_test = ['KMSN', 'KAWO', 'KOSH', 'KBVS', 'KDOESNTEXIST']
     starting_date_time = datetime.utcnow()
     utc_offset = starting_date_time - datetime.now()
 
