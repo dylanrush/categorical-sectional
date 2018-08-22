@@ -50,11 +50,11 @@ def __safe_log(logger, message):
         message {string} -- The message to log.
     """
 
-    print('{} INFO: {}'.format(datetime.now(), message))
-
     try:
         if logger is not None:
             logger.log_info_message(message)
+        else:
+            print('{} INFO: {}'.format(datetime.now(), message))
     except:
         pass
 
@@ -68,11 +68,11 @@ def __safe_log_warning(logger, message):
         message {string} -- The message to log.
     """
 
-    print('{} WARN: {}'.format(datetime.now(), message))
-
     try:
         if logger is not None:
             logger.log_warning_message(message)
+        else:
+            print('{} WARN: {}'.format(datetime.now(), message))
     except:
         pass
 
