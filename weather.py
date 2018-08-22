@@ -371,7 +371,7 @@ def get_twilight_transition(airport_iaco_code, current_utc_time=None, use_cache=
     return proportion_off_to_night, proportion_night_to_color
 
 
-def extract_metar_from_html_line(metar):
+def extract_metar_from_html_line(raw_metar_line):
     """
     Takes a raw line of HTML from the METAR report and extracts the METAR from it.
     NOTE: A "$" at the end of the line indicates a "maintainence check" and is part of the report.
@@ -383,12 +383,42 @@ def extract_metar_from_html_line(metar):
         string -- The extracted METAR.
     """
 
-    metar = metar.split('<')[0]
-    metar = re.sub('<[^<]+?>', '', metar)
+    metar = re.sub('<[^<]+?>', '', raw_metar_line)
     metar = metar.replace('\n', '')
     metar = metar.strip()
 
     return metar
+
+
+def get_metar_from_report_line(metar_report_line_from_webpage):
+    """
+    Extracts the METAR from the line in the webpage and sets
+    the data into the cache.
+
+    Returns None if an error occurs or nothing can be found.
+
+    Arguments:
+        metar_report_line_from_webpage {string} -- The line that contains the METAR from the web report.
+
+    Returns:
+        string,string -- The identifier and extracted METAR (if any), or None
+    """
+
+    identifier = None
+    metar = None
+
+    try:
+        metar = extract_metar_from_html_line(metar_report_line_from_webpage)
+
+        if len(metar) < 1:
+            return (None, None)
+
+        identifier = metar.split(' ')[0]
+        __set_cache__(identifier, __metar_report_cache__, metar)
+    except:
+        metar = None
+
+    return (identifier, metar)
 
 
 def get_metars(airport_iaco_codes):
@@ -403,39 +433,68 @@ def get_metars(airport_iaco_codes):
         Returns INVALID as the value for the key if an error occurs.
     """
 
-    metar_list = "%20".join(airport_iaco_codes)
     metars = {}
 
     try:
-        request_url = 'https://www.aviationweather.gov/metar/data?ids={}&format=raw&hours=0&taf=off&layout=off&date=0'.format(
-            metar_list)
-        stream = urllib.request.urlopen(request_url, timeout=2)
-        data_found = False
-        stream_lines = stream.readlines()
-        stream.close()
-        for line in stream_lines:
-            line_as_string = line.decode("utf-8")
-            if '<!-- Data starts here -->' in line_as_string:
-                data_found = True
-                continue
-            elif '<!-- Data ends here -->' in line_as_string:
-                break
-            elif data_found:
-                metar = ''
-                try:
-                    metar = extract_metar_from_html_line(line_as_string)
+        metars = get_metar_reports_from_web(airport_iaco_codes)
 
-                    if(len(metar) < 1):
-                        continue
-
-                    identifier = metar.split(' ')[0]
-                    __set_cache__(identifier, __metar_report_cache__, metar)
-                except:
-                    metar = INVALID
-
-                metars[identifier] = metar
     except Exception as e:
         print('EX:{}'.format(e))
+        metars = {}
+
+    # For the airports and identifiers that we were not able to get
+    # a result for, see if we can fill in the results.
+    for identifier in airport_iaco_codes:
+        if identifier in metars and metars[identifier] is not None:
+            continue
+
+        # If we did not get a report, but do
+        # still have an old report, then use the old
+        # report.
+        if identifier in __metar_report_cache__:
+            metars[identifier] = __metar_report_cache__[identifier]
+        # Fall back to an "INVALID" if everything else failed.
+        else:
+            metars[identifier] = INVALID
+
+    return metars
+
+
+def get_metar_reports_from_web(airport_iaco_codes):
+    """
+    Calls to the web an attempts to gets the METARs for the requested station list.
+
+    Arguments:
+        airport_iaco_codes {string[]} -- Array of stations to get METARs for.
+
+    Returns:
+        dictionary -- Returns a map of METARs keyed by the station code.
+    """
+
+    metars = {}
+    metar_list = "%20".join(airport_iaco_codes)
+    request_url = 'https://www.aviationweather.gov/metar/data?ids={}&format=raw&hours=0&taf=off&layout=off&date=0'.format(
+        metar_list)
+    stream = urllib.request.urlopen(request_url, timeout=2)
+    data_found = False
+    stream_lines = stream.readlines()
+    stream.close()
+    for line in stream_lines:
+        line_as_string = line.decode("utf-8")
+        if '<!-- Data starts here -->' in line_as_string:
+            data_found = True
+            continue
+        elif '<!-- Data ends here -->' in line_as_string:
+            break
+        elif data_found:
+            identifier, metar = get_metar_from_report_line(line_as_string)
+
+            if identifier is None:
+                continue
+
+            # If we get a good report, go ahead and shove it into the results.
+            if metar is not None:
+                metars[identifier] = metar
 
     return metars
 
@@ -461,17 +520,17 @@ def get_metar(airport_iaco_code, use_cache=True):
         metars = get_metars([airport_iaco_code])
 
         if metars is None:
-            return INVALID
+            return None
 
         if airport_iaco_code not in metars:
-            return INVALID
+            return None
 
         return metars[airport_iaco_code]
 
     except Exception as e:
         print("EX:{}".format(e))
 
-        return INVALID
+        return None
 
 
 def get_metar_age(metar):
@@ -486,22 +545,25 @@ def get_metar_age(metar):
     """
 
     try:
-        partial_date_time = re.search(r'^\w{4}\s(.{6})Z', metar)[
-            0].split(' ')[1].split('Z')[0]
-        day_number = int(partial_date_time[:2])
-        hour = int(partial_date_time[2:4])
-        minute = int(partial_date_time[4:6])
         current_time = datetime.utcnow()
+        embedded_dates = re.search(r'^\w{4}\s(.{6})Z', metar)
+        metar_date = current_time - timedelta(days=31)
 
-        metar_date = datetime(
-            current_time.year, current_time.month, current_time.day, hour, minute)
+        if embedded_dates is not None:
+            partial_date_time = embedded_dates[0].split(' ')[1].split('Z')[0]
+            day_number = int(partial_date_time[:2])
+            hour = int(partial_date_time[2:4])
+            minute = int(partial_date_time[4:6])
 
-        # Assume that the report is from the past, and work backwards.
-        days_back = 0
-        while metar_date.day != day_number and days_back <= 31:
-            metar_date -= timedelta(days=1)
-            days_back += 1
+            metar_date = datetime(
+                current_time.year, current_time.month, current_time.day, hour, minute)
 
+            # Assume that the report is from the past, and work backwards.
+            days_back = 0
+            while metar_date.day != day_number and days_back <= 31:
+                metar_date -= timedelta(days=1)
+                days_back += 1           
+        
         return current_time - metar_date
     except:
         return None
@@ -611,6 +673,10 @@ def get_category(airport_iaco_code, metar):
     # elif (metar_age.total_seconds() / 60.0) > 60.0:
     #     print('Aging out METAR due to an age of {:.1} minutes - returning INVALID'.format(metar_age.total_seconds() / 60.0))
     #     return INVALID
+
+    metar_age = get_metar_age(metar)
+
+    print("{} - Issued {:.1f} minutes ago".format(airport_iaco_code, metar_age.total_seconds() / 60))
 
     vis = get_visibilty(metar)
     ceiling = get_ceiling_category(get_ceiling(metar))
