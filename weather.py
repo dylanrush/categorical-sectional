@@ -36,6 +36,42 @@ __daylight_cache__ = {}
 __metar_report_cache__ = {}
 
 
+def __safe_log(logger, message):
+    """
+    Logs an INFO level message safely. Also prints it to the screen.
+    
+    Arguments:
+        logger {logger} -- The logger to use.
+        message {string} -- The message to log.
+    """
+
+    print('{} INFO: {}'.format(datetime.now(), message))
+
+    try:
+        if logger is not None:
+            logger.log_info_message(message)
+    except:
+        pass
+
+
+def __safe_log_warning(logger, message):
+    """
+    Logs a WARN level message safely. Also prints it to the screen.
+    
+    Arguments:
+        logger {logger} -- The logger to use.
+        message {string} -- The message to log.
+    """
+
+    print('{} WARN: {}'.format(datetime.now(), message))
+
+    try:
+        if logger is not None:
+            logger.log_warning_message(message)
+    except:
+        pass
+
+
 def __load_airport_data__(working_directory=os.path.dirname(os.path.abspath(__file__)),
                           airport_data_file="./data/airports.csv"):
     """
@@ -127,7 +163,7 @@ def __is_cache_valid__(airport_iaco_code, cache, cache_life_in_minutes=8):
     return (False, None)
 
 
-def get_civil_twilight(airport_iaco_code, current_utc_time=None, use_cache=True):
+def get_civil_twilight(airport_iaco_code, current_utc_time=None, use_cache=True, logger=None):
     """
     Gets the civil twilight time for the given airport
 
@@ -158,7 +194,7 @@ def get_civil_twilight(airport_iaco_code, current_utc_time=None, use_cache=True)
             current_utc_time - cached_value[1]).total_seconds() / 3600
         if hours_since_sunrise > 24:
             is_cache_valid = False
-            print("Twilight cache for {} had a HARD miss with delta={}".format(
+            __safe_log_warning(logger, "Twilight cache for {} had a HARD miss with delta={}".format(
                 airport_iaco_code, hours_since_sunrise))
             current_utc_time += timedelta(hours=1)
 
@@ -178,7 +214,8 @@ def get_civil_twilight(airport_iaco_code, current_utc_time=None, use_cache=True)
     json_result = []
     try:
         json_result = __rest_session__.get(url, timeout=2).json()
-    except:
+    except Exception as ex:
+        __safe_log_warning(logger, 'get_civil_twilight EX:{}'.format(ex))
         return []
 
     if json_result is not None and "status" in json_result and json_result["status"] == "OK" and "results" in json_result:
@@ -409,7 +446,7 @@ def get_metar_from_report_line(metar_report_line_from_webpage):
     return (identifier, metar)
 
 
-def get_metars(airport_iaco_codes):
+def get_metars(airport_iaco_codes, logger=None):
     """
     Returns the (RAW) METAR for the given station
 
@@ -423,30 +460,38 @@ def get_metars(airport_iaco_codes):
 
     metars = {}
 
+    __safe_log(logger, 'Starting get_metars')
+
     try:
         metars = get_metar_reports_from_web(airport_iaco_codes)
 
     except Exception as e:
-        print('EX:{}'.format(e))
+        __safe_log_warning(logger, 'get_metars EX:{}'.format(e))
         metars = {}
 
+    __safe_log(logger, 'Attempting to reconcile METARs not returned with cache.')
     # For the airports and identifiers that we were not able to get
     # a result for, see if we can fill in the results.
     for identifier in airport_iaco_codes:
         if identifier in metars and metars[identifier] is not None:
+            __safe_log(logger, '{} had result, using it'.format(
+                identifier))
             continue
 
         # If we did not get a report, but do
         # still have an old report, then use the old
         # report.
         if identifier in __metar_report_cache__:
-            print("Falling back to cached METAR for {}".format(identifier))
+            __safe_log_warning(
+                logger, 'Falling back to cached METAR for {}'.format(identifier))
             metars[identifier] = __metar_report_cache__[identifier]
         # Fall back to an "INVALID" if everything else failed.
         else:
-            print("METAR for {} being set to INVALID".format(identifier))
+            __safe_log_warning(
+                logger, 'METAR for {} being set to INVALID'.format(identifier))
             metars[identifier] = INVALID
 
+    __safe_log(logger, 'Done in get_metars')
     return metars
 
 
@@ -489,7 +534,7 @@ def get_metar_reports_from_web(airport_iaco_codes):
     return metars
 
 
-def get_metar(airport_iaco_code, use_cache=True):
+def get_metar(airport_iaco_code, logger=None, use_cache=True):
     """
     Returns the (RAW) METAR for the given station
 
@@ -500,25 +545,43 @@ def get_metar(airport_iaco_code, use_cache=True):
         use_cache {bool} -- Should we use the cache? Set to false to bypass the cache. (default: {True})
     """
 
+    if airport_iaco_code is None or len(airport_iaco_code) < 1:
+        __safe_log(logger, 'Invalid or empty airport code')
+
+    __safe_log(logger, 'Checking metar cache for {}'.format(airport_iaco_code))
+
     is_cache_valid, cached_metar = __is_cache_valid__(
         airport_iaco_code, __metar_report_cache__)
 
+    __safe_log(logger, 'Cache for {} is {}, {}'.format(
+        airport_iaco_code, is_cache_valid, cached_metar))
+
     if is_cache_valid and cached_metar != INVALID and use_cache:
+        __safe_log(logger, 'Immediately returning cached METAR for {}'.format(
+            airport_iaco_code))
         return cached_metar
 
     try:
-        metars = get_metars([airport_iaco_code])
+        __safe_log(logger, 'Getting single metar for {}'.format(
+            airport_iaco_code))
+        metars = get_metars([airport_iaco_code], logger=logger)
 
         if metars is None:
+            __safe_log(logger, 'Get a None while attempting to get METAR for {}'.format(
+                airport_iaco_code))
             return None
 
         if airport_iaco_code not in metars:
+            __safe_log(logger, 'Got a result, but {} was not in results package'.format(
+                airport_iaco_code))
             return None
 
+        __safe_log(logger, 'Returning new METAR {}'.format(
+            metars[airport_iaco_code]))
         return metars[airport_iaco_code]
 
     except Exception as e:
-        print("EX:{}".format(e))
+        __safe_log(logger, 'get_metar got EX:{}'.format(e))
 
         return None
 
@@ -553,8 +616,8 @@ def get_metar_age(metar):
             days_back = 0
             while metar_date.day != day_number and days_back <= 31:
                 metar_date -= timedelta(days=1)
-                days_back += 1           
-        
+                days_back += 1
+
         return current_time - metar_date
     except Exception as e:
         print("Exception while getting METAR age:{}".format(e))
@@ -641,7 +704,7 @@ def get_ceiling_category(ceiling):
     return VFR
 
 
-def get_category(airport_iaco_code, metar):
+def get_category(airport_iaco_code, metar, logger=None):
     """
     Returns the flight rules classification based on the entire RAW metar.
 
@@ -669,9 +732,11 @@ def get_category(airport_iaco_code, metar):
     metar_age = get_metar_age(metar)
 
     if metar_age is not None:
-        print("{} - Issued {:.1f} minutes ago".format(airport_iaco_code, metar_age.total_seconds() / 60))
+        __safe_log(logger, "{} - Issued {:.1f} minutes ago".format(
+            airport_iaco_code, metar_age.total_seconds() / 60))
     else:
-        print("{} - Unknown METAR age".format(airport_iaco_code))
+        __safe_log_warning(
+            logger, "{} - Unknown METAR age".format(airport_iaco_code))
 
     vis = get_visibilty(metar)
     ceiling = get_ceiling_category(get_ceiling(metar))
@@ -695,7 +760,7 @@ if __name__ == '__main__':
     utc_offset = starting_date_time - datetime.now()
 
     metars = get_metars(airports_to_test)
-    get_metar('KAWO', False)
+    get_metar('KAWO', use_cache=False)
 
     for identifier in airports_to_test:
         metar = get_metar(identifier)
