@@ -175,7 +175,7 @@ def update_weather_for_all_stations():
     This does not update the conditions or category.
     """
 
-    weather.get_metars(airport_render_config.keys())
+    weather.get_metars(airport_render_config.keys(), Logger=LOGGER)
 
 
 def update_all_station_categorizations():
@@ -195,7 +195,7 @@ def update_all_station_categorizations():
             set_airport_display(airport, category)
         except Exception as e:
             LOGGER.log_warning_message(
-                'While attempting to get category for {}, got EX={}'.format(airport, e))
+                'While attempting to get category for {}, got EX:{}'.format(airport, e))
 
 
 def get_airport_category(airport, utc_offset):
@@ -213,23 +213,23 @@ def get_airport_category(airport, utc_offset):
 
     try:
         LOGGER.log_info_message("Retrieving METAR for " + airport)
-        metar = weather.get_metar(airport)
+        metar = weather.get_metar(airport, logger=LOGGER)
 
         LOGGER.log_info_message("METAR for " + airport + " = " + metar)
 
         try:
-            category = weather.get_category(airport, metar)
-            twilight = weather.get_civil_twilight(airport)
+            category = weather.get_category(airport, metar, logger=LOGGER)
+            twilight = weather.get_civil_twilight(airport, logger=LOGGER)
             LOGGER.log_info_message(
-                "{} - Rise(UTC):{}, Set(UTC):{}".format(airport, twilight[0], twilight[1]))
+                "{} - Rise(UTC):{}, Set(UTC):{}".format(airport, twilight[1], twilight[4]))
             LOGGER.log_info_message("{} - Rise(HERE):{}, Set(HERE):{}".format(
-                airport, twilight[0] - utc_offset, twilight[1] - utc_offset))
+                airport, twilight[1] - utc_offset, twilight[4] - utc_offset))
         except Exception as e:
             LOGGER.log_warning_message(
                 "Exception while attempting to categorize. EX:{}".format(e))
     except Exception as e:
         LOGGER.log_info_message(
-            "Captured EX while attempting to get category for {} EX={}".format(airport, e))
+            "Captured EX while attempting to get category for {} EX:{}".format(airport, e))
         category = weather.INVALID
 
     LOGGER.log_info_message("Category for " + airport + " = " + category)
@@ -423,7 +423,7 @@ if __name__ == '__main__':
     # while going through the self-test
     LOGGER.log_info_message("Initialize weather for all airports")
 
-    weather.get_metars(airport_render_config.keys())
+    weather.get_metars(airport_render_config.keys(), logger=LOGGER)
 
     # Test LEDS on startup
     colors_to_init = (
@@ -441,7 +441,7 @@ if __name__ == '__main__':
     for color in colors_to_init:
         LOGGER.log_info_message("Setting to " + color)
         all_airports(color)
-        time.sleep(2)
+        time.sleep(0.5)
 
     all_airports(weather.OFF)
 
