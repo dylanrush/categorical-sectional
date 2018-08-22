@@ -155,7 +155,7 @@ def __is_cache_valid__(airport_iaco_code, cache, cache_life_in_minutes=8):
     if airport_iaco_code in cache:
         time_since_last_fetch = now - cache[airport_iaco_code][0]
 
-        if ((time_since_last_fetch.total_seconds()) / 60.0) < cache_life_in_minutes:
+        if (time_since_last_fetch is not None and (time_since_last_fetch.total_seconds()) / 60.0) < cache_life_in_minutes:
             return (True, cache[airport_iaco_code][1])
         else:
             return (False, cache[airport_iaco_code][1])
@@ -484,7 +484,7 @@ def get_metars(airport_iaco_codes, logger=None):
         if identifier in __metar_report_cache__:
             __safe_log_warning(
                 logger, 'Falling back to cached METAR for {}'.format(identifier))
-            metars[identifier] = __metar_report_cache__[identifier]
+            metars[identifier] = __metar_report_cache__[identifier][1]
         # Fall back to an "INVALID" if everything else failed.
         else:
             __safe_log_warning(
@@ -576,8 +576,9 @@ def get_metar(airport_iaco_code, logger=None, use_cache=True):
                 airport_iaco_code))
             return None
 
-        __safe_log(logger, 'Returning new METAR {}'.format(
+        __safe_log(logger, 'Returning METAR {}'.format(
             metars[airport_iaco_code]))
+
         return metars[airport_iaco_code]
 
     except Exception as e:
