@@ -622,7 +622,7 @@ def get_metar_age(metar):
             minute = int(partial_date_time[4:6])
 
             metar_date = datetime(
-                current_time.year, current_time.month, current_time.day, hour, minute)
+                current_time.year, current_time.month, day_number, hour, minute)
 
             # Assume that the report is from the past, and work backwards.
             days_back = 0
@@ -766,7 +766,7 @@ def get_category(airport_iaco_code, metar, logger=None):
 
 
 if __name__ == '__main__':
-    airports_to_test = ['KAWO', 'KOSH', 'KBVS', 'KDOESNTEXIST']
+    airports_to_test = ['KELN', 'KAWO', 'KOSH', 'KBVS', 'KDOESNTEXIST']
     starting_date_time = datetime.utcnow()
     utc_offset = starting_date_time - datetime.now()
 
