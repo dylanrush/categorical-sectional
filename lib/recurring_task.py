@@ -19,7 +19,6 @@ class RecurringTask(object):
         try:
             if self.__last_task__ is not None:
                 self.pause()
-                self.__last_task__.cancel()
 
             return True
         except:
