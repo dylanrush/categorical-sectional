@@ -742,8 +742,8 @@ def get_category(airport_iaco_code, metar, logger=None):
         # Count the station as INOP.
         # The default is to follow what ForeFlight and SkyVector
         # do and just turn it off.
-        if metar_age_minutes > DEFAULT_METAR_INVALIDATE_MINUTES:
-            return INOP
+        # if metar_age_minutes > DEFAULT_METAR_INVALIDATE_MINUTES:
+        #     return INOP
 
     else:
         __safe_log_warning(

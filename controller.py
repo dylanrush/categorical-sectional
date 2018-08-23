@@ -106,7 +106,7 @@ def get_renderer():
 renderer = get_renderer()
 
 
-def get_color_from_condition(category):
+def get_color_from_condition(category, metar=None):
     """
     From a condition, returns the color it should be rendered as, and if it should flash.
 
@@ -117,12 +117,31 @@ def get_color_from_condition(category):
         [tuple] -- The color (also a tuple) and if it should blink.
     """
 
+    is_old = False
+    metar_age = None
+
+    if metar is not None and metar != weather.INVALID:
+        metar_age = weather.get_metar_age(metar)
+
+    if metar_age is not None:
+        metar_age_minutes = metar_age.total_seconds() / 60.0
+        LOGGER.log_info_message("{} - Issued {:.1f} minutes ago".format(category, metar_age_minutes))
+
+        is_old = metar_age_minutes > weather.DEFAULT_METAR_INVALIDATE_MINUTES
+
+        # No report for a while?
+        # Count the station as INOP.
+        # The default is to follow what ForeFlight and SkyVector
+        # do and just turn it off.
+        # if metar_age_minutes > DEFAULT_METAR_INVALIDATE_MINUTES:
+        #     return INOP
+
     if category == weather.VFR:
-        return (weather.GREEN, False)
+        return (weather.GREEN, is_old)
     elif category == weather.MVFR:
-        return (weather.BLUE, False)
+        return (weather.BLUE, is_old)
     elif category == weather.IFR:
-        return (weather.RED, False)
+        return (weather.RED, is_old)
     elif category == weather.LIFR:
         # Only blink for normal LEDs.
         # PWM and WS2801 have their own color.
@@ -130,13 +149,13 @@ def get_color_from_condition(category):
     elif category == weather.NIGHT:
         return (weather.YELLOW, False)
     elif category == weather.SMOKE:
-        return (weather.GRAY, False)
+        return (weather.GRAY, is_old)
 
     # Error
     return (weather.WHITE, True)
 
 
-def set_airport_display(airport, category):
+def set_airport_display(airport, category, metar=None):
     """
     Sets the given airport to have the given flight rules category.
 
@@ -150,7 +169,7 @@ def set_airport_display(airport, category):
 
     changed = False
     try:
-        color_and_flash = get_color_from_condition(category)
+        color_and_flash = get_color_from_condition(category, metar=metar)
         should_flash = color_and_flash[1]
 
         thread_lock_object.acquire()
@@ -161,6 +180,8 @@ def set_airport_display(airport, category):
             changed = True
 
         airport_conditions[airport] = (category, should_flash)
+    except Exception as ex:
+        LOGGER.log_warning_message('set_airport_display() - {} - EX:{}'.format(airport, ex))
     finally:
         thread_lock_object.release()
 
@@ -192,14 +213,15 @@ def update_all_station_categorizations():
 
     for airport in airport_render_config:
         try:
-            category = get_airport_category(airport, utc_offset)
-            set_airport_display(airport, category)
+            metar = weather.get_metar(airport, logger=LOGGER)
+            category = get_airport_category(airport, metar, utc_offset)
+            set_airport_display(airport, category, metar=metar)
         except Exception as e:
             LOGGER.log_warning_message(
                 'While attempting to get category for {}, got EX:{}'.format(airport, e))
 
 
-def get_airport_category(airport, utc_offset):
+def get_airport_category(airport, metar, utc_offset):
     """
     Gets the category of a single airport.
 
@@ -213,9 +235,6 @@ def get_airport_category(airport, utc_offset):
     category = weather.INVALID
 
     try:
-        LOGGER.log_info_message("Retrieving METAR for " + airport)
-        metar = weather.get_metar(airport, logger=LOGGER)
-
         LOGGER.log_info_message("METAR for " + airport + " = " + metar)
 
         try:
