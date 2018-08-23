@@ -31,6 +31,8 @@ def get_ceiling(metar):
       400
       >>> get_ceiling('KRNT 132053Z 33010KT 2SM SCT010 OVC004 23/14 A3001 RMK AO2 SLP165')
       400
+      >>> get_ceiling('KGCC 231853Z AUTO 28011KT 20/12 A2991 RMK AO2 LTG DSNT SE RAB41RAEMM SLP085 P0000 T02000117 PWINO $')
+      10000
     """
 
     return weather.get_ceiling(metar)
@@ -58,6 +60,8 @@ def get_ceiling_classification(metar):
       'LIFR'
       >>> get_ceiling_classification(get_ceiling('KRNT 132053Z 33010KT 2SM SCT010 OVC004 23/14 A3001 RMK AO2 SLP165'))
       'LIFR'
+      >>> get_ceiling_classification(get_ceiling('KGCC 231853Z AUTO 28011KT 20/12 A2991 RMK AO2 LTG DSNT SE RAB41RAEMM SLP085 P0000 T02000117 PWINO $'))
+      'VFR'
     """
 
     return weather.get_ceiling_category(metar)
@@ -80,6 +84,8 @@ def get_visibilty(metar):
       'IFR'
       >>> get_visibilty('KRNT 132053Z 33010KT 1/2SM SCT034 SCT041 23/14 A3001 RMK AO2 SLP165')
       'LIFR'
+      >>> get_visibilty('KGCC 231853Z AUTO 28011KT 20/12 A2991 RMK AO2 LTG DSNT SE RAB41RAEMM SLP085 P0000 T02000117 PWINO $')
+      'VFR'
     """
     return weather.get_visibilty(metar)
 
