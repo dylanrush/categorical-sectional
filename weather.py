@@ -235,12 +235,12 @@ def get_civil_twilight(airport_iaco_code, current_utc_time=None, use_cache=True,
         sunset_length = sunset_end - sunset
         avg_transition_time = timedelta(seconds=(sunrise_length.seconds +
                                                  sunset_length.seconds) / 2)
-        sunrise_and_sunset = [sunrise - (2 * avg_transition_time),
-                              sunrise - avg_transition_time,
+        sunrise_and_sunset = [sunrise_start - avg_transition_time,
+                              sunrise_start,
                               sunrise,
+                              sunset - avg_transition_time,
                               sunset,
-                              sunset + avg_transition_time,
-                              sunset + (2 * avg_transition_time)]
+                              sunset_end]
         __set_cache__(airport_iaco_code, __daylight_cache__,
                       sunrise_and_sunset)
 
