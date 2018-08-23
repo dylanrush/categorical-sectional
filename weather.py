@@ -649,8 +649,9 @@ def get_visibilty(metar):
 
     match = re.search('( [0-9] )?([0-9]/?[0-9]?SM)', metar)
     is_smoke = re.search('.* FU .*', metar) is not None
+    # Not returning a visibility indicates UNLIMITED
     if(match == None):
-        return INVALID
+        return VFR
     (g1, g2) = match.groups()
     if(g2 == None):
         return INVALID
