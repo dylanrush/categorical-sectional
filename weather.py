@@ -179,10 +179,10 @@ def get_civil_twilight(airport_iaco_code, current_utc_time=None, use_cache=True,
         An array that describes the following:
         0 - When sunrise starts
         1 - when sunrise is
-        2 - when sunrise is finished
-        3 - when sunset starts
-        4 - when sunset is
-        5 - when sunset is finished
+        2 - when full light starts
+        3 - when full light ends
+        4 - when sunset starts
+        5 - when it is full dark
     """
 
     __light_fetch_lock__.acquire()
@@ -235,9 +235,9 @@ def get_civil_twilight(airport_iaco_code, current_utc_time=None, use_cache=True,
         sunset_length = sunset_end - sunset
         avg_transition_time = timedelta(seconds=(sunrise_length.seconds +
                                                  sunset_length.seconds) / 2)
-        sunrise_and_sunset = [sunrise_start - avg_transition_time,
-                              sunrise_start,
+        sunrise_and_sunset = [sunrise_start,
                               sunrise,
+                              sunrise + avg_transition_time,
                               sunset - avg_transition_time,
                               sunset,
                               sunset_end]
@@ -772,6 +772,15 @@ if __name__ == '__main__':
 
     metars = get_metars(airports_to_test)
     get_metar('KAWO', use_cache=False)
+
+    light_times = get_civil_twilight('KAWO', starting_date_time)
+
+    print('Sunrise start:{0}'.format(light_times[0] - utc_offset))
+    print('Sunrise:{0}'.format(light_times[1] - utc_offset))
+    print('Full light:{0}'.format(light_times[2] - utc_offset))
+    print('Sunset start:{0}'.format(light_times[3] - utc_offset))
+    print('Sunset:{0}'.format(light_times[4] - utc_offset))
+    print('Full dark:{0}'.format(light_times[5] - utc_offset))
 
     for identifier in airports_to_test:
         metar = get_metar(identifier)
