@@ -125,7 +125,8 @@ def get_color_from_condition(category, metar=None):
 
     if metar_age is not None:
         metar_age_minutes = metar_age.total_seconds() / 60.0
-        LOGGER.log_info_message("{} - Issued {:.1f} minutes ago".format(category, metar_age_minutes))
+        LOGGER.log_info_message(
+            "{} - Issued {:.1f} minutes ago".format(category, metar_age_minutes))
 
         is_old = metar_age_minutes > weather.DEFAULT_METAR_INVALIDATE_MINUTES
 
@@ -181,7 +182,8 @@ def set_airport_display(airport, category, metar=None):
 
         airport_conditions[airport] = (category, should_flash)
     except Exception as ex:
-        LOGGER.log_warning_message('set_airport_display() - {} - EX:{}'.format(airport, ex))
+        LOGGER.log_warning_message(
+            'set_airport_display() - {} - EX:{}'.format(airport, ex))
     finally:
         thread_lock_object.release()
 
