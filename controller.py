@@ -197,7 +197,7 @@ def update_weather_for_all_stations():
     This does not update the conditions or category.
     """
 
-    weather.get_metars(airport_render_config.keys(), Logger=LOGGER)
+    weather.get_metars(airport_render_config.keys(), logger=LOGGER)
 
 
 def update_all_station_categorizations():
