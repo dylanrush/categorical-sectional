@@ -248,7 +248,7 @@ def get_airport_category(airport, metar, utc_offset):
                 airport, twilight[1] - utc_offset, twilight[4] - utc_offset))
         except Exception as e:
             LOGGER.log_warning_message(
-                "Exception while attempting to categorize {}. EX:{}".format(metar, e))
+                "Exception while attempting to categorize METAR:{} EX:{}".format(metar, e))
     except Exception as e:
         LOGGER.log_info_message(
             "Captured EX while attempting to get category for {} EX:{}".format(airport, e))

@@ -676,7 +676,7 @@ def get_visibilty(metar):
     return VFR
 
 
-def get_ceiling(metar):
+def get_ceiling(metar, logger=None):
     """
     Returns the flight rules classification based on ceiling from a RAW metar.
 
@@ -687,13 +687,20 @@ def get_ceiling(metar):
         string -- The flight rules classification, or INVALID in case of an error.
     """
 
-    components = metar.split(' ')
+    # Exclude the remarks from being parsed as the current 
+    # condition as they normally are for events that
+    # are in the past.
+    components = metar.split('RMK')[0].split(' ')
     minimum_ceiling = 10000
     for component in components:
         if 'BKN' in component or 'OVC' in component:
-            ceiling = int(''.join(filter(str.isdigit, component))) * 100
-            if(ceiling < minimum_ceiling):
-                minimum_ceiling = ceiling
+            try:
+                ceiling = int(''.join(filter(str.isdigit, component))) * 100
+                if(ceiling < minimum_ceiling):
+                    minimum_ceiling = ceiling
+            except Exception as ex:
+                __safe_log_warning(logger, 'Unable to decode ceilning component {} from {}. EX:{}'.format(
+                    component, metar, ex))
     return minimum_ceiling
 
 
@@ -751,7 +758,7 @@ def get_category(airport_iaco_code, metar, logger=None):
             logger, "{} - Unknown METAR age".format(airport_iaco_code))
 
     vis = get_visibilty(metar)
-    ceiling = get_ceiling_category(get_ceiling(metar))
+    ceiling = get_ceiling_category(get_ceiling(metar, logger=logger))
     if ceiling == INVALID or vis == INVALID:
         return INVALID
     if vis == SMOKE:
@@ -770,6 +777,9 @@ if __name__ == '__main__':
     airports_to_test = ['KMSN', 'KAWO', 'KOSH', 'KBVS', 'KDOESNTEXIST']
     starting_date_time = datetime.utcnow()
     utc_offset = starting_date_time - datetime.now()
+
+    get_category(
+        'KVOK', 'KVOK 251453Z 34004KT 10SM SCT008 OVC019 21/21 A2988 RMK AO2A SCT V BKN SLP119 53012')
 
     metars = get_metars(airports_to_test)
     get_metar('KAWO', use_cache=False)
