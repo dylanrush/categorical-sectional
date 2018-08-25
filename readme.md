@@ -6,6 +6,8 @@ The purpose of this version was to unify the control code of different LED light
 
 I have also attempted to make setup easier by moving the LED configuration into data files.
 
+![Seattle to Oshkosh, showing Sunset across the country](media/weather_and_fade.jpg)
+
 ## What You Need
 
 ### Skills Required
@@ -17,9 +19,9 @@ To complete this project you will need to:
 
 ### Additional Hardware
 
-The instructions given here are for the NeoPixel/WS2801 version of LEDs.
+The instructions given here are for WS2801 LED based strands, such as those found on AdaFruit.
 
-The electronics cost about $90 USD if you are buying everything new.
+The electronics cost about $90 USD if you are buying everything new, and want 50 lights.
 
 To complete the project you will need to supply your own chart and backing board.
 
@@ -35,8 +37,8 @@ A parts manifest lists a Raspberry Pi Zero due to its size and lower power consu
 
 ### Parts List
 
-| Description                                  | Cost   | Link                                                                                                                                                                 |
-|----------------------------------------------|--------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Description                                  | Cost   | Link                                                                                                                                                                   |
+|----------------------------------------------|--------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Raspberry Pi Zero W                          | $29.99 | <https://www.amazon.com/CanaKit-Raspberry-Wireless-Starter-Official/dp/B06XJQV162/ref=sr_1_7?s=electronics&ie=UTF8&qid=1528557992&sr=1-7&keywords=raspberry+pi+zero+w> |
 | 5 volt, 4 amp power supply                   | $12.99 | <https://www.amazon.com/gp/product/B00MRGKPH8/ref=oh_aui_detailpage_o06_s00?ie=UTF8&psc=1>                                                                             |
 | Barrel jack adapters                         | $7.99  | <https://www.amazon.com/gp/product/B01M4RBARQ/ref=oh_aui_detailpage_o06_s01?ie=UTF8&psc=1>                                                                             |
@@ -150,16 +152,22 @@ This is the first file loaded. It tells the software what type of lights are bei
   "spi_device": 0,
   "spi_port": 0,
   "pwm_frequency": 100,
-  "airports_file": "data/south_sound.json",
+  "airports_file": "data/kawo_to_kosh.json",
   "night_lights": true
 }
 ```
 
 #### night_lights
 
-Set this to true if you would like the airports to switch to yellow when the airport is past sunset but not yet to sunrise.
+Set this to true if you would like the weather stations to change colors based on the time of day.
 
-Switches to normal flight category colors during daylight hours.
+If you are using WS2801 or PWM based lights, then this is a gradual process.
+
+First the light will fade from the flight condition color to a bright yellow to indicate "Populated night".
+As the station gets darker, the light fades to a darker yellow by the time the station is "pitch black" in night.
+
+In the morning, the light will increase back to a bright yellow as the office sunrise time approaches.
+As the station approaches full daylight, the light will fade from bright yellow to the color appropriate for the flight condition.
 
 #### mode
 
@@ -277,16 +285,19 @@ To run it at boot, perform the following steps:
 
 Capitalization counts. The map lights should come on with each boot now.
 
-## Default Colors
+## Colors
 
-This project uses the standard airport coloring for flight rules category.
+This project uses "standard" airport coloring for flight rules category, along with some unique colors.
 
-Green is VFR
-Blue is MVFR
-Red is IFR
-Blinking red is LIFR.
-
-*NOTE:* A blinking blue light indicates an error getting the weather from the station.
+| Flight Rule | WS2801         | PWM            | LED            |
+|-------------|----------------|----------------|----------------|
+| VFR         | Solid green    | Solid green    | Solid green    |
+| MVFR        | Solid blue     | Solid blue     | Solid blue     |
+| IFR         | Solid red      | Solid red      | Solid red      |
+| LIFR        | Solid magenta  | Solid magenta  | Blinking red   |
+| Smoke       | Solid gray     | Solid gray     | Solid gray     |
+| Night       | Solid yellow   | Solid yellow   | Solid yellow   |
+| Error       | Blinking white | Blinking white | Blinking white |
 
 ## Apendix
 
