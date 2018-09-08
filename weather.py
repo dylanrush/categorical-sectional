@@ -38,7 +38,8 @@ __metar_report_cache__ = {}
 
 DEFAULT_READ_SECONDS = 15
 DEFAULT_METAR_LIFESPAN_MINUTES = 60
-DEFAULT_METAR_INVALIDATE_MINUTES = DEFAULT_METAR_LIFESPAN_MINUTES * 2
+DEFAULT_METAR_INVALIDATE_MINUTES = DEFAULT_METAR_LIFESPAN_MINUTES * 1.5
+DEFAULT_METAR_STATION_INACTIVE = DEFAULT_METAR_LIFESPAN_MINUTES * 3
 
 
 def __safe_log(logger, message):
@@ -185,6 +186,9 @@ def get_civil_twilight(airport_iaco_code, current_utc_time=None, use_cache=True,
         5 - when it is full dark
     """
 
+    __safe_log(logger, 'get_civil_twilight({}, {}, {})'.format(
+        airport_iaco_code, current_utc_time, use_cache))
+
     __light_fetch_lock__.acquire()
 
     if current_utc_time is None:
@@ -205,6 +209,9 @@ def get_civil_twilight(airport_iaco_code, current_utc_time=None, use_cache=True,
 
     if is_cache_valid and use_cache:
         __light_fetch_lock__.release()
+
+        __safe_log(logger, 'get_civil_twilight() - Using cached value.')
+
         return cached_value
 
     # Using "formatted=0" returns the times in a full datetime format
@@ -221,6 +228,8 @@ def get_civil_twilight(airport_iaco_code, current_utc_time=None, use_cache=True,
         json_result = __rest_session__.get(
             url, timeout=DEFAULT_READ_SECONDS).json()
     except Exception as ex:
+        __light_fetch_lock__.release()
+
         __safe_log_warning(logger, 'get_civil_twilight EX:{}'.format(ex))
         return []
 
@@ -245,9 +254,14 @@ def get_civil_twilight(airport_iaco_code, current_utc_time=None, use_cache=True,
                       sunrise_and_sunset)
 
         __light_fetch_lock__.release()
+
+        __safe_log(logger, 'get_civil_twilight() - Returning new value.')
+
         return sunrise_and_sunset
 
     __light_fetch_lock__.release()
+
+    __safe_log(logger, 'get_civil_twilight() - Returning None.')
     return None
 
 
@@ -687,7 +701,7 @@ def get_ceiling(metar, logger=None):
         string -- The flight rules classification, or INVALID in case of an error.
     """
 
-    # Exclude the remarks from being parsed as the current 
+    # Exclude the remarks from being parsed as the current
     # condition as they normally are for events that
     # are in the past.
     components = metar.split('RMK')[0].split(' ')
@@ -745,14 +759,6 @@ def get_category(airport_iaco_code, metar, logger=None):
         metar_age_minutes = metar_age.total_seconds() / 60.0
         __safe_log(logger, "{} - Issued {:.1f} minutes ago".format(
             airport_iaco_code, metar_age_minutes))
-
-        # No report for a while?
-        # Count the station as INOP.
-        # The default is to follow what ForeFlight and SkyVector
-        # do and just turn it off.
-        # if metar_age_minutes > DEFAULT_METAR_INVALIDATE_MINUTES:
-        #     return INOP
-
     else:
         __safe_log_warning(
             logger, "{} - Unknown METAR age".format(airport_iaco_code))
