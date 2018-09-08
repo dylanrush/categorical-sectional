@@ -129,13 +129,14 @@ def get_color_from_condition(category, metar=None):
             "{} - Issued {:.1f} minutes ago".format(category, metar_age_minutes))
 
         is_old = metar_age_minutes > weather.DEFAULT_METAR_INVALIDATE_MINUTES
+        is_inactive = metar_age_minutes > weather.DEFAULT_METAR_STATION_INACTIVE
 
-        # No report for a while?
-        # Count the station as INOP.
-        # The default is to follow what ForeFlight and SkyVector
-        # do and just turn it off.
-        # if metar_age_minutes > DEFAULT_METAR_INVALIDATE_MINUTES:
-        #     return INOP
+    # No report for a while?
+    # Count the station as INOP.
+    # The default is to follow what ForeFlight and SkyVector
+    # do and just turn it off.
+    if is_inactive:
+        return (weather.INOP, False)
 
     if category == weather.VFR:
         return (weather.GREEN, is_old)
@@ -467,8 +468,6 @@ if __name__ == '__main__':
 
     all_airports(weather.OFF)
 
-    update_weather_task = RecurringTask(
-        'UpdateWeather', 10 * 60, LOGGER, True)
     update_categories_task = RecurringTask(
         'UpdateCategorizations', 60, update_all_station_categorizations, LOGGER, True)
 
