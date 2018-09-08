@@ -72,7 +72,7 @@ color_by_rules = {
     weather.LIFR: colors[weather.LOW],
     weather.NIGHT: colors[weather.YELLOW],
     weather.SMOKE: colors[weather.GRAY],
-    weather.INVALID: colors[weather.WHITE],
+    weather.INVALID: colors[weather.OFF],
     weather.INOP: colors[weather.OFF]
 }
 
@@ -154,7 +154,7 @@ def get_color_from_condition(category, metar=None):
         return (weather.GRAY, is_old)
 
     # Error
-    return (weather.WHITE, True)
+    return (weather.OFF, False)
 
 
 def set_airport_display(airport, category, metar=None):
@@ -277,7 +277,7 @@ def get_airport_condition(airport):
     except:
         pass
 
-    return weather.INVALID, True
+    return weather.INVALID, False
 
 
 def render_airport_displays(airport_flasher):
