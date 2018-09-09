@@ -760,6 +760,8 @@ def get_category(airport_iaco_code, metar, logger=None):
 
 
 if __name__ == '__main__':
+    safe_log(None, 'Starting self-test')
+    
     airports_to_test = ['KMSN', 'KAWO', 'KOSH', 'KBVS', 'KDOESNTEXIST']
     starting_date_time = datetime.utcnow()
     utc_offset = starting_date_time - datetime.now()
