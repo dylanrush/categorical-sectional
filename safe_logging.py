@@ -6,10 +6,15 @@ import traceback
 import inspect
 from datetime import datetime, timedelta
 
+TAB_TEXT = ' ' * 4
 
-def __get_callstack_indent_count():
+
+def __get_callstack_indent_count(stack_adjustment = 3):
     """
     Returns the number of indents that should be applied to the logging statement.
+
+    Keyword Arguments:
+        stack_adjustment {int -- The number of frames down the ACTUAL function name is. (default: {3})
 
     Returns:
         int -- The numnber of indents.
@@ -18,7 +23,14 @@ def __get_callstack_indent_count():
     try:
         cs_info = traceback.extract_stack()
 
-        indents = len(cs_info)
+        indents = 0
+
+        for index in range(len(cs_info) - stack_adjustment, 0, -1):
+            if '<module>' in cs_info[index].name:
+                break
+            else:
+                indents += 1
+
         if indents < 0:
             indents = 0
 
@@ -27,13 +39,14 @@ def __get_callstack_indent_count():
         return 0
 
 
-def __get_indents(count=0):
+def __get_indents(count=0, stack_adjustment=3):
     """
     Returns whitespace for the number of given indents.
-    
+
     Keyword Arguments:
         count {int} -- The number of indents to return whitespace for. (default: {0})
-    
+        stack_adjustment {int -- The number of frames down the ACTUAL function name is. (default: {3})
+
     Returns:
         string -- A whitespace string.
     """
@@ -41,7 +54,18 @@ def __get_indents(count=0):
     if count < 0:
         count = 0
 
-    return (' ' * 4) * count
+    function_name = 'UKNOWN'
+    line_num = 'UNKNOWN'
+
+    try:
+        cs_info = traceback.extract_stack()
+        index = len(cs_info) - stack_adjustment
+        function_name = cs_info[index].name
+        line_num = cs_info[index].lineno
+    except:
+        pass
+
+    return '{}{}:():{}: '.format(TAB_TEXT * count, function_name, line_num)
 
 
 def safe_log(logger, message):
