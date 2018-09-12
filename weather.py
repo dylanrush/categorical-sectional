@@ -461,14 +461,13 @@ def get_metars(airport_iaco_codes, logger=None):
         metars = {}
 
     safe_log(logger, 'Attempting to reconcile METARs not returned with cache.')
+
+    stations_to_use_cache_for = filter(
+        lambda x: x not in metars or metars[x] is None, airport_iaco_codes)
+
     # For the airports and identifiers that we were not able to get
     # a result for, see if we can fill in the results.
-    for identifier in airport_iaco_codes:
-        if identifier in metars and metars[identifier] is not None:
-            safe_log(logger, '{} had result, using it'.format(
-                identifier))
-            continue
-
+    for identifier in stations_to_use_cache_for:
         # If we did not get a report, but do
         # still have an old report, then use the old
         # report.
@@ -761,7 +760,7 @@ def get_category(airport_iaco_code, metar, logger=None):
 
 if __name__ == '__main__':
     safe_log(None, 'Starting self-test')
-    
+
     airports_to_test = ['KMSN', 'KAWO', 'KOSH', 'KBVS', 'KDOESNTEXIST']
     starting_date_time = datetime.utcnow()
     utc_offset = starting_date_time - datetime.now()
