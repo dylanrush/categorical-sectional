@@ -184,7 +184,7 @@ def get_civil_twilight(airport_iaco_code, current_utc_time=None, use_cache=True,
     # Using "formatted=0" returns the times in a full datetime format
     # Otherwise you need to do some silly math to figure out the date
     # of the sunrise or sunset.
-    url = "https://api.sunrise-sunset.org/json?lat=" + \
+    url = "http://api.sunrise-sunset.org/json?lat=" + \
         str(__airport_locations__[airport_iaco_code]["lat"]) + \
         "&lng=" + str(__airport_locations__[airport_iaco_code]["long"]) + \
         "&date=" + str(current_utc_time.year) + "-" + str(current_utc_time.month) + "-" + str(current_utc_time.day) + \
