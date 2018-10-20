@@ -18,7 +18,7 @@ class Ws2801Renderer(object):
     def __init__(self, pixel_count, spi_port, spi_device):
         """
         Create a new controller for the WS2801 based lights
-        
+
         Arguments:
             pixel_count {int} -- The total number of neopixels. Probably a multple of 25.
             spi_port {int} -- The SPI port the neopixels are on.
@@ -36,8 +36,8 @@ class Ws2801Renderer(object):
             self.pixels.clear()
             self.pixels.show()  # Make sure to call show() after changing any pixels!
 
-            for pixel in range(0, self.pixel_count):
-                self.pixels.set_pixel(pixel, Adafruit_WS2801.RGB_to_color(0, 0, 0))
+            [self.pixels.set_pixel(pixel, Adafruit_WS2801.RGB_to_color(0, 0, 0))
+                for pixel in range(0, self.pixel_count)]
 
             self.pixels.show()
 
