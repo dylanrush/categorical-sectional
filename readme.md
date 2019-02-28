@@ -120,7 +120,7 @@ Solder them to the board.
 | Blue       | Tied off and shrink wrapped. Not connected. | Not connected |
 | Red        | 25                                          | GRND          |
 | Black      | 23                                          | SCLK          |
-| Teal       | 19                                          | MOSI          |
+| Green/Teal | 19                                          | MOSI          |
 
 
 #### Wiring Detail From Top
