@@ -14,14 +14,14 @@ I have also attempted to make setup easier by moving the LED configuration into 
 
 To complete this project you will need to:
 
-* Edit two text files.
-* Solder three wires.
+- Edit two text files.
+- Solder three wires.
 
 ### Additional Hardware
 
 The instructions given here are for WS2801 LED based strands, such as those found on AdaFruit.
 
-The electronics cost about $90 USD if you are buying everything new, and want 50 lights.
+The electronics cost about \$90 USD if you are buying everything new, and want 50 lights.
 
 To complete the project you will need to supply your own chart and backing board.
 
@@ -37,13 +37,13 @@ A parts manifest lists a Raspberry Pi Zero due to its size and lower power consu
 
 ### Parts List
 
-| Description                                  | Cost   | Link                                                                                                                                                                   |
-|----------------------------------------------|--------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Raspberry Pi Zero W                          | $29.99 | <https://www.amazon.com/CanaKit-Raspberry-Wireless-Starter-Official/dp/B06XJQV162/ref=sr_1_7?s=electronics&ie=UTF8&qid=1528557992&sr=1-7&keywords=raspberry+pi+zero+w> |
-| 5 volt, 4 amp power supply                   | $12.99 | <https://www.amazon.com/gp/product/B00MRGKPH8/ref=oh_aui_detailpage_o06_s00?ie=UTF8&psc=1>                                                                             |
-| Barrel jack adapters                         | $7.99  | <https://www.amazon.com/gp/product/B01M4RBARQ/ref=oh_aui_detailpage_o06_s01?ie=UTF8&psc=1>                                                                             |
-| Individually addressable LEDs (WS2801 based) | $39.95 | <https://www.amazon.com/12mm-Diffused-Digital-Pixels-Strand/dp/B073MZWBYS/ref=sr_1_1?ie=UTF8&qid=1528558371&sr=8-1&keywords=adafruit+ws2801>                           |
-| 4 Pin JST SM Plugs                           | $7.99  | <https://www.amazon.com/Visdoll-Pairs-Female-Connector-Cable/dp/B075K48BD9/ref=sr_1_8?ie=UTF8&qid=1528559351&sr=8-8&keywords=4+Pin+JST+SM+Plug>                        |
+| Description                                  | Cost    | Link                                                                                                                                                                   |
+| -------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Raspberry Pi Zero W                          | \$29.99 | <https://www.amazon.com/CanaKit-Raspberry-Wireless-Starter-Official/dp/B06XJQV162/ref=sr_1_7?s=electronics&ie=UTF8&qid=1528557992&sr=1-7&keywords=raspberry+pi+zero+w> |
+| 5 volt, 4 amp power supply                   | \$12.99 | <https://www.amazon.com/gp/product/B00MRGKPH8/ref=oh_aui_detailpage_o06_s00?ie=UTF8&psc=1>                                                                             |
+| Barrel jack adapters                         | \$7.99  | <https://www.amazon.com/gp/product/B01M4RBARQ/ref=oh_aui_detailpage_o06_s01?ie=UTF8&psc=1>                                                                             |
+| Individually addressable LEDs (WS2801 based) | \$39.95 | <https://www.amazon.com/12mm-Diffused-Digital-Pixels-Strand/dp/B073MZWBYS/ref=sr_1_1?ie=UTF8&qid=1528558371&sr=8-1&keywords=adafruit+ws2801>                           |
+| 4 Pin JST SM Plugs                           | \$7.99  | <https://www.amazon.com/Visdoll-Pairs-Female-Connector-Cable/dp/B075K48BD9/ref=sr_1_8?ie=UTF8&qid=1528559351&sr=8-8&keywords=4+Pin+JST+SM+Plug>                        |
 
 ### Bootstrapping The Raspberry Pi
 
@@ -102,8 +102,8 @@ For the barrel jack, use the two thinner wires that come out of the top of the p
 
 One is red, the other blue.
 
-* Blue -> Barrel jack minus
-* Red -> Barrel jack positive
+- Blue -> Barrel jack minus
+- Red -> Barrel jack positive
 
 #### Wiring Detail For Barrel Jack
 
@@ -111,17 +111,16 @@ One is red, the other blue.
 
 ### The Raspberry Pi
 
-Use the group of four wires from a *_male_* JST SM adapter.
+Use the group of four wires from a _*male*_ JST SM adapter.
 
 Solder them to the board.
 
 | Wire Color | Physical Pin                                | Pin Name      |
-|------------|---------------------------------------------|---------------|
+| ---------- | ------------------------------------------- | ------------- |
 | Blue       | Tied off and shrink wrapped. Not connected. | Not connected |
 | Red        | 25                                          | GRND          |
 | Black      | 23                                          | SCLK          |
 | Green/Teal | 19                                          | MOSI          |
-
 
 #### Wiring Detail From Top
 
@@ -133,10 +132,10 @@ Solder them to the board.
 
 ## Final Assembly
 
-* Connect the Male JST and LED connectors together.
-* Connect the barrel jack into the Neopixel strip.
-* Add the SD card to the Pi.
-* Plug inthe NeoPixels first, then the Raspberry Pi.
+- Connect the Male JST and LED connectors together.
+- Connect the barrel jack into the Neopixel strip.
+- Add the SD card to the Pi.
+- Plug inthe NeoPixels first, then the Raspberry Pi.
 
 ## Understanding The Configuration Files
 
@@ -177,7 +176,7 @@ As the station approaches full daylight, the light will fade from bright yellow 
 This controls which type of LED system to use for controlling the lights.
 
 | Value  | Description                                                                                      |
-|--------|--------------------------------------------------------------------------------------------------|
+| ------ | ------------------------------------------------------------------------------------------------ |
 | ws2801 | Use WS2801 based light strands like those from AdaFruit                                          |
 | pwm    | Use pulse width modulation based LEDs. This can have their colors changed more than normal LEDs. |
 | led    | Use standard LEDs that have a positive wire for each color and a common ground.                  |
@@ -216,13 +215,13 @@ This shows the two sections for an example airport file.
     { "KSHN": [8, 10, 12] }
   ],
   "ws2801": [
-    { "KRNT": { "neopixel": 0} },
-    { "KSEA": { "neopixel": 2} },
-    { "KPLU": { "neopixel": 4} },
-    { "KOLM": { "neopixel": 6} },
-    { "KTIW": { "neopixel": 8} },
-    { "KPWT": { "neopixel": 10} },
-    { "KSHN": { "neopixel": 12} }
+    { "KRNT": { "neopixel": 0 } },
+    { "KSEA": { "neopixel": 2 } },
+    { "KPLU": { "neopixel": 4 } },
+    { "KOLM": { "neopixel": 6 } },
+    { "KTIW": { "neopixel": 8 } },
+    { "KPWT": { "neopixel": 10 } },
+    { "KSHN": { "neopixel": 12 } }
   ]
 }
 ```
@@ -235,11 +234,11 @@ There are two sections:
 
 Contains the airport name and wiring information. The first number is the wire controlling the red LED, then the green LED, and finally the blue LED.
 
-These wire numbers refer to the *_physical_* board number on the Raspberry pie.
+These wire numbers refer to the _*physical*_ board number on the Raspberry pie.
 
 So for KRNT (Renton), the wire leading to the Red LED would be wired to the GPIO board at pin 3. The Blue LED would be wired to pin 5, and the green LED wire would be wired to pin 7.
 
-*NOTE:* The "pwm" section is used by both the normal LEDs and the pulse width controlled LEDs.
+_NOTE:_ The "pwm" section is used by both the normal LEDs and the pulse width controlled LEDs.
 
 ##### ws2801
 
@@ -249,7 +248,7 @@ Once again, this starts with an airport or weather station identifier.
 
 Next to contains a "neopixel" identifier. This is the order of the light on the strand.
 
-*NOTE:* The first light is "0", the second light is "1".
+_NOTE:_ The first light is "0", the second light is "1".
 
 Due to the way your lights may need to be arranged to fit on the map, some lights may need to be skipped, so keep track of your lights.
 
@@ -279,9 +278,9 @@ To run it at boot, perform the following steps:
 3. Select "Nano" (Option 1)
 4. Enter the following text at the _bottom_ of the file:
 
-  ```code
-  @reboot python3 /home/pi/categorical-sectional/controller.py &
-  ```
+```code
+@reboot python3 /home/pi/categorical-sectional/controller.py &
+```
 
 5. Save the file and exit.
 6. sudo reboot now
@@ -293,7 +292,7 @@ Capitalization counts. The map lights should come on with each boot now.
 This project uses "standard" airport coloring for flight rules category, along with some unique colors.
 
 | Flight Rule | WS2801         | PWM            | LED            |
-|-------------|----------------|----------------|----------------|
+| ----------- | -------------- | -------------- | -------------- |
 | VFR         | Solid green    | Solid green    | Solid green    |
 | MVFR        | Solid blue     | Solid blue     | Solid blue     |
 | IFR         | Solid red      | Solid red      | Solid red      |
