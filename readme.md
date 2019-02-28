@@ -115,10 +115,13 @@ Use the group of four wires from a *_male_* JST SM adapter.
 
 Solder them to the board.
 
-* Blue -> Tied off and shrink wrapped. Not connected.
-* Red -> Raspberry Pi 3V Pin 17 (Physical)
-* Yellow -> Pin 19(Physical)/SPI MOSI
-* Green -> Pin 23(Physical)/SCLK/SPI
+| Wire Color | Physical Pin                                | Pin Name      |
+|------------|---------------------------------------------|---------------|
+| Blue       | Tied off and shrink wrapped. Not connected. | Not connected |
+| Red        | 25                                          | GRND          |
+| Black      | 23                                          | SCLK          |
+| Teal       | 19                                          | MOSI          |
+
 
 #### Wiring Detail From Top
 
