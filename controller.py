@@ -438,25 +438,19 @@ def wait_for_all_airports():
     If an airport had an error, then that still counts.
     """
 
-    airport_missing = True
-    start_time = datetime.utcnow()
+    utc_offset = datetime.utcnow() - datetime.now()
 
-    while airport_missing and (datetime.utcnow() - start_time).total_seconds() < 60:
-        airport_missing = False
-
-        thread_lock_object.acquire()
+    for airport in airport_render_config:
         try:
-            for airport in airport_render_config:
-                if airport not in airport_conditions:
-                    airport_missing = True
-                    safe_log(LOGGER, "Waiting on " + airport)
-                    break
+            thread_lock_object.acquire()
+            metar = weather.get_metar(airport, logger=LOGGER)
+            category = get_airport_category(airport, metar, utc_offset)
+            airport_conditions[airport] = get_color_from_condition(category, metar=metar)
         except:
-            safe_log_warning(LOGGER, "Error while waiting for boot")
+            airport_conditions[airport] =  (weather.INVALID, False)
+            safe_log_warning(LOGGER, "Error while initializing with airport=" + airport)
         finally:
             thread_lock_object.release()
-
-        time.sleep(0.5)
 
     return True
 
