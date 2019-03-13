@@ -311,16 +311,16 @@ def render_airport_displays(airport_flasher):
         airport_flasher {bool} -- Is this on the "off" cycle of blinking.
     """
 
-    try:
-        thread_lock_object.acquire()
+    for airport in airport_render_config:
+        try:
+            thread_lock_object.acquire()
 
-        [render_airport(airport, airport_flasher)
-            for airport in airport_render_config]
-    except Exception as ex:
-        safe_log_warning(LOGGER,
-                         'Catch-all error in render_airport_displays of EX:{}'.format(ex))
-    finally:
-        thread_lock_object.release()
+            render_airport(airport, airport_flasher)
+        except Exception as ex:
+            safe_log_warning(LOGGER,
+                             'Catch-all error in render_airport_displays of {} EX={}'.format(airport, ex))
+        finally:
+            thread_lock_object.release()
 
 
 def render_airport(airport, airport_flasher):
@@ -445,7 +445,7 @@ def wait_for_all_airports():
             thread_lock_object.acquire()
             metar = weather.get_metar(airport, logger=LOGGER)
             category = get_airport_category(airport, metar, utc_offset)
-            airport_conditions[airport] = get_color_from_condition(category, metar=metar)
+            airport_conditions[airport] = (category, False)
         except:
             airport_conditions[airport] =  (weather.INVALID, False)
             safe_log_warning(LOGGER, "Error while initializing with airport=" + airport)
