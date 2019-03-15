@@ -307,6 +307,16 @@ This project uses "standard" airport coloring for flight rules category, along w
 <https://tutorials-raspberrypi.com/how-to-control-a-raspberry-pi-ws2801-rgb-led-strip/>
 <https://www.raspberrypi.org/documentation/linux/usage/cron.md>
 
+## Version History
+
+| Version | Change                                                                                                                                                                            |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|   1.4   | Changes to map initialization to help with bad airport identifiers. Improve handling of mismatch between four and three letter long identifiers when determining day/night cycle. |
+|   1.3   | Performance improvements.                                                                                                                                                         |
+|   1.2   | Migrated to Python 3.x                                                                                                                                                            |
+|   1.1   | Day / Night cycle.                                                                                                                                                                |
+|   1.0   | First release with adressable lights.                                                                                                                                             |
+
 ## Credits
 
 Airport Location data from <http://ourairports.com/data/>

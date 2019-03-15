@@ -124,15 +124,55 @@ def __is_cache_valid__(airport_iaco_code, cache, cache_life_in_minutes=8):
 
     now = datetime.utcnow()
 
-    if airport_iaco_code in cache:
-        time_since_last_fetch = now - cache[airport_iaco_code][0]
+    try:
+        if airport_iaco_code in cache:
+            time_since_last_fetch = now - cache[airport_iaco_code][0]
 
-        if (time_since_last_fetch is not None and (time_since_last_fetch.total_seconds()) / 60.0) < cache_life_in_minutes:
-            return (True, cache[airport_iaco_code][1])
-        else:
-            return (False, cache[airport_iaco_code][1])
+            if (time_since_last_fetch is not None and (time_since_last_fetch.total_seconds()) / 60.0) < cache_life_in_minutes:
+                return (True, cache[airport_iaco_code][1])
+            else:
+                return (False, cache[airport_iaco_code][1])
+    except:
+        pass
 
     return (False, None)
+
+
+def get_faa_csv_identifier(airport_iaco_code):
+    """
+    Checks to see if the given identifier is in the FAA CSV file.
+    If it is not, then checks to see if it is one of the airports
+    that the weather service requires a "K" prefix, but the CSV
+    file is without it.
+
+    Returns any identifier that is in the CSV file.
+    Returns None if the airport is not in the file.
+    
+    Arguments:
+        airport_iaco_code {string} -- The full identifier of the airport.
+    """
+
+    if airport_iaco_code is None:
+        return None
+    
+    normalized_iaco_code = airport_iaco_code.upper()
+
+    if normalized_iaco_code in __airport_locations__:
+        return normalized_iaco_code
+
+    if len(normalized_iaco_code) >= 4:
+        normalized_iaco_code = normalized_iaco_code[-3:]
+
+        if normalized_iaco_code in __airport_locations__:
+            return normalized_iaco_code
+    
+    if len(normalized_iaco_code) <= 3:
+        normalized_iaco_code = "K{}".format(normalized_iaco_code)
+
+        if normalized_iaco_code in __airport_locations__:
+            return normalized_iaco_code
+
+    return None
 
 
 def get_civil_twilight(airport_iaco_code, current_utc_time=None, use_cache=True, logger=None):
@@ -157,83 +197,85 @@ def get_civil_twilight(airport_iaco_code, current_utc_time=None, use_cache=True,
 
     __light_fetch_lock__.acquire()
 
-    if current_utc_time is None:
-        current_utc_time = datetime.utcnow()
-
-    is_cache_valid, cached_value = __is_cache_valid__(
-        airport_iaco_code, __daylight_cache__, 4 * 60)
-
-    # Make sure that the sunrise time we are using is still valid...
-    if is_cache_valid:
-        hours_since_sunrise = (
-            current_utc_time - cached_value[1]).total_seconds() / 3600
-        if hours_since_sunrise > 24:
-            is_cache_valid = False
-            safe_log_warning(logger, "Twilight cache for {} had a HARD miss with delta={}".format(
-                airport_iaco_code, hours_since_sunrise))
-            current_utc_time += timedelta(hours=1)
-
-    if is_cache_valid and use_cache:
-        __light_fetch_lock__.release()
-
-        safe_log(logger, 'Using cached value')
-        safe_log(logger, '~get_civil_twilight() => {}'.format(cached_value))
-
-        return cached_value
-
-    # Using "formatted=0" returns the times in a full datetime format
-    # Otherwise you need to do some silly math to figure out the date
-    # of the sunrise or sunset.
-    url = "http://api.sunrise-sunset.org/json?lat=" + \
-        str(__airport_locations__[airport_iaco_code]["lat"]) + \
-        "&lng=" + str(__airport_locations__[airport_iaco_code]["long"]) + \
-        "&date=" + str(current_utc_time.year) + "-" + str(current_utc_time.month) + "-" + str(current_utc_time.day) + \
-        "&formatted=0"
-
-    json_result = []
     try:
-        json_result = __rest_session__.get(
-            url, timeout=DEFAULT_READ_SECONDS).json()
-    except Exception as ex:
+        if current_utc_time is None:
+            current_utc_time = datetime.utcnow()
+
+        is_cache_valid, cached_value = __is_cache_valid__(
+            airport_iaco_code, __daylight_cache__, 4 * 60)
+
+        # Make sure that the sunrise time we are using is still valid...
+        if is_cache_valid:
+            hours_since_sunrise = (
+                current_utc_time - cached_value[1]).total_seconds() / 3600
+            if hours_since_sunrise > 24:
+                is_cache_valid = False
+                safe_log_warning(logger, "Twilight cache for {} had a HARD miss with delta={}".format(
+                    airport_iaco_code, hours_since_sunrise))
+                current_utc_time += timedelta(hours=1)
+
+        if is_cache_valid and use_cache:
+            safe_log(logger, 'Using cached value')
+            safe_log(logger, '~get_civil_twilight() => {}'.format(cached_value))
+
+            return cached_value
+        
+        faa_code = get_faa_csv_identifier(airport_iaco_code)
+
+        if faa_code is None:
+            safe_log(logger, 'Fall through due to the identifier not being in the FAA CSV file.')
+            safe_log(logger, '~get_civil_twilight() => None')
+            return None
+
+        # Using "formatted=0" returns the times in a full datetime format
+        # Otherwise you need to do some silly math to figure out the date
+        # of the sunrise or sunset.
+        url = "http://api.sunrise-sunset.org/json?lat=" + \
+            str(__airport_locations__[faa_code]["lat"]) + \
+            "&lng=" + str(__airport_locations__[faa_code]["long"]) + \
+            "&date=" + str(current_utc_time.year) + "-" + str(current_utc_time.month) + "-" + str(current_utc_time.day) + \
+            "&formatted=0"
+
+        json_result = []
+        try:
+            json_result = __rest_session__.get(
+                url, timeout=DEFAULT_READ_SECONDS).json()
+        except Exception as ex:
+            safe_log_warning(
+                logger, '~get_civil_twilight() => None; EX:{}'.format(ex))
+            return []
+
+        if json_result is not None and "status" in json_result and json_result["status"] == "OK" and "results" in json_result:
+            sunrise = __get_utc_datetime__(json_result["results"]["sunrise"])
+            sunset = __get_utc_datetime__(json_result["results"]["sunset"])
+            sunrise_start = __get_utc_datetime__(
+                json_result["results"]["civil_twilight_begin"])
+            sunset_end = __get_utc_datetime__(
+                json_result["results"]["civil_twilight_end"])
+            sunrise_length = sunrise - sunrise_start
+            sunset_length = sunset_end - sunset
+            avg_transition_time = timedelta(seconds=(sunrise_length.seconds +
+                                                    sunset_length.seconds) / 2)
+            sunrise_and_sunset = [sunrise_start,
+                                sunrise,
+                                sunrise + avg_transition_time,
+                                sunset - avg_transition_time,
+                                sunset,
+                                sunset_end]
+            __set_cache__(airport_iaco_code, __daylight_cache__,
+                        sunrise_and_sunset)
+
+            safe_log(logger, 'Returning new value.')
+            safe_log(logger, '~get_civil_twilight() => ({}, {}, {}, {}, {}, {})'.format(
+                sunrise_and_sunset[0], sunrise_and_sunset[1], sunrise_and_sunset[2], sunrise_and_sunset[3], sunrise_and_sunset[4], sunrise_and_sunset[5]))
+
+            return sunrise_and_sunset
+
+        safe_log(logger, 'Fall through.')
+        safe_log(logger, '~get_civil_twilight() => None')
+        return None
+    finally:
         __light_fetch_lock__.release()
-
-        safe_log_warning(
-            logger, '~get_civil_twilight() => None; EX:{}'.format(ex))
-        return []
-
-    if json_result is not None and "status" in json_result and json_result["status"] == "OK" and "results" in json_result:
-        sunrise = __get_utc_datetime__(json_result["results"]["sunrise"])
-        sunset = __get_utc_datetime__(json_result["results"]["sunset"])
-        sunrise_start = __get_utc_datetime__(
-            json_result["results"]["civil_twilight_begin"])
-        sunset_end = __get_utc_datetime__(
-            json_result["results"]["civil_twilight_end"])
-        sunrise_length = sunrise - sunrise_start
-        sunset_length = sunset_end - sunset
-        avg_transition_time = timedelta(seconds=(sunrise_length.seconds +
-                                                 sunset_length.seconds) / 2)
-        sunrise_and_sunset = [sunrise_start,
-                              sunrise,
-                              sunrise + avg_transition_time,
-                              sunset - avg_transition_time,
-                              sunset,
-                              sunset_end]
-        __set_cache__(airport_iaco_code, __daylight_cache__,
-                      sunrise_and_sunset)
-
-        __light_fetch_lock__.release()
-
-        safe_log(logger, 'Returning new value.')
-        safe_log(logger, '~get_civil_twilight() => ({}, {}, {}, {}, {}, {})'.format(
-            sunrise_and_sunset[0], sunrise_and_sunset[1], sunrise_and_sunset[2], sunrise_and_sunset[3], sunrise_and_sunset[4], sunrise_and_sunset[5]))
-
-        return sunrise_and_sunset
-
-    __light_fetch_lock__.release()
-
-    safe_log(logger, 'Fall through.')
-    safe_log(logger, '~get_civil_twilight() => None')
-    return None
 
 
 def is_daylight(airport_iaco_code, light_times, current_utc_time=None, use_cache=True):
@@ -761,7 +803,7 @@ def get_category(airport_iaco_code, metar, logger=None):
 if __name__ == '__main__':
     safe_log(None, 'Starting self-test')
 
-    airports_to_test = ['KMSN', 'KAWO', 'KOSH', 'KBVS', 'KDOESNTEXIST']
+    airports_to_test = ['KW29', 'KMSN', 'KAWO', 'KOSH', 'KBVS', 'KDOESNTEXIST']
     starting_date_time = datetime.utcnow()
     utc_offset = starting_date_time - datetime.now()
 
@@ -781,6 +823,8 @@ if __name__ == '__main__':
     print('Full dark:{0}'.format(light_times[5] - utc_offset))
 
     for identifier in airports_to_test:
+        faa_csv_identifer = get_faa_csv_identifier(identifier)
+
         metar = get_metar(identifier)
         age = get_metar_age(metar)
         flight_category = get_category(identifier, metar)
@@ -791,7 +835,7 @@ if __name__ == '__main__':
         time_to_fetch = starting_date_time + timedelta(hours=hours_ahead)
         local_fetch_time = time_to_fetch - utc_offset
 
-        for airport in ['KAWO']:  # , 'KCOE', 'KMSP', 'KOSH']:
+        for airport in ['KW29', 'KAWO']:  # , 'KCOE', 'KMSP', 'KOSH']:
             light_times = get_civil_twilight(airport, time_to_fetch)
             is_lit = is_daylight(airport, light_times, time_to_fetch)
             is_dark = is_night(airport, light_times, time_to_fetch)
