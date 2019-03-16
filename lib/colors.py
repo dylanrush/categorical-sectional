@@ -32,17 +32,59 @@ def interpolate(left_value, right_value, proportion):
         right_value {number} -- The value on the "right" that 1.0 would return.
         proportion {float} -- The proportion from the left to the right hand side.
 
+    >>> interpolate(0, 255, 0.5)
+    127
+    >>> interpolate(10, 20, 0.5)
+    15
+    >>> interpolate(0, 255, 0.0)
+    0
+    >>> interpolate(0, 255, 0)
+    0
+    >>> interpolate(0, 255, 1)
+    255
+    >>> interpolate(0, 255, 1.5)
+    255
+    >>> interpolate(0, 255, -0.5)
+    0
+    >>> interpolate(0, 255, 0.1)
+    25
+    >>> interpolate(0, 255, 0.9)
+    229
+    >>> interpolate(255, 0, 0.5)
+    127
+    >>> interpolate(20, 10, 0.5)
+    15
+    >>> interpolate(255, 0, 0.0)
+    0
+    >>> interpolate(255, 0, 0)
+    0
+    >>> interpolate(255, 0, 1)
+    255
+    >>> interpolate(255, 0, 1.5)
+    255
+    >>> interpolate(255, 0, -0.5)
+    0
+    >>> interpolate(255, 0, 0.1)
+    25
+    >>> interpolate(255, 0, 0.9)
+    229
+
     Returns:
         float -- The number that is the given amount between the left and right.
     """
 
-    left_value = clamp(0, left_value, 255)
-    right_value = clamp(0, right_value, 255)
+    left_value = clamp(0.0, left_value, 255.0)
+    right_value = clamp(0.0, right_value, 255.0)
     proportion = clamp(0.0, proportion, 1.0)
+
+    if right_value < left_value:
+        swap = left_value
+        left_value = right_value
+        right_value = swap
 
     return clamp(0,
                  int(float(left_value) +
-                     (float(right_value - left_value) * proportion)),
+                     (float(right_value - float(left_value)) * float(proportion))),
                  255)
 
 
@@ -65,6 +107,12 @@ def get_color_mix(left_color, right_color, proportion):
     [127, 127, 127]
 
     >>> get_color_mix([125,255,0], [125, 0, 255], 0.5)
+    [125, 127, 127]
+
+    >>> get_color_mix([255, 255, 255], [0,0,0], 0.5)
+    [127, 127, 127]
+
+    >>> get_color_mix([125, 0, 255], [125,255,0], 0.5)
     [125, 127, 127]
 
     Arguments:
