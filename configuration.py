@@ -54,6 +54,46 @@ def get_night_lights():
     except:
         return False
 
+def get_night_populated_yellow():
+    """
+    If we are using the option feature that shows day/night cycles,
+    then should we use "populated yellow" as the target color?
+    Defaults to True if the option is not in the config file.
+
+    Returns:
+        boolean -- True if the color of the station should be yellow when it is dark.
+    """
+    try:
+        if CONFIG is not None and 'night_populated_yellow' in CONFIG:
+            return CONFIG['night_populated_yellow']
+    except:
+        return True
+
+def get_night_category_proportion():
+    """
+    If we are using the category color for the night conditions,
+    then what proportion between the category and black should we use?
+    0.0 is black. 1.0 is the normal category color.
+
+    Returns:
+        float -- A number between 0.0 (off) and 1.0 (true category color), inclusive
+    """
+    try:
+        if CONFIG is not None and 'night_category_proportion' in CONFIG:
+            try:
+                unclamped =  float(CONFIG['night_category_proportion'])
+
+                if unclamped < 0.0:
+                    return 0.0
+                
+                if unclamped > 1.0:
+                    return 1.0
+
+                return unclamped
+            except:
+                return 0.5
+    except:
+        return 0.5
 
 def get_airport_configuration_section():
     """

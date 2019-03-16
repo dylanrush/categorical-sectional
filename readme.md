@@ -311,6 +311,7 @@ This project uses "standard" airport coloring for flight rules category, along w
 
 | Version | Change                                                                                                                                                                            |
 | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|   1.5   | New options that expand the day/night lighting cycle. Allows for dimmed category colors to be used instread.                                                                      |
 |   1.4   | Changes to map initialization to help with bad airport identifiers. Improve handling of mismatch between four and three letter long identifiers when determining day/night cycle. |
 |   1.3   | Performance improvements.                                                                                                                                                         |
 |   1.2   | Migrated to Python 3.x                                                                                                                                                            |

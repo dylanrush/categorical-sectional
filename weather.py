@@ -21,6 +21,7 @@ MVFR = 'M' + VFR
 IFR = 'IFR'
 LIFR = 'L' + IFR
 NIGHT = 'NIGHT'
+NIGHT_DARK = 'DARK'
 SMOKE = 'SMOKE'
 
 RED = 'RED'
