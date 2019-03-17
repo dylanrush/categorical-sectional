@@ -418,7 +418,10 @@ def get_mix_and_color(color_by_category, airport):
 
     if configuration.get_night_lights():
         if proportions[0] <= 0.0 and proportions[1] <= 0.0:
-            color_to_render = colors[weather.DARK_YELLOW]
+            if configuration.get_night_populated_yellow():
+                color_to_render = colors[weather.DARK_YELLOW]
+            else:
+                color_to_render = _get_rgb_night_color_to_render(color_by_category, proportions)
         # Do not allow color mixing for standard LEDs
         # Instead if we are going to render NIGHT then
         # have the NIGHT color represent that the station
