@@ -72,6 +72,7 @@ color_by_rules = {
     weather.MVFR: colors[weather.BLUE],
     weather.LIFR: colors[weather.LOW],
     weather.NIGHT: colors[weather.YELLOW],
+    weather.NIGHT_DARK: colors[weather.DARK_YELLOW],
     weather.SMOKE: colors[weather.GRAY],
     weather.INVALID: colors[weather.OFF],
     weather.INOP: colors[weather.OFF]
@@ -359,6 +360,47 @@ def render_airport(airport, airport_flasher):
         airport_render_config[airport], color_to_render)
 
 
+def _get_standard_led_night_color(starting_color, proportions):
+    """
+    Returns the color to render for the chart for a STANDARD
+    LED setup (+3 GPIO excitement, *_NOT_* addressable)
+
+    Arguments:
+        starting_color {array} -- The starting color descriptor
+        proportions {tuple(float, float)} -- How far into the day/night transition.
+
+    Returns:
+        array -- The final color
+    """
+
+    if proportions[0] > 0.0 or proportions[1] < 1.0:
+        return color_by_rules[weather.NIGHT]
+    elif proportions[0] <= 0.0 and proportions[1] <= 0.0:
+        return color_by_rules[weather.NIGHT_DARK]
+
+    return starting_color
+
+
+def _get_rgb_night_color_to_render(color_by_category, proportions):
+    color_to_render = color_by_category
+
+    target_night_color = colors_lib.get_color_mix(
+        color_by_category, colors[weather.OFF], configuration.get_night_category_proportion())
+
+    # For the scenario where we simply dim the LED to account for sunrise/sunset
+    # then only use the period between sunset/sunrise start and civil twilight
+    if proportions[0] > 0.0:
+        color_to_render = colors_lib.get_color_mix(
+            color_by_category, target_night_color, proportions[0])
+    elif proportions[1] > 0.0:
+        color_to_render = colors_lib.get_color_mix(
+            target_night_color, color_by_category, proportions[1])
+    else:
+        color_to_render = target_night_color
+
+    return color_to_render
+
+
 def get_mix_and_color(color_by_category, airport):
     """
     Gets the proportion of color mixes (dark to NIGHT, NIGHT to color) and the final color to render.
@@ -376,7 +418,10 @@ def get_mix_and_color(color_by_category, airport):
 
     if configuration.get_night_lights():
         if proportions[0] <= 0.0 and proportions[1] <= 0.0:
-            color_to_render = colors[weather.DARK_YELLOW]
+            if configuration.get_night_populated_yellow():
+                color_to_render = colors[weather.DARK_YELLOW]
+            else:
+                color_to_render = _get_rgb_night_color_to_render(color_by_category, proportions)
         # Do not allow color mixing for standard LEDs
         # Instead if we are going to render NIGHT then
         # have the NIGHT color represent that the station
@@ -386,6 +431,8 @@ def get_mix_and_color(color_by_category, airport):
                 color_to_render = color_by_rules[weather.NIGHT]
             elif proportions[0] <= 0.0 and proportions[1] <= 0.0:
                 color_to_render = colors[weather.DARK_YELLOW]
+        elif not configuration.get_night_populated_yellow():
+            return proportions, _get_rgb_night_color_to_render(color_by_category, proportions)
         elif proportions[0] > 0.0:
             color_to_render = colors_lib.get_color_mix(
                 colors[weather.DARK_YELLOW], color_by_rules[weather.NIGHT], proportions[0])
@@ -394,9 +441,9 @@ def get_mix_and_color(color_by_category, airport):
                 color_by_rules[weather.NIGHT], color_by_category, proportions[1])
     return proportions, color_to_render
 
-#VFR - Green
-#MVFR - Blue
-#IFR - Red
+# VFR - Green
+# MVFR - Blue
+# IFR - Red
 # LIFR - Flashing red
 # Error - Flashing white
 
@@ -447,8 +494,9 @@ def wait_for_all_airports():
             category = get_airport_category(airport, metar, utc_offset)
             airport_conditions[airport] = (category, False)
         except:
-            airport_conditions[airport] =  (weather.INVALID, False)
-            safe_log_warning(LOGGER, "Error while initializing with airport=" + airport)
+            airport_conditions[airport] = (weather.INVALID, False)
+            safe_log_warning(
+                LOGGER, "Error while initializing with airport=" + airport)
         finally:
             thread_lock_object.release()
 

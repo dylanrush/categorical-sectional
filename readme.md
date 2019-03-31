@@ -155,7 +155,9 @@ This is the first file loaded. It tells the software what type of lights are bei
   "spi_port": 0,
   "pwm_frequency": 100,
   "airports_file": "data/kawo_to_kosh.json",
-  "night_lights": true
+  "night_lights": true,
+  "night_populated_yellow": false,
+  "night_category_proportion": 0.05
 }
 ```
 
@@ -170,6 +172,24 @@ As the station gets darker, the light fades to a darker yellow by the time the s
 
 In the morning, the light will increase back to a bright yellow as the office sunrise time approaches.
 As the station approaches full daylight, the light will fade from bright yellow to the color appropriate for the flight condition.
+
+#### night_populated_yellow
+
+Set this to true if you would like the day/night transition to show stations that are currently in "full dark" using yellow.
+
+This will transition/fade into yellow from the standard category color.
+
+Setting this to false will result in the category color fading. The amount the category fades is determined by `night_category_proportion`
+
+#### night_category_proportion
+
+This is only used when `night_populated_yellow` is set to `false`.
+
+The default value is `0.05`, or 5%. This means that when the station is in "full dark" that the normal category color will be reduced to 5% of the normal strength.
+
+This creates a pleasant fade as stations on the chart transition from day to night, back to day.
+
+_NOTE:_ This will not work with standard mode GPIO based LEDs.
 
 #### mode
 
@@ -311,6 +331,7 @@ This project uses "standard" airport coloring for flight rules category, along w
 
 | Version | Change                                                                                                                                                                            |
 | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|   1.5   | New options that expand the day/night lighting cycle. Allows for dimmed category colors to be used instread.                                                                      |
 |   1.4   | Changes to map initialization to help with bad airport identifiers. Improve handling of mismatch between four and three letter long identifiers when determining day/night cycle. |
 |   1.3   | Performance improvements.                                                                                                                                                         |
 |   1.2   | Migrated to Python 3.x                                                                                                                                                            |
