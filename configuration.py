@@ -54,6 +54,7 @@ def get_night_lights():
     except:
         return False
 
+
 def get_night_populated_yellow():
     """
     If we are using the option feature that shows day/night cycles,
@@ -69,6 +70,7 @@ def get_night_populated_yellow():
     except:
         return True
 
+
 def get_night_category_proportion():
     """
     If we are using the category color for the night conditions,
@@ -81,11 +83,11 @@ def get_night_category_proportion():
     try:
         if CONFIG is not None and 'night_category_proportion' in CONFIG:
             try:
-                unclamped =  float(CONFIG['night_category_proportion'])
+                unclamped = float(CONFIG['night_category_proportion'])
 
                 if unclamped < 0.0:
                     return 0.0
-                
+
                 if unclamped > 1.0:
                     return 1.0
 
@@ -94,6 +96,7 @@ def get_night_category_proportion():
                 return 0.5
     except:
         return 0.5
+
 
 def get_airport_configuration_section():
     """
@@ -209,11 +212,11 @@ def get_airport_configs():
 
 def __load_gpio_airport_pins__(config_file):
     """
-    Loads the mapping of airport IACO codes to the GPIO
+    Loads the mapping of airport ICAO codes to the GPIO
     pin mapping from the configuration file.
 
     Returns:
-        Map -- A dictionary of GPIO pin tuples keyed by IACO code.
+        Map -- A dictionary of GPIO pin tuples keyed by ICAO code.
     """
 
     out_airport_pins_map = {}
@@ -239,7 +242,7 @@ def __load_airport_ws2801__(config_file):
         config_file {string} -- The file name & location to load.
 
     Returns:
-        dictionary -- A dictionary keyed by airport identitifier
+        dictionary -- A dictionary keyed by airport identifier
                       that holds the pixel index and a reserved value.
     """
 

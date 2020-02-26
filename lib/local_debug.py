@@ -5,8 +5,13 @@ debugging on a Mac or Windows host.
 """
 
 from sys import platform, version_info
+from sys import platform as os_platform
+import platform
 
 REQUIRED_PYTHON_VERSION = 3.5
+IS_LINUX = 'linux' in os_platform
+DETECTED_CPU = platform.machine()
+IS_PI = "arm" in DETECTED_CPU
 
 
 def validate_python_version():
@@ -17,7 +22,8 @@ def validate_python_version():
         Exception -- If the  version of Python is not new enough.
     """
 
-    python_version = float('{}.{}'.format(version_info.major, version_info.minor))
+    python_version = float('{}.{}'.format(
+        version_info.major, version_info.minor))
     error_text = 'Requires Python {}'.format(REQUIRED_PYTHON_VERSION)
 
     if python_version < REQUIRED_PYTHON_VERSION:
@@ -30,7 +36,7 @@ def is_debug():
     returns True if this should be run as a local debug (Mac or Windows).
     """
 
-    return platform in ["win32", "darwin"]
+    return os_platform in ["win32", "darwin"] or (IS_LINUX and not IS_PI)
 
 
 class PWM:
