@@ -9,7 +9,7 @@ if not local_debug.is_debug():
     installs.append('RPi.GPIO')
 
 setup(name='cateorical-sectional',
-      version='1.5',
+      version='1.6',
       python_requires='>=3.5',
       description='VFR weathermap supporting Adafruit WS2801 lights.',
       url='https://github.com/JohnMarzulli/categorical-sectional',
