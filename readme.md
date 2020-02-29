@@ -289,6 +289,31 @@ The third light will show SeaTac aiport.
            0/KRNT    Skipped     2/KSEA    Skipped
 ```
 
+## Testing The LED Wiring
+
+There is a self-test file included to help quickly validate your wiring.
+This works for both WS2801 and LED based maps.
+
+This file exercises the LED lights without having to wait for the entire mapping software to initialize.
+
+You may use it from a bash command-line:
+
+```bash
+cd ~
+cd categorical-sectional
+python3 check_lights_wiring.py
+```
+
+Please note that this will only run on a Raspberry Pi.
+
+Also note that you will need to run this from a command terminal and that the self-check will run in a loop until stopped. From a terminal you may use `ctrl+c` to stop the task.
+
+All of the lights will cycle through all of the active colors. Any lights that do not turn on may not be configured properly or may not be wired correctly.
+
+The lights are expected to start cycling colors within a second of starting the test.
+
+Please do not run the test WHILE the map code is running. Mutliple programs attempting to control the lights will produce unexpected results.
+
 ## Running It At Boot
 
 To run it at boot, perform the following steps:
@@ -331,12 +356,14 @@ This project uses "standard" airport coloring for flight rules category, along w
 
 | Version | Change                                                                                                                                                                            |
 | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-|   1.5   | New options that expand the day/night lighting cycle. Allows for dimmed category colors to be used instread.                                                                      |
-|   1.4   | Changes to map initialization to help with bad airport identifiers. Improve handling of mismatch between four and three letter long identifiers when determining day/night cycle. |
-|   1.3   | Performance improvements.                                                                                                                                                         |
-|   1.2   | Migrated to Python 3.x                                                                                                                                                            |
-|   1.1   | Day / Night cycle.                                                                                                                                                                |
-|   1.0   | First release with adressable lights.                                                                                                                                             |
+| 1.6     | Updated documentation, wiring self-check file that uses the configuration to exercise each weather station for all colors.                                                        |
+
+| 1.5     | New options that expand the day/night lighting cycle. Allows for dimmed category colors to be used instread.                                                                      |
+| 1.4     | Changes to map initialization to help with bad airport identifiers. Improve handling of mismatch between four and three letter long identifiers when determining day/night cycle. |
+| 1.3     | Performance improvements.                                                                                                                                                         |
+| 1.2     | Migrated to Python 3.x                                                                                                                                                            |
+| 1.1     | Day / Night cycle.                                                                                                                                                                |
+| 1.0     | First release with adressable lights.                                                                                                                                             |
 
 ## Credits
 

@@ -24,6 +24,7 @@
 #
 
 
+from safe_logging import safe_log, safe_log_warning
 from datetime import datetime
 import sys
 import json
@@ -40,8 +41,11 @@ import lib.colors as colors_lib
 import weather
 from lib.logger import Logger
 from lib.recurring_task import RecurringTask
-from renderers import led, led_pwm, ws2801
-from safe_logging import safe_log, safe_log_warning
+from renderers import led, led_pwm
+
+if not local_debug.is_debug():
+    from renderers import ws2801
+
 
 airport_conditions = {}
 python_logger = logging.getLogger("weathermap")
@@ -91,6 +95,9 @@ def get_renderer():
         sets the LEDs.
     """
 
+    if local_debug.is_debug():
+        return None
+
     if configuration.get_mode() == configuration.WS2801:
         pixel_count = configuration.CONFIG["pixel_count"]
         spi_port = configuration.CONFIG["spi_port"]
@@ -102,13 +109,14 @@ def get_renderer():
         # "Normal" LEDs
         return led.LedRenderer(airport_render_config)
 
-    return None
-
 
 renderer = get_renderer()
 
 
-def get_color_from_condition(category, metar=None):
+def get_color_from_condition(
+    category,
+    metar=None
+):
     """
     From a condition, returns the color it should be rendered as, and if it should flash.
 
@@ -161,7 +169,11 @@ def get_color_from_condition(category, metar=None):
     return (weather.OFF, False)
 
 
-def set_airport_display(airport, category, metar=None):
+def set_airport_display(
+    airport,
+    category,
+    metar=None
+):
     """
     Sets the given airport to have the given flight rules category.
 
@@ -246,7 +258,11 @@ def update_all_station_categorizations():
     safe_log(LOGGER, '~update_all_station_categorizations()')
 
 
-def get_airport_category(airport, metar, utc_offset):
+def get_airport_category(
+    airport,
+    metar,
+    utc_offset
+):
     """
     Gets the category of a single airport.
 
@@ -283,7 +299,9 @@ def get_airport_category(airport, metar, utc_offset):
     return category
 
 
-def get_airport_condition(airport):
+def get_airport_condition(
+    airport
+):
     """
     Safely get the conditions at an airport
 
@@ -303,10 +321,12 @@ def get_airport_condition(airport):
     return weather.INVALID, False
 
 
-def render_airport_displays(airport_flasher):
+def render_airport_displays(
+    airport_flasher
+):
     """
     Sets the LEDs for all of the airports based on their flight rules.
-    Does this independant of the LED type.
+    Does this independent of the LED type.
 
     Arguments:
         airport_flasher {bool} -- Is this on the "off" cycle of blinking.
@@ -324,7 +344,10 @@ def render_airport_displays(airport_flasher):
             thread_lock_object.release()
 
 
-def render_airport(airport, airport_flasher):
+def render_airport(
+    airport,
+    airport_flasher
+):
     """
     Renders an airport.
 
@@ -360,7 +383,10 @@ def render_airport(airport, airport_flasher):
         airport_render_config[airport], color_to_render)
 
 
-def _get_standard_led_night_color(starting_color, proportions):
+def _get_standard_led_night_color(
+    starting_color,
+    proportions
+):
     """
     Returns the color to render for the chart for a STANDARD
     LED setup (+3 GPIO excitement, *_NOT_* addressable)
@@ -381,9 +407,10 @@ def _get_standard_led_night_color(starting_color, proportions):
     return starting_color
 
 
-def _get_rgb_night_color_to_render(color_by_category, proportions):
-    color_to_render = color_by_category
-
+def _get_rgb_night_color_to_render(
+    color_by_category,
+    proportions
+):
     target_night_color = colors_lib.get_color_mix(
         color_by_category, colors[weather.OFF], configuration.get_night_category_proportion())
 
@@ -401,7 +428,10 @@ def _get_rgb_night_color_to_render(color_by_category, proportions):
     return color_to_render
 
 
-def get_mix_and_color(color_by_category, airport):
+def get_mix_and_color(
+    color_by_category,
+    airport
+):
     """
     Gets the proportion of color mixes (dark to NIGHT, NIGHT to color) and the final color to render.
 
@@ -421,7 +451,8 @@ def get_mix_and_color(color_by_category, airport):
             if configuration.get_night_populated_yellow():
                 color_to_render = colors[weather.DARK_YELLOW]
             else:
-                color_to_render = _get_rgb_night_color_to_render(color_by_category, proportions)
+                color_to_render = _get_rgb_night_color_to_render(
+                    color_by_category, proportions)
         # Do not allow color mixing for standard LEDs
         # Instead if we are going to render NIGHT then
         # have the NIGHT color represent that the station
@@ -448,7 +479,9 @@ def get_mix_and_color(color_by_category, airport):
 # Error - Flashing white
 
 
-def all_airports(color):
+def all_airports(
+    color
+):
     """
     Sets all of the airports to the given color
 
@@ -456,6 +489,9 @@ def all_airports(color):
         color {triple} -- Three integer tuple(triple?) of the RGB values
         of the color to set for ALL airports.
     """
+
+    if renderer is None:
+        return
 
     [renderer.set_led(airport_render_config[airport], colors[color])
         for airport in airport_render_config]

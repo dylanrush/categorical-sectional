@@ -45,8 +45,10 @@ DEFAULT_METAR_INVALIDATE_MINUTES = DEFAULT_METAR_LIFESPAN_MINUTES * 1.5
 DEFAULT_METAR_STATION_INACTIVE = DEFAULT_METAR_LIFESPAN_MINUTES * 3
 
 
-def __load_airport_data__(working_directory=os.path.dirname(os.path.abspath(__file__)),
-                          airport_data_file="./data/airports.csv"):
+def __load_airport_data__(
+    working_directory=os.path.dirname(os.path.abspath(__file__)),
+    airport_data_file="./data/airports.csv"
+):
     """
     Loads all of the airport and weather station data from the included CSV file
     then places it into a dictionary for easy use.
@@ -55,7 +57,7 @@ def __load_airport_data__(working_directory=os.path.dirname(os.path.abspath(__fi
         airport_data_file {str} -- The file that contains the airports (default: {"./data/airports.csv"})
 
     Returns:
-        dictionary -- A map of the airport data keyed by IACO code.
+        dictionary -- A map of the airport data keyed by ICAO code.
     """
     full_file_path = os.path.join(
         working_directory, os.path.normpath(airport_data_file))
@@ -78,7 +80,9 @@ def __load_airport_data__(working_directory=os.path.dirname(os.path.abspath(__fi
 __airport_locations__ = __load_airport_data__()
 
 
-def __get_utc_datetime__(datetime_string):
+def __get_utc_datetime__(
+    datetime_string
+):
     """
     Parses the RFC format datetime into something we can use.
 
@@ -92,27 +96,33 @@ def __get_utc_datetime__(datetime_string):
     return datetime.strptime(datetime_string, "%Y-%m-%dT%H:%M:%S+00:00")
 
 
-def __set_cache__(airport_iaco_code, cache, value):
+def __set_cache__(
+    airport_icao_code,
+    cache, value
+):
     """
     Sets the given cache to have the given value.
     Automatically sets the cache saved time.
 
     Arguments:
-        airport_iaco_code {str} -- The code of the station to cache the results for.
+        airport_icao_code {str} -- The code of the station to cache the results for.
         cache {dictionary} -- The cache keyed by airport code.
         value {object} -- The value to store in the cache.
     """
 
-    cache[airport_iaco_code] = (datetime.utcnow(), value)
+    cache[airport_icao_code] = (datetime.utcnow(), value)
 
 
-def __is_cache_valid__(airport_iaco_code, cache, cache_life_in_minutes=8):
+def __is_cache_valid__(
+    airport_icao_code,
+    cache, cache_life_in_minutes=8
+):
     """
     Returns TRUE and the cached value if the cached value
     can still be used.
 
     Arguments:
-        airport_iaco_code {str} -- The airport code to get from the cache.
+        airport_icao_code {str} -- The airport code to get from the cache.
         cache {dictionary} -- Tuple of last update time and value keyed by airport code.
         cache_life_in_minutes {int} -- How many minutes until the cached value expires
 
@@ -126,20 +136,22 @@ def __is_cache_valid__(airport_iaco_code, cache, cache_life_in_minutes=8):
     now = datetime.utcnow()
 
     try:
-        if airport_iaco_code in cache:
-            time_since_last_fetch = now - cache[airport_iaco_code][0]
+        if airport_icao_code in cache:
+            time_since_last_fetch = now - cache[airport_icao_code][0]
 
             if (time_since_last_fetch is not None and (time_since_last_fetch.total_seconds()) / 60.0) < cache_life_in_minutes:
-                return (True, cache[airport_iaco_code][1])
+                return (True, cache[airport_icao_code][1])
             else:
-                return (False, cache[airport_iaco_code][1])
+                return (False, cache[airport_icao_code][1])
     except:
         pass
 
     return (False, None)
 
 
-def get_faa_csv_identifier(airport_iaco_code):
+def get_faa_csv_identifier(
+    airport_icao_code
+):
     """
     Checks to see if the given identifier is in the FAA CSV file.
     If it is not, then checks to see if it is one of the airports
@@ -148,40 +160,44 @@ def get_faa_csv_identifier(airport_iaco_code):
 
     Returns any identifier that is in the CSV file.
     Returns None if the airport is not in the file.
-    
+
     Arguments:
-        airport_iaco_code {string} -- The full identifier of the airport.
+        airport_icao_code {string} -- The full identifier of the airport.
     """
 
-    if airport_iaco_code is None:
+    if airport_icao_code is None:
         return None
-    
-    normalized_iaco_code = airport_iaco_code.upper()
 
-    if normalized_iaco_code in __airport_locations__:
-        return normalized_iaco_code
+    normalized_icao_code = airport_icao_code.upper()
 
-    if len(normalized_iaco_code) >= 4:
-        normalized_iaco_code = normalized_iaco_code[-3:]
+    if normalized_icao_code in __airport_locations__:
+        return normalized_icao_code
 
-        if normalized_iaco_code in __airport_locations__:
-            return normalized_iaco_code
-    
-    if len(normalized_iaco_code) <= 3:
-        normalized_iaco_code = "K{}".format(normalized_iaco_code)
+    if len(normalized_icao_code) >= 4:
+        normalized_icao_code = normalized_icao_code[-3:]
 
-        if normalized_iaco_code in __airport_locations__:
-            return normalized_iaco_code
+        if normalized_icao_code in __airport_locations__:
+            return normalized_icao_code
+
+    if len(normalized_icao_code) <= 3:
+        normalized_icao_code = "K{}".format(normalized_icao_code)
+
+        if normalized_icao_code in __airport_locations__:
+            return normalized_icao_code
 
     return None
 
 
-def get_civil_twilight(airport_iaco_code, current_utc_time=None, use_cache=True, logger=None):
+def get_civil_twilight(
+    airport_icao_code,
+    current_utc_time=None,
+    use_cache=True, logger=None
+):
     """
     Gets the civil twilight time for the given airport
 
     Arguments:
-        airport_iaco_code {string} -- The IACO code of the airport.
+        airport_icao_code {string} -- The ICAO code of the airport.
 
     Returns:
         An array that describes the following:
@@ -194,7 +210,7 @@ def get_civil_twilight(airport_iaco_code, current_utc_time=None, use_cache=True,
     """
 
     safe_log(logger, 'get_civil_twilight({}, {}, {})'.format(
-        airport_iaco_code, current_utc_time, use_cache))
+        airport_icao_code, current_utc_time, use_cache))
 
     __light_fetch_lock__.acquire()
 
@@ -203,7 +219,7 @@ def get_civil_twilight(airport_iaco_code, current_utc_time=None, use_cache=True,
             current_utc_time = datetime.utcnow()
 
         is_cache_valid, cached_value = __is_cache_valid__(
-            airport_iaco_code, __daylight_cache__, 4 * 60)
+            airport_icao_code, __daylight_cache__, 4 * 60)
 
         # Make sure that the sunrise time we are using is still valid...
         if is_cache_valid:
@@ -212,7 +228,7 @@ def get_civil_twilight(airport_iaco_code, current_utc_time=None, use_cache=True,
             if hours_since_sunrise > 24:
                 is_cache_valid = False
                 safe_log_warning(logger, "Twilight cache for {} had a HARD miss with delta={}".format(
-                    airport_iaco_code, hours_since_sunrise))
+                    airport_icao_code, hours_since_sunrise))
                 current_utc_time += timedelta(hours=1)
 
         if is_cache_valid and use_cache:
@@ -220,11 +236,12 @@ def get_civil_twilight(airport_iaco_code, current_utc_time=None, use_cache=True,
             safe_log(logger, '~get_civil_twilight() => {}'.format(cached_value))
 
             return cached_value
-        
-        faa_code = get_faa_csv_identifier(airport_iaco_code)
+
+        faa_code = get_faa_csv_identifier(airport_icao_code)
 
         if faa_code is None:
-            safe_log(logger, 'Fall through due to the identifier not being in the FAA CSV file.')
+            safe_log(
+                logger, 'Fall through due to the identifier not being in the FAA CSV file.')
             safe_log(logger, '~get_civil_twilight() => None')
             return None
 
@@ -256,15 +273,15 @@ def get_civil_twilight(airport_iaco_code, current_utc_time=None, use_cache=True,
             sunrise_length = sunrise - sunrise_start
             sunset_length = sunset_end - sunset
             avg_transition_time = timedelta(seconds=(sunrise_length.seconds +
-                                                    sunset_length.seconds) / 2)
+                                                     sunset_length.seconds) / 2)
             sunrise_and_sunset = [sunrise_start,
-                                sunrise,
-                                sunrise + avg_transition_time,
-                                sunset - avg_transition_time,
-                                sunset,
-                                sunset_end]
-            __set_cache__(airport_iaco_code, __daylight_cache__,
-                        sunrise_and_sunset)
+                                  sunrise,
+                                  sunrise + avg_transition_time,
+                                  sunset - avg_transition_time,
+                                  sunset,
+                                  sunset_end]
+            __set_cache__(airport_icao_code, __daylight_cache__,
+                          sunrise_and_sunset)
 
             safe_log(logger, 'Returning new value.')
             safe_log(logger, '~get_civil_twilight() => ({}, {}, {}, {}, {}, {})'.format(
@@ -279,12 +296,17 @@ def get_civil_twilight(airport_iaco_code, current_utc_time=None, use_cache=True,
         __light_fetch_lock__.release()
 
 
-def is_daylight(airport_iaco_code, light_times, current_utc_time=None, use_cache=True):
+def is_daylight(
+    airport_icao_code,
+    light_times,
+    current_utc_time=None,
+    use_cache=True
+):
     """
     Returns TRUE if the airport is currently in daylight
 
     Arguments:
-        airport_iaco_code {string} -- The airport code to test.
+        airport_icao_code {string} -- The airport code to test.
 
     Returns:
         boolean -- True if the airport is currently in daylight.
@@ -300,7 +322,7 @@ def is_daylight(airport_iaco_code, light_times, current_utc_time=None, use_cache
 
         if hours_since_sunrise < 0:
             light_times = get_civil_twilight(
-                airport_iaco_code, current_utc_time - timedelta(hours=24), False)
+                airport_icao_code, current_utc_time - timedelta(hours=24), False)
 
         if hours_since_sunrise > 24:
             return True
@@ -315,12 +337,17 @@ def is_daylight(airport_iaco_code, light_times, current_utc_time=None, use_cache
     return True
 
 
-def is_night(airport_iaco_code, light_times, current_utc_time=None, use_cache=True):
+def is_night(
+    airport_icao_code,
+    light_times,
+    current_utc_time=None,
+    use_cache=True
+):
     """
     Returns TRUE if the airport is currently in night
 
     Arguments:
-        airport_iaco_code {string} -- The airport code to test.
+        airport_icao_code {string} -- The airport code to test.
 
     Returns:
         boolean -- True if the airport is currently in night.
@@ -336,7 +363,7 @@ def is_night(airport_iaco_code, light_times, current_utc_time=None, use_cache=Tr
 
         if hours_since_sunrise < 0:
             light_times = get_civil_twilight(
-                airport_iaco_code, current_utc_time - timedelta(hours=24), False)
+                airport_icao_code, current_utc_time - timedelta(hours=24), False)
 
         if hours_since_sunrise > 24:
             return False
@@ -375,12 +402,16 @@ def get_proportion_between_times(start, current, end):
     return time_in / total_delta
 
 
-def get_twilight_transition(airport_iaco_code, current_utc_time=None, use_cache=True):
+def get_twilight_transition(
+    airport_icao_code,
+    current_utc_time=None,
+    use_cache=True
+):
     """
     Returns the mix of dark & color fade for twilight transitions.
 
     Arguments:
-        airport_iaco_code {string} -- The IACO code of the weather station.
+        airport_icao_code {string} -- The ICAO code of the weather station.
 
     Keyword Arguments:
         current_utc_time {datetime} -- The time in UTC to calculate the mix for. (default: {None})
@@ -394,15 +425,15 @@ def get_twilight_transition(airport_iaco_code, current_utc_time=None, use_cache=
         current_utc_time = datetime.utcnow()
 
     light_times = get_civil_twilight(
-        airport_iaco_code, current_utc_time, use_cache)
+        airport_icao_code, current_utc_time, use_cache)
 
     if light_times is None or len(light_times) < 5:
         return 0.0, 1.0
 
-    if is_daylight(airport_iaco_code, light_times, current_utc_time, use_cache):
+    if is_daylight(airport_icao_code, light_times, current_utc_time, use_cache):
         return 0.0, 1.0
 
-    if is_night(airport_iaco_code, light_times, current_utc_time, use_cache):
+    if is_night(airport_icao_code, light_times, current_utc_time, use_cache):
         return 0.0, 0.0
 
     proportion_off_to_night = 0.0
@@ -430,10 +461,12 @@ def get_twilight_transition(airport_iaco_code, current_utc_time=None, use_cache=
     return proportion_off_to_night, proportion_night_to_color
 
 
-def extract_metar_from_html_line(raw_metar_line):
+def extract_metar_from_html_line(
+    raw_metar_line
+):
     """
     Takes a raw line of HTML from the METAR report and extracts the METAR from it.
-    NOTE: A "$" at the end of the line indicates a "maintainence check" and is part of the report.
+    NOTE: A "$" at the end of the line indicates a "maintenance check" and is part of the report.
 
     Arguments:
         metar {string} -- The raw HTML line that may include BReaks and other HTML elements.
@@ -449,7 +482,9 @@ def extract_metar_from_html_line(raw_metar_line):
     return metar
 
 
-def get_metar_from_report_line(metar_report_line_from_webpage):
+def get_metar_from_report_line(
+    metar_report_line_from_webpage
+):
     """
     Extracts the METAR from the line in the webpage and sets
     the data into the cache.
@@ -480,12 +515,15 @@ def get_metar_from_report_line(metar_report_line_from_webpage):
     return (identifier, metar)
 
 
-def get_metars(airport_iaco_codes, logger=None):
+def get_metars(
+    airport_icao_codes,
+    logger=None
+):
     """
     Returns the (RAW) METAR for the given station
 
     Arguments:
-        airport_iaco_codes {string} -- The list of IACO code for the weather station.
+        airport_icao_code {string} -- The list of ICAO code for the weather station.
 
     Returns:
         dictionary - A dictionary (keyed by airport code) of the RAW metars.
@@ -494,10 +532,10 @@ def get_metars(airport_iaco_codes, logger=None):
 
     metars = {}
 
-    safe_log(logger, 'get_metars([{}])'.format(','.join(airport_iaco_codes)))
+    safe_log(logger, 'get_metars([{}])'.format(','.join(airport_icao_codes)))
 
     try:
-        metars = get_metar_reports_from_web(airport_iaco_codes)
+        metars = get_metar_reports_from_web(airport_icao_codes)
 
     except Exception as e:
         safe_log_warning(logger, 'get_metars EX:{}'.format(e))
@@ -506,7 +544,7 @@ def get_metars(airport_iaco_codes, logger=None):
     safe_log(logger, 'Attempting to reconcile METARs not returned with cache.')
 
     stations_to_use_cache_for = filter(
-        lambda x: x not in metars or metars[x] is None, airport_iaco_codes)
+        lambda x: x not in metars or metars[x] is None, airport_icao_codes)
 
     # For the airports and identifiers that we were not able to get
     # a result for, see if we can fill in the results.
@@ -528,20 +566,22 @@ def get_metars(airport_iaco_codes, logger=None):
     return metars
 
 
-def get_metar_reports_from_web(airport_iaco_codes):
+def get_metar_reports_from_web(
+    airport_icao_codes
+):
     """
     Calls to the web an attempts to gets the METARs for the requested station list.
 
     Arguments:
-        airport_iaco_codes {string[]} -- Array of stations to get METARs for.
+        airport_icao_code {string[]} -- Array of stations to get METARs for.
 
     Returns:
         dictionary -- Returns a map of METARs keyed by the station code.
     """
 
     metars = {}
-    metar_list = "%20".join(airport_iaco_codes)
-    request_url = 'https://www.aviationweather.gov/metar/data?ids={}&format=raw&hours=0&taf=off&layout=off&date=0'.format(
+    metar_list = "%20".join(airport_icao_codes)
+    request_url = 'http://www.aviationweather.gov/metar/data?ids={}&format=raw&hours=0&taf=off&layout=off&date=0'.format(
         metar_list)
     stream = urllib.request.urlopen(request_url, timeout=2)
     data_found = False
@@ -567,65 +607,69 @@ def get_metar_reports_from_web(airport_iaco_codes):
     return metars
 
 
-def get_metar(airport_iaco_code, logger=None, use_cache=True):
+def get_metar(
+    airport_icao_code,
+    logger=None,
+    use_cache=True
+):
     """
     Returns the (RAW) METAR for the given station
 
     Arguments:
-        airport_iaco_code {string} -- The IACO code for the weather station.
+        airport_icao_code {string} -- The ICAO code for the weather station.
 
     Keyword Arguments:
         use_cache {bool} -- Should we use the cache? Set to false to bypass the cache. (default: {True})
     """
 
-    safe_log(logger, 'get_metar({})'.format(airport_iaco_code))
+    safe_log(logger, 'get_metar({})'.format(airport_icao_code))
 
-    if airport_iaco_code is None or len(airport_iaco_code) < 1:
+    if airport_icao_code is None or len(airport_icao_code) < 1:
         safe_log(logger, 'Invalid or empty airport code')
 
     is_cache_valid, cached_metar = __is_cache_valid__(
-        airport_iaco_code, __metar_report_cache__)
+        airport_icao_code, __metar_report_cache__)
 
     safe_log(logger, 'Cache for {} is {}, {}'.format(
-        airport_iaco_code, is_cache_valid, cached_metar))
+        airport_icao_code, is_cache_valid, cached_metar))
 
     # Make sure that we used the most recent reports we can.
-    # Metars are normaly updated hourly.
+    # Metars are normally updated hourly.
     if is_cache_valid \
             and cached_metar != INVALID \
             and use_cache \
             and (get_metar_age(cached_metar).total_seconds() / 60.0) < DEFAULT_METAR_LIFESPAN_MINUTES:
         safe_log(logger, 'Immediately returning cached METAR for {}'.format(
-            airport_iaco_code))
+            airport_icao_code))
 
         safe_log(logger, '~get_metar() => {}'.format(cached_metar))
         return cached_metar
 
     try:
         safe_log(logger, 'Getting single metar for {}'.format(
-            airport_iaco_code))
-        metars = get_metars([airport_iaco_code], logger=logger)
+            airport_icao_code))
+        metars = get_metars([airport_icao_code], logger=logger)
 
         if metars is None:
             safe_log(logger, 'Get a None while attempting to get METAR for {}'.format(
-                airport_iaco_code))
+                airport_icao_code))
             safe_log(logger, '~get_metar() => None')
 
             return None
 
-        if airport_iaco_code not in metars:
+        if airport_icao_code not in metars:
             safe_log(logger, 'Got a result, but {} was not in results package'.format(
-                airport_iaco_code))
+                airport_icao_code))
             safe_log(logger, '~get_metar() => None')
             return None
 
         safe_log(logger, 'Returning METAR {}'.format(
-            metars[airport_iaco_code]))
+            metars[airport_icao_code]))
 
         safe_log(logger, '~get_metar() => {}'.format(
-            metars[airport_iaco_code]))
+            metars[airport_icao_code]))
 
-        return metars[airport_iaco_code]
+        return metars[airport_icao_code]
 
     except Exception as e:
         safe_log(logger, 'get_metar got EX:{}'.format(e))
@@ -634,7 +678,9 @@ def get_metar(airport_iaco_code, logger=None, use_cache=True):
         return None
 
 
-def get_metar_age(metar):
+def get_metar_age(
+    metar
+):
     """
     Returns the age of the METAR
 
@@ -672,7 +718,9 @@ def get_metar_age(metar):
         return None
 
 
-def get_visibilty(metar):
+def get_visibility(
+    metar
+):
     """
     Returns the flight rules classification based on visibility from a RAW metar.
 
@@ -712,7 +760,10 @@ def get_visibilty(metar):
     return VFR
 
 
-def get_ceiling(metar, logger=None):
+def get_ceiling(
+    metar,
+    logger=None
+):
     """
     Returns the flight rules classification based on ceiling from a RAW metar.
 
@@ -740,7 +791,9 @@ def get_ceiling(metar, logger=None):
     return minimum_ceiling
 
 
-def get_ceiling_category(ceiling):
+def get_ceiling_category(
+    ceiling
+):
     """
     Returns the flight rules classification based on the cloud ceiling.
 
@@ -760,12 +813,16 @@ def get_ceiling_category(ceiling):
     return VFR
 
 
-def get_category(airport_iaco_code, metar, logger=None):
+def get_category(
+    airport_icao_code,
+    metar,
+    logger=None
+):
     """
     Returns the flight rules classification based on the entire RAW metar.
 
     Arguments:
-        airport_iaco_code -- The airport or weather station that we want to get a category for.
+        airport_icao_code -- The airport or weather station that we want to get a category for.
         metar {string} -- The RAW weather report in METAR format.
         return_night {boolean} -- Should we return a category for NIGHT?
 
@@ -780,12 +837,12 @@ def get_category(airport_iaco_code, metar, logger=None):
     if metar_age is not None:
         metar_age_minutes = metar_age.total_seconds() / 60.0
         safe_log(logger, "{} - Issued {:.1f} minutes ago".format(
-            airport_iaco_code, metar_age_minutes))
+            airport_icao_code, metar_age_minutes))
     else:
         safe_log_warning(
-            logger, "{} - Unknown METAR age".format(airport_iaco_code))
+            logger, "{} - Unknown METAR age".format(airport_icao_code))
 
-    vis = get_visibilty(metar)
+    vis = get_visibility(metar)
     ceiling = get_ceiling_category(get_ceiling(metar, logger=logger))
     if ceiling == INVALID or vis == INVALID:
         return INVALID
