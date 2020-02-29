@@ -78,11 +78,12 @@ if __name__ == '__main__':
 
     while True:
         for airport in airport_render_config:
+            led_index = airport_render_config[airport]
             renderer.set_led(
-                airport_render_config[airport],
+                led_index,
                 colors[weather.GREEN])
 
-            safe_log(LOGGER, "{} - Now lit".format(airport))
+            safe_log(LOGGER, "LED {} - {} - Now lit".format(led_index, airport))
 
             time.sleep(5)
             renderer.set_led(
