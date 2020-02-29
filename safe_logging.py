@@ -7,9 +7,12 @@ import inspect
 from datetime import datetime, timedelta
 
 TAB_TEXT = ' ' * 4
+MODULE_NAME = '<module>'
 
 
-def __get_callstack_indent_count(stack_adjustment = 3):
+def __get_callstack_indent_count(
+    stack_adjustment=3
+):
     """
     Returns the number of indents that should be applied to the logging statement.
 
@@ -26,7 +29,7 @@ def __get_callstack_indent_count(stack_adjustment = 3):
         indents = 0
 
         for index in range(len(cs_info) - stack_adjustment, 0, -1):
-            if '<module>' in cs_info[index].name:
+            if MODULE_NAME in cs_info[index].name:
                 break
             else:
                 indents += 1
@@ -39,7 +42,10 @@ def __get_callstack_indent_count(stack_adjustment = 3):
         return 0
 
 
-def __get_indents(count=0, stack_adjustment=3):
+def __get_indents(
+    count=0,
+    stack_adjustment=3
+):
     """
     Returns whitespace for the number of given indents.
 
@@ -60,15 +66,22 @@ def __get_indents(count=0, stack_adjustment=3):
     try:
         cs_info = traceback.extract_stack()
         index = len(cs_info) - stack_adjustment
-        function_name = cs_info[index].name
+        function_name = '{}()'.format(cs_info[index].name)
+
+        if MODULE_NAME in function_name:
+            function_name = cs_info[index].filename
+
         line_num = cs_info[index].lineno
     except:
         pass
 
-    return '{}{}:():{}: '.format(TAB_TEXT * count, function_name, line_num)
+    return '{}{}:{}: '.format(TAB_TEXT * count, function_name, line_num)
 
 
-def safe_log(logger, message):
+def safe_log(
+    logger,
+    message
+):
     """
     Logs an INFO level message safely. Also prints it to the screen.
 
@@ -84,10 +97,13 @@ def safe_log(logger, message):
         else:
             print('{} INFO: {}{}'.format(datetime.now(), indents, message))
     except:
-        pass
+        print(indents + message)
 
 
-def safe_log_warning(logger, message):
+def safe_log_warning(
+    logger,
+    message
+):
     """
     Logs a WARN level message safely. Also prints it to the screen.
 
@@ -104,4 +120,4 @@ def safe_log_warning(logger, message):
         else:
             print('{} WARN: {}{}'.format(datetime.now(), indents, message))
     except:
-        pass
+        print(indents + message)

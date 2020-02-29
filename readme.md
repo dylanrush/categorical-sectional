@@ -308,9 +308,10 @@ Please note that this will only run on a Raspberry Pi.
 
 Also note that you will need to run this from a command terminal and that the self-check will run in a loop until stopped. From a terminal you may use `ctrl+c` to stop the task.
 
-All of the lights will cycle through all of the active colors. Any lights that do not turn on may not be configured properly or may not be wired correctly.
+This self-test runs in two phases:
 
-The lights are expected to start cycling colors within a second of starting the test.
+1. All of the lights will cycle through all of the active colors. Any lights that do not turn on may not be configured properly or may not be wired correctly.
+2. All lights will turn off. One by one, each light will be turned on by iteself. There will be console text saying which identifier has been turned on.
 
 Please do not run the test WHILE the map code is running. Mutliple programs attempting to control the lights will produce unexpected results.
 
@@ -357,7 +358,6 @@ This project uses "standard" airport coloring for flight rules category, along w
 | Version | Change                                                                                                                                                                            |
 | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1.6     | Updated documentation, wiring self-check file that uses the configuration to exercise each weather station for all colors.                                                        |
-
 | 1.5     | New options that expand the day/night lighting cycle. Allows for dimmed category colors to be used instread.                                                                      |
 | 1.4     | Changes to map initialization to help with bad airport identifiers. Improve handling of mismatch between four and three letter long identifiers when determining day/night cycle. |
 | 1.3     | Performance improvements.                                                                                                                                                         |
