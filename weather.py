@@ -191,7 +191,8 @@ def get_faa_csv_identifier(
 def get_civil_twilight(
     airport_icao_code,
     current_utc_time=None,
-    use_cache=True, logger=None
+    use_cache=True,
+    logger=None
 ):
     """
     Gets the civil twilight time for the given airport

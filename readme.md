@@ -315,6 +315,33 @@ This self-test runs in two phases:
 
 Please do not run the test WHILE the map code is running. Mutliple programs attempting to control the lights will produce unexpected results.
 
+## Testing The Station Configuration
+
+There is a self-test file included to help quickly validate your configuration files.
+
+You may use it from a bash command-line:
+
+```bash
+cd ~
+cd categorical-sectional
+python3 check_config_files_wiring.py
+```
+
+This tool may be also run from a Windows, Linux, or Mac based machine.
+
+It checks each weather station in your configuration.
+
+Each station is:
+
+- Checked against the FAA CSV file to validate the ICAO code.
+- Checked to validate the civil twilight information can be fetched.
+- Checked that a METAR can be retrieved.
+
+Any failures will list the identifier code and the reason.
+
+Not being able to fetch a weather report is not considered a fatal error if other data can be obtained.
+Any airport that had issues fetching weather will be listed, and may simply be temporarily down.
+
 ## Running It At Boot
 
 To run it at boot, perform the following steps:
