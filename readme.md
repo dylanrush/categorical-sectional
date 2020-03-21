@@ -311,7 +311,7 @@ Also note that you will need to run this from a command terminal and that the se
 This self-test runs in two phases:
 
 1. All of the lights will cycle through all of the active colors. Any lights that do not turn on may not be configured properly or may not be wired correctly.
-2. All lights will turn off. One by one, each light will be turned on by iteself. There will be console text saying which identifier has been turned on.
+2. All lights will turn off. The tool will tell you which LED is turned on (by number, starting a `0`), along with the station identifier currently set in the configuration. The tool will then prompt you to press `{enter}` to move to the next light.
 
 Please do not run the test WHILE the map code is running. Mutliple programs attempting to control the lights will produce unexpected results.
 
