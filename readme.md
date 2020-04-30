@@ -157,7 +157,8 @@ This is the first file loaded. It tells the software what type of lights are bei
   "airports_file": "data/kawo_to_kosh.json",
   "night_lights": true,
   "night_populated_yellow": false,
-  "night_category_proportion": 0.05
+  "night_category_proportion": 0.05,
+  "brightness_proportion": 1.0
 }
 ```
 
@@ -190,6 +191,20 @@ The default value is `0.05`, or 5%. This means that when the station is in "full
 This creates a pleasant fade as stations on the chart transition from day to night, back to day.
 
 _NOTE:_ This will not work with standard mode GPIO based LEDs.
+
+#### brightness_proportion
+
+This an adjustment to the LED brightness. It is applied AFTER all other light calculations are performed.
+
+The intent is to provide a way to dim the LEDs during daylight hours.
+
+This is a proportion
+- `0.0` will result in all lights effectively being turned off.
+- `0.5` will result in the lights being half as bright.
+- `1.0` will result in no change.
+
+You may need to adjust `night_category_proportion` if you use this value. A low enough value of `brightness_proportion` may result in LEDs for stations in the dark to result in not being visible.
+Increasing `night_category_proportion` will result in the LEDs being turned on again.
 
 #### mode
 
