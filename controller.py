@@ -362,7 +362,8 @@ def render_airport(
         color_by_category = colors[weather.OFF]
 
     proportions, color_to_render = get_mix_and_color(
-        color_by_category, airport)
+        color_by_category,
+        airport)
 
     log = airport not in airport_render_last_logged_by_station
 
@@ -452,7 +453,8 @@ def get_mix_and_color(
                 color_to_render = colors[weather.DARK_YELLOW]
             else:
                 color_to_render = _get_rgb_night_color_to_render(
-                    color_by_category, proportions)
+                    color_by_category,
+                    proportions)
         # Do not allow color mixing for standard LEDs
         # Instead if we are going to render NIGHT then
         # have the NIGHT color represent that the station
@@ -463,14 +465,32 @@ def get_mix_and_color(
             elif proportions[0] <= 0.0 and proportions[1] <= 0.0:
                 color_to_render = colors[weather.DARK_YELLOW]
         elif not configuration.get_night_populated_yellow():
-            return proportions, _get_rgb_night_color_to_render(color_by_category, proportions)
+            color_to_render = _get_rgb_night_color_to_render(
+                color_by_category, proportions)
         elif proportions[0] > 0.0:
             color_to_render = colors_lib.get_color_mix(
-                colors[weather.DARK_YELLOW], color_by_rules[weather.NIGHT], proportions[0])
+                colors[weather.DARK_YELLOW],
+                color_by_rules[weather.NIGHT],
+                proportions[0])
         elif proportions[1] > 0.0:
             color_to_render = colors_lib.get_color_mix(
-                color_by_rules[weather.NIGHT], color_by_category, proportions[1])
-    return proportions, color_to_render
+                color_by_rules[weather.NIGHT],
+                color_by_category,
+                proportions[1])
+
+    final_color = []
+    brightness_adjustment = configuration.get_brightness_proportion()
+    for color in color_to_render:
+        reduced_color = float(color) * brightness_adjustment
+
+        # Some colors are floats, some are integers.
+        # Make sure we keep everything the same.
+        if isinstance(color, int):
+            reduced_color = int(reduced_color)
+
+        final_color.append(reduced_color)
+
+    return proportions, final_color
 
 # VFR - Green
 # MVFR - Blue
