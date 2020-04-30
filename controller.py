@@ -374,14 +374,25 @@ def render_airport(
 
     if log:
         message_format = 'STATION={}, CAT={:5}, BLINK={}, COLOR={:3}:{:3}:{:3}, P_O2N={:.1f}, P_N2C={:.1f}, RENDER={:3}:{:3}:{:3}'
-        safe_log(LOGGER, message_format.format(airport, condition, blink,
-                                               color_by_category[0], color_by_category[1], color_by_category[2],
-                                               proportions[0], proportions[1],
-                                               color_to_render[0], color_to_render[1], color_to_render[2]))
+        message = message_format.format(
+            airport,
+            condition,
+            blink,
+            color_by_category[0],
+            color_by_category[1],
+            color_by_category[2],
+            proportions[0],
+            proportions[1],
+            color_to_render[0],
+            color_to_render[1],
+            color_to_render[2])
+        safe_log(LOGGER, message)
         airport_render_last_logged_by_station[airport] = datetime.utcnow()
 
-    renderer.set_led(
-        airport_render_config[airport], color_to_render)
+    if renderer is not None:
+        renderer.set_led(
+            airport_render_config[airport],
+            color_to_render)
 
 
 def _get_standard_led_night_color(
