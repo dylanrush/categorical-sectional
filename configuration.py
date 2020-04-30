@@ -116,13 +116,28 @@ def get_airport_configuration_section():
     return mode
 
 
+def get_brightness_proportion() -> float:
+    """
+    Get how much we want to adjust the brightness of the LEDs
+
+    Returns:
+        float -- The amount that the final color will be multiplied by
+    """
+    try:
+        if CONFIG is not None and 'brightness_proportion' in CONFIG:
+            return CONFIG['brightness_proportion']
+    except:
+        return 1.0
+
+
 def get_airport_file():
     """
     Returns the file that contains the airport config
     """
 
     full_config = os.path.join(
-        __working_dir__, os.path.normpath(CONFIG['airports_file']))
+        __working_dir__,
+        os.path.normpath(CONFIG['airports_file']))
 
     return full_config
 
@@ -198,7 +213,7 @@ def get_airport_configs():
     Returns the configuration for the lighting type
 
     Returns:
-        dictionary -- Airport identitifier keying lighting configuration.
+        dictionary -- Airport identifier keying lighting configuration.
     """
 
     mode = CONFIG['mode']
