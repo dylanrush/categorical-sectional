@@ -1,7 +1,11 @@
 import copy
 
 
-def clamp(minimum, value, maximum):
+def clamp(
+    minimum,
+    value,
+    maximum
+):
     """
     Makes sure the given value (middle param) is always between the maximum and minimum.
 
@@ -23,7 +27,11 @@ def clamp(minimum, value, maximum):
     return value
 
 
-def interpolate(left_value, right_value, proportion):
+def interpolate(
+    left_value,
+    right_value,
+    proportion
+):
     """
     Finds the spot between the two values.
 
@@ -82,13 +90,18 @@ def interpolate(left_value, right_value, proportion):
         left_value = right_value
         right_value = swap
 
-    return clamp(0,
-                 int(float(left_value) +
-                     (float(right_value - float(left_value)) * float(proportion))),
-                 255)
+    return clamp(
+        0,
+        int(float(left_value) + (float(right_value -
+                                       float(left_value)) * float(proportion))),
+        255)
 
 
-def get_color_mix(left_color, right_color, proportion):
+def get_color_mix(
+    left_color: list,
+    right_color: list,
+    proportion
+) -> list:
     """
     Returns a color that is a mix between the two given colors.
     A given proportion of 0 would return the left color.
@@ -129,8 +142,10 @@ def get_color_mix(left_color, right_color, proportion):
         return left_color
 
     indices = range(0, array_length)
-    new_color = [int(interpolate(left_color[index], right_color[index], proportion))
-                 for index in indices]
+    new_color = [int(interpolate(
+        left_color[index],
+        right_color[index],
+        proportion)) for index in indices]
 
     return new_color
 

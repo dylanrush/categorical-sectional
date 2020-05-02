@@ -222,16 +222,18 @@ def get_airport_configs():
     elif mode == WS2801:
         return __load_airport_ws2801__(get_airport_file())
     else:
-        raise 'Unable to determine light types'
+        raise Exception('Unable to determine light types')
 
 
-def __load_gpio_airport_pins__(config_file):
+def __load_gpio_airport_pins__(
+    config_file: str
+) -> dict:
     """
     Loads the mapping of airport ICAO codes to the GPIO
     pin mapping from the configuration file.
 
     Returns:
-        Map -- A dictionary of GPIO pin tuples keyed by ICAO code.
+        dict -- A dictionary of GPIO pin tuples keyed by ICAO code.
     """
 
     out_airport_pins_map = {}
@@ -242,14 +244,17 @@ def __load_gpio_airport_pins__(config_file):
 
         for airport_data in airports:
             airport_code = airport_data.keys()[0]
-            out_airport_pins_map[airport_code.upper()] = (airport_data[airport_code][0],
-                                                          airport_data[airport_code][1],
-                                                          airport_data[airport_code][2])
+            out_airport_pins_map[airport_code.upper()] = (
+                airport_data[airport_code][0],
+                airport_data[airport_code][1],
+                airport_data[airport_code][2])
 
         return out_airport_pins_map
 
 
-def __load_airport_ws2801__(config_file):
+def __load_airport_ws2801__(
+    config_file: str
+) -> dict:
     """
     Loads the configuration for WS2801/neopixel based setups.
 
@@ -257,8 +262,7 @@ def __load_airport_ws2801__(config_file):
         config_file {string} -- The file name & location to load.
 
     Returns:
-        dictionary -- A dictionary keyed by airport identifier
-                      that holds the pixel index and a reserved value.
+        dict -- A dictionary keyed by airport identifier that holds the pixel index and a reserved value.
     """
 
     out_airport_map = {}
