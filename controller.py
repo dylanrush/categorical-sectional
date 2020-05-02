@@ -52,7 +52,9 @@ python_logger = logging.getLogger("weathermap")
 python_logger.setLevel(logging.DEBUG)
 LOGGER = Logger(python_logger)
 HANDLER = logging.handlers.RotatingFileHandler(
-    "weathermap.log", maxBytes=10485760, backupCount=10)
+    "weathermap.log",
+    maxBytes=10485760,
+    backupCount=10)
 HANDLER.setFormatter(logging.Formatter(
     '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 python_logger.addHandler(HANDLER)
@@ -185,8 +187,11 @@ def set_airport_display(
     Returns:
         bool -- True if the flight category changed (or was set for the first time).
     """
-    safe_log(LOGGER, 'set_airport_display({}, {}, {})'.format(
-        airport, category, metar))
+    safe_log(
+        LOGGER, 'set_airport_display({}, {}, {})'.format(
+            airport,
+            category,
+            metar))
 
     changed = False
     try:
@@ -252,8 +257,11 @@ def update_all_station_categorizations():
 
     utc_offset = datetime.utcnow() - datetime.now()
 
-    safe_log(LOGGER, "update_all_station_categorizations(LOCAL={}, UTC={})".format(
-        datetime.now(), datetime.utcnow()))
+    safe_log(
+        LOGGER,
+        "update_all_station_categorizations(LOCAL={}, UTC={})".format(
+            datetime.now(),
+            datetime.utcnow()))
 
     [update_station_categorization(airport, utc_offset)
         for airport in airport_render_config]
@@ -279,17 +287,27 @@ def get_airport_category(
     category = weather.INVALID
 
     try:
-        safe_log(LOGGER, 'get_airport_category({}, {}, {})'.format(
-            airport, metar, utc_offset))
+        safe_log(
+            LOGGER,
+            'get_airport_category({}, {}, {})'.format(
+                airport,
+                metar,
+                utc_offset))
 
         try:
             category = weather.get_category(airport, metar, logger=LOGGER)
             twilight = weather.get_civil_twilight(airport, logger=LOGGER)
             safe_log(
                 LOGGER,
-                "{} - Rise(UTC):{}, Set(UTC):{}".format(airport, twilight[1], twilight[4]))
-            safe_log(LOGGER, "{} - Rise(HERE):{}, Set(HERE):{}".format(
-                airport, twilight[1] - utc_offset, twilight[4] - utc_offset))
+                "{} - Rise(UTC):{}, Set(UTC):{}".format(
+                    airport,
+                    twilight[1],
+                    twilight[4]))
+            safe_log(
+                LOGGER, "{} - Rise(HERE):{}, Set(HERE):{}".format(
+                    airport,
+                    twilight[1] - utc_offset,
+                    twilight[4] - utc_offset))
         except Exception as e:
             safe_log_warning(
                 LOGGER,
@@ -375,8 +393,8 @@ def render_airport(
     log = airport not in airport_render_last_logged_by_station
 
     if airport in airport_render_last_logged_by_station:
-        time_since_last = datetime.utcnow(
-        ) - airport_render_last_logged_by_station[airport]
+        time_since_last = datetime.utcnow() \
+            - airport_render_last_logged_by_station[airport]
         log = time_since_last.total_seconds() > 60
 
     if log:
@@ -431,7 +449,9 @@ def _get_rgb_night_color_to_render(
     proportions
 ):
     target_night_color = colors_lib.get_color_mix(
-        color_by_category, colors[weather.OFF], configuration.get_night_category_proportion())
+        color_by_category,
+        colors[weather.OFF],
+        configuration.get_night_category_proportion())
 
     # For the scenario where we simply dim the LED to account for sunrise/sunset
     # then only use the period between sunset/sunrise start and civil twilight
@@ -605,7 +625,11 @@ if __name__ == '__main__':
     all_airports(weather.OFF)
 
     update_categories_task = RecurringTask(
-        'UpdateCategorizations', 60, update_all_station_categorizations, LOGGER, True)
+        'UpdateCategorizations',
+        60,
+        update_all_station_categorizations,
+        LOGGER,
+        True)
 
     wait_for_all_airports()
 
