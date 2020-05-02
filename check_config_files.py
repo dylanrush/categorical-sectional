@@ -4,8 +4,8 @@
 import logging
 import time
 
-import configuration
-import weather
+from configuration import configuration
+from data_sources import weather
 from lib.logger import Logger
 from safe_logging import safe_log, safe_log_warning
 

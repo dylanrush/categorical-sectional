@@ -24,24 +24,24 @@
 #
 
 
-from safe_logging import safe_log, safe_log_warning
-from datetime import datetime
-import sys
 import json
 import logging
 import logging.handlers
 import re
+import sys
+import threading
 import time
 import urllib
-import threading
+from datetime import datetime
 
-import configuration
-import lib.local_debug as local_debug
 import lib.colors as colors_lib
-import weather
+import lib.local_debug as local_debug
+from configuration import configuration
+from data_sources import weather
 from lib.logger import Logger
 from lib.recurring_task import RecurringTask
 from renderers import led, led_pwm
+from safe_logging import safe_log, safe_log_warning
 
 if not local_debug.is_debug():
     from renderers import ws2801

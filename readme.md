@@ -138,13 +138,27 @@ Green/Teal | 19                                          | MOSI
 
 ## Understanding The Configuration Files
 
-All of the configuration files will be in the "data" sub directory.
+All of the configuration files with the **default** values will be in the "data" sub directory.
 
-Unless you are building the same exact map that I did (Puget Sound to Oshkosh), then you will want to modify at least one of these.
+Unless you are building the same exact map that I did (Puget Sound to Oshkosh), then you will want to modify at least one of these values.
 
-### data/config.json
+To help separate changes you make to personalize the map, you may create a user directory to holds values that override the defaults.
+
+You will need to create a directory that branches from your home folder. This home folder has the special shortcut in Unix-like operating systems of `~`
+
+To create this directory use the following command from a command line.
+
+```bash
+mkdir ~/weather_map
+```
+
+If you are using the default user of `pi`, then the full name of this directory is `/user/home/pi/weather_map/`.
+
+### ~/weather_map/config.json
 
 This is the first file loaded. It tells the software what type of lights are being used, and which airport file to open.
+
+You do not need to include ALL of these values. Any values provided in this file OVERRIDE the default values. This shows what the defaults are.
 
 ```json
 {
@@ -160,6 +174,20 @@ This is the first file loaded. It tells the software what type of lights are bei
   "brightness_proportion": 1.0
 }
 ```
+
+Note: If you create your own mapping file for the LEDs, the `~/weather_map` directory is the best place to put it.
+
+Here is an example of using overriding values:
+
+```json
+{
+  "airports_file": "~/weather_map/puget_sound_region.json",
+  "night_category_proportion": 0.10,
+  "brightness_proportion": 0.5
+}
+```
+
+In this example we are using the file `puget_sound_region.json` to define our mapping. This file is expected to be in the `/home/pi/weather_map` folder. We are also reducing the overall brightness (ever during the day) by 50% of what the lights are capable of.
 
 #### night_lights
 
@@ -391,6 +419,7 @@ Error       | Blinking white | Blinking white | Blinking white
 
 Version | Change
 ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+1.8     | Use the configuration files provided as a default base, and then source user configuration from the user directory.
 1.7     | Allow for the brightness of the lights to be dimmed. This affects both the daytime and nighttime colors.
 1.6     | Updated documentation, wiring self-check file that uses the configuration to exercise each weather station for all colors.
 1.5     | New options that expand the day/night lighting cycle. Allows for dimmed category colors to be used instead of "night yellow.

@@ -4,9 +4,10 @@ Handles configuration loading and constants.
 import json
 import os
 import unicodedata
+from pathlib import Path
 
 import lib.local_debug as local_debug
-import weather
+from data_sources import weather
 
 if local_debug.is_debug():
     HIGH = 1
@@ -16,19 +17,58 @@ else:
     HIGH = GPIO.HIGH
     LOW = GPIO.LOW
 
-CONFIG_FILE = "./data/config.json"
-__working_dir__ = os.path.dirname(os.path.abspath(__file__))
-__full_config__ = os.path.join(__working_dir__, os.path.normpath(CONFIG_FILE))
-
 # Modes
 STANDARD = 'led'
 PWM = 'pwm'
 WS2801 = 'ws2801'
 
 
-with open(__full_config__) as config_file:
-    config_text = config_file.read()
-    CONFIG = json.loads(config_text)
+__DEFAULT_CONFIG_FILE__ = './data/config.json'
+__USER_CONFIG_FILE__ = '~/weather_map/config.json'
+
+
+def __load_config_file__(
+    config_filename: str
+) -> dict:
+    """
+    Loads a configuration file from the given source.
+
+    Arguments:
+        config_filename {str} -- The path to the configuration file to load.
+
+    Returns:
+        dict -- Any given configuration found.
+    """
+    try:
+        full_filename = str(
+            Path(os.path.expanduser(config_filename)).resolve())
+
+        with open(str(full_filename)) as config_file:
+            config_text = config_file.read()
+            configuration = json.loads(config_text)
+
+            return configuration
+    except Exception as ex:
+        print("Error while trying to load {}: EX={}".format(config_file, ex))
+        return {}
+
+
+def __get_configuration__() -> dict:
+    """
+    Loads the default configuration. Then loads any user configuration and applies the new data over the defaults.
+
+    Returns:
+        dict -- The default configuration with the user changes applied over top.
+    """
+    configuration = __load_config_file__(__DEFAULT_CONFIG_FILE__)
+    user_configuration = __load_config_file__(__USER_CONFIG_FILE__)
+
+    configuration.update(user_configuration)
+
+    return configuration
+
+
+CONFIG = __get_configuration__()
 
 
 def get_mode():
@@ -135,11 +175,7 @@ def get_airport_file():
     Returns the file that contains the airport config
     """
 
-    full_config = os.path.join(
-        __working_dir__,
-        os.path.normpath(CONFIG['airports_file']))
-
-    return full_config
+    return CONFIG['airports_file']
 
 
 def get_colors():
@@ -237,19 +273,19 @@ def __load_gpio_airport_pins__(
     """
 
     out_airport_pins_map = {}
-    with open(config_file, encoding='UTF8') as gpio_config_file:
-        json_config_text = gpio_config_file.read()
-        json_config = json.loads(json_config_text)
-        airports = json_config[get_airport_configuration_section()]
 
-        for airport_data in airports:
-            airport_code = airport_data.keys()[0]
-            out_airport_pins_map[airport_code.upper()] = (
-                airport_data[airport_code][0],
-                airport_data[airport_code][1],
-                airport_data[airport_code][2])
+    json_config = __load_config_file__(config_file)
 
-        return out_airport_pins_map
+    airports = json_config[get_airport_configuration_section()]
+
+    for airport_data in airports:
+        airport_code = airport_data.keys()[0]
+        out_airport_pins_map[airport_code.upper()] = (
+            airport_data[airport_code][0],
+            airport_data[airport_code][1],
+            airport_data[airport_code][2])
+
+    return out_airport_pins_map
 
 
 def __load_airport_ws2801__(
@@ -266,17 +302,16 @@ def __load_airport_ws2801__(
     """
 
     out_airport_map = {}
-    with open(config_file, encoding='UTF8') as ws2801_config_file:
-        json_config_text = ws2801_config_file.read()
-        json_config = json.loads(json_config_text)
-        airports = json_config[WS2801]
 
-        for airport_data in airports:
-            keylist = []
-            keylist.extend(iter(airport_data.keys()))
-            airport_code = keylist[0]
+    json_config = __load_config_file__(config_file)
+    airports = json_config[WS2801]
 
-            out_airport_map[airport_code.upper(
-            )] = airport_data[airport_code]['neopixel']
+    for airport_data in airports:
+        keylist = []
+        keylist.extend(iter(airport_data.keys()))
+        airport_code = keylist[0]
+        normalized_code = airport_code.upper()
 
-        return out_airport_map
+        out_airport_map[normalized_code] = airport_data[airport_code]['neopixel']
+
+    return out_airport_map

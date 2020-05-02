@@ -47,14 +47,14 @@ DEFAULT_METAR_STATION_INACTIVE = DEFAULT_METAR_LIFESPAN_MINUTES * 3
 
 def __load_airport_data__(
     working_directory=os.path.dirname(os.path.abspath(__file__)),
-    airport_data_file="./data/airports.csv"
+    airport_data_file="../data/airports.csv"
 ):
     """
     Loads all of the airport and weather station data from the included CSV file
     then places it into a dictionary for easy use.
 
     Keyword Arguments:
-        airport_data_file {str} -- The file that contains the airports (default: {"./data/airports.csv"})
+        airport_data_file {str} -- The file that contains the airports (default: {"../data/airports.csv"})
 
     Returns:
         dictionary -- A map of the airport data keyed by ICAO code.

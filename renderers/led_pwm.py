@@ -2,8 +2,8 @@
 Handles controlling Pulse Width Modulation LEDs.
 """
 
-import weather
 import lib.local_debug as local_debug
+from data_sources import weather
 
 if local_debug.is_debug():
     from lib.local_debug import PWM
