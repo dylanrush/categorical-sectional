@@ -49,7 +49,7 @@ def __load_config_file__(
 
             return configuration
     except Exception as ex:
-        print("Error while trying to load {}: EX={}".format(config_file, ex))
+        print("Error while trying to load {}: EX={}".format(config_filename, ex))
         return {}
 
 
