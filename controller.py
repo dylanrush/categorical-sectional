@@ -52,7 +52,9 @@ python_logger = logging.getLogger("weathermap")
 python_logger.setLevel(logging.DEBUG)
 LOGGER = Logger(python_logger)
 HANDLER = logging.handlers.RotatingFileHandler(
-    "weathermap.log", maxBytes=10485760, backupCount=10)
+    "weathermap.log",
+    maxBytes=10485760,
+    backupCount=10)
 HANDLER.setFormatter(logging.Formatter(
     '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 python_logger.addHandler(HANDLER)
@@ -135,8 +137,9 @@ def get_color_from_condition(
 
     if metar_age is not None:
         metar_age_minutes = metar_age.total_seconds() / 60.0
-        safe_log(LOGGER,
-                 "{} - Issued {:.1f} minutes ago".format(category, metar_age_minutes))
+        safe_log(
+            LOGGER,
+            "{} - Issued {:.1f} minutes ago".format(category, metar_age_minutes))
 
         is_old = metar_age_minutes > weather.DEFAULT_METAR_INVALIDATE_MINUTES
         is_inactive = metar_age_minutes > weather.DEFAULT_METAR_STATION_INACTIVE
@@ -184,8 +187,11 @@ def set_airport_display(
     Returns:
         bool -- True if the flight category changed (or was set for the first time).
     """
-    safe_log(LOGGER, 'set_airport_display({}, {}, {})'.format(
-        airport, category, metar))
+    safe_log(
+        LOGGER, 'set_airport_display({}, {}, {})'.format(
+            airport,
+            category,
+            metar))
 
     changed = False
     try:
@@ -201,8 +207,9 @@ def set_airport_display(
 
         airport_conditions[airport] = (category, should_flash)
     except Exception as ex:
-        safe_log_warning(LOGGER,
-                         'set_airport_display() - {} - EX:{}'.format(airport, ex))
+        safe_log_warning(
+            LOGGER,
+            'set_airport_display() - {} - EX:{}'.format(airport, ex))
     finally:
         thread_lock_object.release()
 
@@ -237,8 +244,9 @@ def update_station_categorization(airport, utc_offset):
         category = get_airport_category(airport, metar, utc_offset)
         set_airport_display(airport, category, metar=metar)
     except Exception as e:
-        safe_log_warning(LOGGER,
-                         'While attempting to get category for {}, got EX:{}'.format(airport, e))
+        safe_log_warning(
+            LOGGER,
+            'While attempting to get category for {}, got EX:{}'.format(airport, e))
 
 
 def update_all_station_categorizations():
@@ -249,8 +257,11 @@ def update_all_station_categorizations():
 
     utc_offset = datetime.utcnow() - datetime.now()
 
-    safe_log(LOGGER, "update_all_station_categorizations(LOCAL={}, UTC={})".format(
-        datetime.now(), datetime.utcnow()))
+    safe_log(
+        LOGGER,
+        "update_all_station_categorizations(LOCAL={}, UTC={})".format(
+            datetime.now(),
+            datetime.utcnow()))
 
     [update_station_categorization(airport, utc_offset)
         for airport in airport_render_config]
@@ -276,22 +287,35 @@ def get_airport_category(
     category = weather.INVALID
 
     try:
-        safe_log(LOGGER, 'get_airport_category({}, {}, {})'.format(
-            airport, metar, utc_offset))
+        safe_log(
+            LOGGER,
+            'get_airport_category({}, {}, {})'.format(
+                airport,
+                metar,
+                utc_offset))
 
         try:
             category = weather.get_category(airport, metar, logger=LOGGER)
             twilight = weather.get_civil_twilight(airport, logger=LOGGER)
-            safe_log(LOGGER,
-                     "{} - Rise(UTC):{}, Set(UTC):{}".format(airport, twilight[1], twilight[4]))
-            safe_log(LOGGER, "{} - Rise(HERE):{}, Set(HERE):{}".format(
-                airport, twilight[1] - utc_offset, twilight[4] - utc_offset))
+            safe_log(
+                LOGGER,
+                "{} - Rise(UTC):{}, Set(UTC):{}".format(
+                    airport,
+                    twilight[1],
+                    twilight[4]))
+            safe_log(
+                LOGGER, "{} - Rise(HERE):{}, Set(HERE):{}".format(
+                    airport,
+                    twilight[1] - utc_offset,
+                    twilight[4] - utc_offset))
         except Exception as e:
-            safe_log_warning(LOGGER,
-                             "Exception while attempting to categorize METAR:{} EX:{}".format(metar, e))
+            safe_log_warning(
+                LOGGER,
+                "Exception while attempting to categorize METAR:{} EX:{}".format(metar, e))
     except Exception as e:
-        safe_log(LOGGER,
-                 "Captured EX while attempting to get category for {} EX:{}".format(airport, e))
+        safe_log(
+            LOGGER,
+            "Captured EX while attempting to get category for {} EX:{}".format(airport, e))
         category = weather.INVALID
 
     safe_log(LOGGER, '~get_airport_category() => {}'.format(category))
@@ -338,8 +362,9 @@ def render_airport_displays(
 
             render_airport(airport, airport_flasher)
         except Exception as ex:
-            safe_log_warning(LOGGER,
-                             'Catch-all error in render_airport_displays of {} EX={}'.format(airport, ex))
+            safe_log_warning(
+                LOGGER,
+                'Catch-all error in render_airport_displays of {} EX={}'.format(airport, ex))
         finally:
             thread_lock_object.release()
 
@@ -362,25 +387,37 @@ def render_airport(
         color_by_category = colors[weather.OFF]
 
     proportions, color_to_render = get_mix_and_color(
-        color_by_category, airport)
+        color_by_category,
+        airport)
 
     log = airport not in airport_render_last_logged_by_station
 
     if airport in airport_render_last_logged_by_station:
-        time_since_last = datetime.utcnow(
-        ) - airport_render_last_logged_by_station[airport]
+        time_since_last = datetime.utcnow() \
+            - airport_render_last_logged_by_station[airport]
         log = time_since_last.total_seconds() > 60
 
     if log:
         message_format = 'STATION={}, CAT={:5}, BLINK={}, COLOR={:3}:{:3}:{:3}, P_O2N={:.1f}, P_N2C={:.1f}, RENDER={:3}:{:3}:{:3}'
-        safe_log(LOGGER, message_format.format(airport, condition, blink,
-                                               color_by_category[0], color_by_category[1], color_by_category[2],
-                                               proportions[0], proportions[1],
-                                               color_to_render[0], color_to_render[1], color_to_render[2]))
+        message = message_format.format(
+            airport,
+            condition,
+            blink,
+            color_by_category[0],
+            color_by_category[1],
+            color_by_category[2],
+            proportions[0],
+            proportions[1],
+            color_to_render[0],
+            color_to_render[1],
+            color_to_render[2])
+        safe_log(LOGGER, message)
         airport_render_last_logged_by_station[airport] = datetime.utcnow()
 
-    renderer.set_led(
-        airport_render_config[airport], color_to_render)
+    if renderer is not None:
+        renderer.set_led(
+            airport_render_config[airport],
+            color_to_render)
 
 
 def _get_standard_led_night_color(
@@ -412,7 +449,9 @@ def _get_rgb_night_color_to_render(
     proportions
 ):
     target_night_color = colors_lib.get_color_mix(
-        color_by_category, colors[weather.OFF], configuration.get_night_category_proportion())
+        color_by_category,
+        colors[weather.OFF],
+        configuration.get_night_category_proportion())
 
     # For the scenario where we simply dim the LED to account for sunrise/sunset
     # then only use the period between sunset/sunrise start and civil twilight
@@ -452,7 +491,8 @@ def get_mix_and_color(
                 color_to_render = colors[weather.DARK_YELLOW]
             else:
                 color_to_render = _get_rgb_night_color_to_render(
-                    color_by_category, proportions)
+                    color_by_category,
+                    proportions)
         # Do not allow color mixing for standard LEDs
         # Instead if we are going to render NIGHT then
         # have the NIGHT color represent that the station
@@ -463,14 +503,32 @@ def get_mix_and_color(
             elif proportions[0] <= 0.0 and proportions[1] <= 0.0:
                 color_to_render = colors[weather.DARK_YELLOW]
         elif not configuration.get_night_populated_yellow():
-            return proportions, _get_rgb_night_color_to_render(color_by_category, proportions)
+            color_to_render = _get_rgb_night_color_to_render(
+                color_by_category, proportions)
         elif proportions[0] > 0.0:
             color_to_render = colors_lib.get_color_mix(
-                colors[weather.DARK_YELLOW], color_by_rules[weather.NIGHT], proportions[0])
+                colors[weather.DARK_YELLOW],
+                color_by_rules[weather.NIGHT],
+                proportions[0])
         elif proportions[1] > 0.0:
             color_to_render = colors_lib.get_color_mix(
-                color_by_rules[weather.NIGHT], color_by_category, proportions[1])
-    return proportions, color_to_render
+                color_by_rules[weather.NIGHT],
+                color_by_category,
+                proportions[1])
+
+    final_color = []
+    brightness_adjustment = configuration.get_brightness_proportion()
+    for color in color_to_render:
+        reduced_color = float(color) * brightness_adjustment
+
+        # Some colors are floats, some are integers.
+        # Make sure we keep everything the same.
+        if isinstance(color, int):
+            reduced_color = int(reduced_color)
+
+        final_color.append(reduced_color)
+
+    return proportions, final_color
 
 # VFR - Green
 # MVFR - Blue
@@ -567,7 +625,11 @@ if __name__ == '__main__':
     all_airports(weather.OFF)
 
     update_categories_task = RecurringTask(
-        'UpdateCategorizations', 60, update_all_station_categorizations, LOGGER, True)
+        'UpdateCategorizations',
+        60,
+        update_all_station_categorizations,
+        LOGGER,
+        True)
 
     wait_for_all_airports()
 

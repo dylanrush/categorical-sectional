@@ -62,17 +62,37 @@ def __load_airport_data__(
     full_file_path = os.path.join(
         working_directory, os.path.normpath(airport_data_file))
 
-    csvfile = open(full_file_path, 'r', encoding='utf-8')
+    csv_file = open(full_file_path, 'r', encoding='utf-8')
 
-    fieldnames = ("id", "ident", "type", "name", "latitude_deg", "longitude_deg", "elevation_ft", "continent", "iso_country", "iso_region",
-                  "municipality", "scheduled_service", "gps_code", "iata_code", "local_code", "home_link", "wikipedia_link", "keywords")
-    reader = csv.DictReader(csvfile, fieldnames)
+    fieldnames = (
+        "id",
+        "ident",
+        "type",
+        "name",
+        "latitude_deg",
+        "longitude_deg",
+        "elevation_ft",
+        "continent",
+        "iso_country",
+        "iso_region",
+        "municipality",
+        "scheduled_service",
+        "gps_code",
+        "iata_code",
+        "local_code",
+        "home_link",
+        "wikipedia_link",
+        "keywords"
+    )
+    reader = csv.DictReader(csv_file, fieldnames)
 
     airport_to_location = {}
 
     for row in reader:
         airport_to_location[row["ident"]] = {
-            "lat": row["latitude_deg"], "long": row["longitude_deg"]}
+            "lat": row["latitude_deg"],
+            "long": row["longitude_deg"]
+        }
 
     return airport_to_location
 
@@ -210,9 +230,6 @@ def get_civil_twilight(
         5 - when it is full dark
     """
 
-    safe_log(logger, 'get_civil_twilight({}, {}, {})'.format(
-        airport_icao_code, current_utc_time, use_cache))
-
     __light_fetch_lock__.acquire()
 
     try:
@@ -228,22 +245,19 @@ def get_civil_twilight(
                 current_utc_time - cached_value[1]).total_seconds() / 3600
             if hours_since_sunrise > 24:
                 is_cache_valid = False
-                safe_log_warning(logger, "Twilight cache for {} had a HARD miss with delta={}".format(
-                    airport_icao_code, hours_since_sunrise))
+                safe_log_warning(
+                    logger,
+                    "Twilight cache for {} had a HARD miss with delta={}".format(
+                        airport_icao_code,
+                        hours_since_sunrise))
                 current_utc_time += timedelta(hours=1)
 
         if is_cache_valid and use_cache:
-            safe_log(logger, 'Using cached value')
-            safe_log(logger, '~get_civil_twilight() => {}'.format(cached_value))
-
             return cached_value
 
         faa_code = get_faa_csv_identifier(airport_icao_code)
 
         if faa_code is None:
-            safe_log(
-                logger, 'Fall through due to the identifier not being in the FAA CSV file.')
-            safe_log(logger, '~get_civil_twilight() => None')
             return None
 
         # Using "formatted=0" returns the times in a full datetime format
@@ -261,7 +275,8 @@ def get_civil_twilight(
                 url, timeout=DEFAULT_READ_SECONDS).json()
         except Exception as ex:
             safe_log_warning(
-                logger, '~get_civil_twilight() => None; EX:{}'.format(ex))
+                logger,
+                '~get_civil_twilight() => None; EX:{}'.format(ex))
             return []
 
         if json_result is not None and "status" in json_result and json_result["status"] == "OK" and "results" in json_result:
@@ -273,25 +288,22 @@ def get_civil_twilight(
                 json_result["results"]["civil_twilight_end"])
             sunrise_length = sunrise - sunrise_start
             sunset_length = sunset_end - sunset
-            avg_transition_time = timedelta(seconds=(sunrise_length.seconds +
-                                                     sunset_length.seconds) / 2)
-            sunrise_and_sunset = [sunrise_start,
-                                  sunrise,
-                                  sunrise + avg_transition_time,
-                                  sunset - avg_transition_time,
-                                  sunset,
-                                  sunset_end]
-            __set_cache__(airport_icao_code, __daylight_cache__,
-                          sunrise_and_sunset)
-
-            safe_log(logger, 'Returning new value.')
-            safe_log(logger, '~get_civil_twilight() => ({}, {}, {}, {}, {}, {})'.format(
-                sunrise_and_sunset[0], sunrise_and_sunset[1], sunrise_and_sunset[2], sunrise_and_sunset[3], sunrise_and_sunset[4], sunrise_and_sunset[5]))
+            avg_transition_time = timedelta(
+                seconds=(sunrise_length.seconds + sunset_length.seconds) / 2)
+            sunrise_and_sunset = [
+                sunrise_start,
+                sunrise,
+                sunrise + avg_transition_time,
+                sunset - avg_transition_time,
+                sunset,
+                sunset_end]
+            __set_cache__(
+                airport_icao_code,
+                __daylight_cache__,
+                sunrise_and_sunset)
 
             return sunrise_and_sunset
 
-        safe_log(logger, 'Fall through.')
-        safe_log(logger, '~get_civil_twilight() => None')
         return None
     finally:
         __light_fetch_lock__.release()
@@ -364,7 +376,9 @@ def is_night(
 
         if hours_since_sunrise < 0:
             light_times = get_civil_twilight(
-                airport_icao_code, current_utc_time - timedelta(hours=24), False)
+                airport_icao_code,
+                current_utc_time - timedelta(hours=24),
+                False)
 
         if hours_since_sunrise > 24:
             return False
@@ -426,7 +440,8 @@ def get_twilight_transition(
         current_utc_time = datetime.utcnow()
 
     light_times = get_civil_twilight(
-        airport_icao_code, current_utc_time, use_cache)
+        airport_icao_code,
+        current_utc_time, use_cache)
 
     if light_times is None or len(light_times) < 5:
         return 0.0, 1.0
@@ -444,20 +459,24 @@ def get_twilight_transition(
     if current_utc_time >= light_times[4]:
         proportion_off_to_night = 1.0 - \
             get_proportion_between_times(
-                light_times[4], current_utc_time, light_times[5])
+                light_times[4],
+                current_utc_time, light_times[5])
     # Sunsetting: Color to night
     elif current_utc_time >= light_times[3]:
         proportion_night_to_color = 1.0 - \
             get_proportion_between_times(
-                light_times[3], current_utc_time, light_times[4])
+                light_times[3],
+                current_utc_time, light_times[4])
     # Sunrising: Night to color
     elif current_utc_time >= light_times[1]:
         proportion_night_to_color = get_proportion_between_times(
-            light_times[1], current_utc_time, light_times[2])
+            light_times[1],
+            current_utc_time, light_times[2])
     # Sunrising: off to night
     else:
         proportion_off_to_night = get_proportion_between_times(
-            light_times[0], current_utc_time, light_times[1])
+            light_times[0],
+            current_utc_time, light_times[1])
 
     return proportion_off_to_night, proportion_night_to_color
 
@@ -545,7 +564,8 @@ def get_metars(
     safe_log(logger, 'Attempting to reconcile METARs not returned with cache.')
 
     stations_to_use_cache_for = filter(
-        lambda x: x not in metars or metars[x] is None, airport_icao_codes)
+        lambda x: x not in metars or metars[x] is None,
+        airport_icao_codes)
 
     # For the airports and identifiers that we were not able to get
     # a result for, see if we can fill in the results.
@@ -592,7 +612,6 @@ def get_metar_reports_from_web(
         line_as_string = line.decode("utf-8")
         if '<!-- Data starts here -->' in line_as_string:
             data_found = True
-            continue
         elif '<!-- Data ends here -->' in line_as_string:
             break
         elif data_found:
@@ -640,8 +659,10 @@ def get_metar(
             and cached_metar != INVALID \
             and use_cache \
             and (get_metar_age(cached_metar).total_seconds() / 60.0) < DEFAULT_METAR_LIFESPAN_MINUTES:
-        safe_log(logger, 'Immediately returning cached METAR for {}'.format(
-            airport_icao_code))
+        safe_log(
+            logger,
+            'Immediately returning cached METAR for {}'.format(
+                airport_icao_code))
 
         safe_log(logger, '~get_metar() => {}'.format(cached_metar))
         return cached_metar
@@ -652,23 +673,31 @@ def get_metar(
         metars = get_metars([airport_icao_code], logger=logger)
 
         if metars is None:
-            safe_log(logger, 'Get a None while attempting to get METAR for {}'.format(
-                airport_icao_code))
+            safe_log(
+                logger,
+                'Get a None while attempting to get METAR for {}'.format(
+                    airport_icao_code))
             safe_log(logger, '~get_metar() => None')
 
             return None
 
         if airport_icao_code not in metars:
-            safe_log(logger, 'Got a result, but {} was not in results package'.format(
-                airport_icao_code))
+            safe_log(
+                logger,
+                'Got a result, but {} was not in results package'.format(
+                    airport_icao_code))
             safe_log(logger, '~get_metar() => None')
             return None
 
-        safe_log(logger, 'Returning METAR {}'.format(
-            metars[airport_icao_code]))
+        safe_log(
+            logger,
+            'Returning METAR {}'.format(
+                metars[airport_icao_code]))
 
-        safe_log(logger, '~get_metar() => {}'.format(
-            metars[airport_icao_code]))
+        safe_log(
+            logger,
+            '~get_metar() => {}'.format(
+                metars[airport_icao_code]))
 
         return metars[airport_icao_code]
 
@@ -705,7 +734,11 @@ def get_metar_age(
             minute = int(partial_date_time[4:6])
 
             metar_date = datetime(
-                current_time.year, current_time.month, day_number, hour, minute)
+                current_time.year,
+                current_time.month,
+                day_number,
+                hour,
+                minute)
 
             # Assume that the report is from the past, and work backwards.
             days_back = 0
@@ -784,11 +817,16 @@ def get_ceiling(
         if 'BKN' in component or 'OVC' in component:
             try:
                 ceiling = int(''.join(filter(str.isdigit, component))) * 100
+
                 if(ceiling < minimum_ceiling):
                     minimum_ceiling = ceiling
             except Exception as ex:
-                safe_log_warning(logger, 'Unable to decode ceilning component {} from {}. EX:{}'.format(
-                    component, metar, ex))
+                safe_log_warning(
+                    logger,
+                    'Unable to decode ceiling component {} from {}. EX:{}'.format(
+                        component,
+                        metar,
+                        ex))
     return minimum_ceiling
 
 
@@ -837,11 +875,15 @@ def get_category(
 
     if metar_age is not None:
         metar_age_minutes = metar_age.total_seconds() / 60.0
-        safe_log(logger, "{} - Issued {:.1f} minutes ago".format(
-            airport_icao_code, metar_age_minutes))
+        safe_log(
+            logger,
+            "{} - Issued {:.1f} minutes ago".format(
+                airport_icao_code,
+                metar_age_minutes))
     else:
         safe_log_warning(
-            logger, "{} - Unknown METAR age".format(airport_icao_code))
+            logger,
+            "{} - Unknown METAR age".format(airport_icao_code))
 
     vis = get_visibility(metar)
     ceiling = get_ceiling_category(get_ceiling(metar, logger=logger))
@@ -867,7 +909,8 @@ if __name__ == '__main__':
     utc_offset = starting_date_time - datetime.now()
 
     get_category(
-        'KVOK', 'KVOK 251453Z 34004KT 10SM SCT008 OVC019 21/21 A2988 RMK AO2A SCT V BKN SLP119 53012')
+        'KVOK',
+        'KVOK 251453Z 34004KT 10SM SCT008 OVC019 21/21 A2988 RMK AO2A SCT V BKN SLP119 53012')
 
     metars = get_metars(airports_to_test)
     get_metar('KAWO', use_cache=False)
@@ -900,5 +943,12 @@ if __name__ == '__main__':
             is_dark = is_night(airport, light_times, time_to_fetch)
             transition = get_twilight_transition(airport, time_to_fetch)
 
-            print("DELTA=+{0:.1f}, LOCAL={1}, AIRPORT={2}: is_day={3}, is_night={4}, p_dark:{5:.1f}, p_color:{6:.1f}".format(
-                hours_ahead, local_fetch_time, airport, is_lit, is_dark, transition[0], transition[1]))
+            print(
+                "DELTA=+{0:.1f}, LOCAL={1}, AIRPORT={2}: is_day={3}, is_night={4}, p_dark:{5:.1f}, p_color:{6:.1f}".format(
+                    hours_ahead,
+                    local_fetch_time,
+                    airport,
+                    is_lit,
+                    is_dark,
+                    transition[0],
+                    transition[1]))

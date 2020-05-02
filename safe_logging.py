@@ -20,7 +20,7 @@ def __get_callstack_indent_count(
         stack_adjustment {int -- The number of frames down the ACTUAL function name is. (default: {3})
 
     Returns:
-        int -- The numnber of indents.
+        int -- The number of indents.
     """
 
     try:
@@ -60,7 +60,7 @@ def __get_indents(
     if count < 0:
         count = 0
 
-    function_name = 'UKNOWN'
+    function_name = 'UNKNOWN'
     line_num = 'UNKNOWN'
 
     try:

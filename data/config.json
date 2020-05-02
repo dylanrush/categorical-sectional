@@ -7,5 +7,6 @@
   "airports_file": "data/kawo_to_kosh.json",
   "night_lights": true,
   "night_populated_yellow": false,
-  "night_category_proportion": 0.05
+  "night_category_proportion": 0.05,
+  "brightness_proportion": 1.0
 }
