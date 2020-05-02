@@ -44,20 +44,23 @@ def __get_resolved_filepath__(
     print("Attempting to resolve '{}'".format(filename))
     print("__file__='{}'".format(__file__))
 
-    not_normalized_path = str(Path(os.path.expanduser(filename)).resolve())
+    try:
+        not_normalized_path = str(Path(os.path.expanduser(filename)).resolve())
 
-    if './' in filename:
-        not_normalized_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)),
-            os.path.normpath(filename))
+        if './' in filename:
+            not_normalized_path = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                os.path.normpath(filename))
 
-    print("Before normalization path='{}'".format(not_normalized_path))
+        print("Before normalization path='{}'".format(not_normalized_path))
 
-    normalized_path = os.path.normpath(not_normalized_path)
+        normalized_path = os.path.normpath(not_normalized_path)
 
-    print("Normalized path='{}'".format(not_normalized_path))
+        print("Normalized path='{}'".format(not_normalized_path))
 
-    return normalized_path
+        return normalized_path
+    except:
+        return None
 
 
 def __load_config_file__(
@@ -73,7 +76,6 @@ def __load_config_file__(
         dict -- Any given configuration found.
     """
     try:
-
         full_filename = __get_resolved_filepath__(config_filename)
 
         with open(str(full_filename)) as config_file:
