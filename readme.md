@@ -37,13 +37,13 @@ A parts manifest lists a Raspberry Pi Zero due to its size and lower power consu
 
 ### Parts List
 
-| Description                                  | Cost    | Link                                                                                                                                                                   |
-| -------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Raspberry Pi Zero W                          | \$29.99 | <https://www.amazon.com/CanaKit-Raspberry-Wireless-Starter-Official/dp/B06XJQV162/ref=sr_1_7?s=electronics&ie=UTF8&qid=1528557992&sr=1-7&keywords=raspberry+pi+zero+w> |
-| 5 volt, 4 amp power supply                   | \$12.99 | <https://www.amazon.com/gp/product/B00MRGKPH8/ref=oh_aui_detailpage_o06_s00?ie=UTF8&psc=1>                                                                             |
-| Barrel jack adapters                         | \$7.99  | <https://www.amazon.com/gp/product/B01M4RBARQ/ref=oh_aui_detailpage_o06_s01?ie=UTF8&psc=1>                                                                             |
-| Individually addressable LEDs (WS2801 based) | \$39.95 | <https://www.amazon.com/12mm-Diffused-Digital-Pixels-Strand/dp/B073MZWBYS/ref=sr_1_1?ie=UTF8&qid=1528558371&sr=8-1&keywords=adafruit+ws2801>                           |
-| 4 Pin JST SM Plugs                           | \$7.99  | <https://www.amazon.com/Visdoll-Pairs-Female-Connector-Cable/dp/B075K48BD9/ref=sr_1_8?ie=UTF8&qid=1528559351&sr=8-8&keywords=4+Pin+JST+SM+Plug>                        |
+Description                                  | Cost    | Link
+-------------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Raspberry Pi Zero W                          | \$29.99 | <https://www.amazon.com/CanaKit-Raspberry-Wireless-Starter-Official/dp/B06XJQV162/ref=sr_1_7?s=electronics&ie=UTF8&qid=1528557992&sr=1-7&keywords=raspberry+pi+zero+w>
+5 volt, 4 amp power supply                   | \$12.99 | <https://www.amazon.com/gp/product/B00MRGKPH8/ref=oh_aui_detailpage_o06_s00?ie=UTF8&psc=1>
+Barrel jack adapters                         | \$7.99  | <https://www.amazon.com/gp/product/B01M4RBARQ/ref=oh_aui_detailpage_o06_s01?ie=UTF8&psc=1>
+Individually addressable LEDs (WS2801 based) | \$39.95 | <https://www.amazon.com/12mm-Diffused-Digital-Pixels-Strand/dp/B073MZWBYS/ref=sr_1_1?ie=UTF8&qid=1528558371&sr=8-1&keywords=adafruit+ws2801>
+4 Pin JST SM Plugs                           | \$7.99  | <https://www.amazon.com/Visdoll-Pairs-Female-Connector-Cable/dp/B075K48BD9/ref=sr_1_8?ie=UTF8&qid=1528559351&sr=8-8&keywords=4+Pin+JST+SM+Plug>
 
 ### Bootstrapping The Raspberry Pi
 
@@ -91,8 +91,7 @@ sudo raspi-config
 
 ### Wiring the WS2801
 
-If you are using multiple strands of lights, plug them together.
-Tape off the red and blue tap wires between the connectors and at the end of the strand.
+If you are using multiple strands of lights, plug them together. Tape off the red and blue tap wires between the connectors and at the end of the strand.
 
 Leave the read and blue wire at the start of the strand for the moment.
 
@@ -111,16 +110,16 @@ One is red, the other blue.
 
 ### The Raspberry Pi
 
-Use the group of four wires from a _*male*_ JST SM adapter.
+Use the group of four wires from a **male** JST SM adapter.
 
 Solder them to the board.
 
-| Wire Color | Physical Pin                                | Pin Name      |
-| ---------- | ------------------------------------------- | ------------- |
-| Blue       | Tied off and shrink wrapped. Not connected. | Not connected |
-| Red        | 25                                          | GRND          |
-| Black      | 23                                          | SCLK          |
-| Green/Teal | 19                                          | MOSI          |
+Wire Color | Physical Pin                                | Pin Name
+---------- | ------------------------------------------- | -------------
+Blue       | Tied off and shrink wrapped. Not connected. | Not connected
+Red        | 25                                          | GRND
+Black      | 23                                          | SCLK
+Green/Teal | 19                                          | MOSI
 
 #### Wiring Detail From Top
 
@@ -168,11 +167,9 @@ Set this to true if you would like the weather stations to change colors based o
 
 If you are using WS2801 or PWM based lights, then this is a gradual process.
 
-First the light will fade from the flight condition color to a bright yellow to indicate "Populated night".
-As the station gets darker, the light fades to a darker yellow by the time the station is "pitch black" in night.
+First the light will fade from the flight condition color to a bright yellow to indicate "Populated night". As the station gets darker, the light fades to a darker yellow by the time the station is "pitch black" in night.
 
-In the morning, the light will increase back to a bright yellow as the office sunrise time approaches.
-As the station approaches full daylight, the light will fade from bright yellow to the color appropriate for the flight condition.
+In the morning, the light will increase back to a bright yellow as the office sunrise time approaches. As the station approaches full daylight, the light will fade from bright yellow to the color appropriate for the flight condition.
 
 #### night_populated_yellow
 
@@ -199,22 +196,22 @@ This an adjustment to the LED brightness. It is applied AFTER all other light ca
 The intent is to provide a way to dim the LEDs during daylight hours.
 
 This is a proportion
+
 - `0.0` will result in all lights effectively being turned off.
 - `0.5` will result in the lights being half as bright.
 - `1.0` will result in no change.
 
-You may need to adjust `night_category_proportion` if you use this value. A low enough value of `brightness_proportion` may result in LEDs for stations in the dark to result in not being visible.
-Increasing `night_category_proportion` will result in the LEDs being turned on again.
+You may need to adjust `night_category_proportion` if you use this value. A low enough value of `brightness_proportion` may result in LEDs for stations in the dark to result in not being visible. Increasing `night_category_proportion` will result in the LEDs being turned on again.
 
 #### mode
 
 This controls which type of LED system to use for controlling the lights.
 
-| Value  | Description                                                                                      |
-| ------ | ------------------------------------------------------------------------------------------------ |
-| ws2801 | Use WS2801 based light strands like those from AdaFruit                                          |
-| pwm    | Use pulse width modulation based LEDs. This can have their colors changed more than normal LEDs. |
-| led    | Use standard LEDs that have a positive wire for each color and a common ground.                  |
+Value  | Description
+------ | ------------------------------------------------------------------------------------------------
+ws2801 | Use WS2801 based light strands like those from AdaFruit
+pwm    | Use pulse width modulation based LEDs. This can have their colors changed more than normal LEDs.
+led    | Use standard LEDs that have a positive wire for each color and a common ground.
 
 #### pixel_count
 
@@ -269,9 +266,9 @@ There are two sections:
 
 Contains the airport name and wiring information. The first number is the wire controlling the red LED, then the green LED, and finally the blue LED.
 
-These wire numbers refer to the _*physical*_ board number on the Raspberry pie.
+These wire numbers refer to the **physical** board number on the Raspberry pie.
 
-So for KRNT (Renton), the wire leading to the Red LED would be wired to the GPIO board at pin 3. The Blue LED would be wired to pin 5, and the green LED wire would be wired to pin 7.
+So for KRNT (Renton), the wire leading to the Red LED would be wired to the GPIO board at pin 3\. The Blue LED would be wired to pin 5, and the green LED wire would be wired to pin 7.
 
 _NOTE:_ The "pwm" section is used by both the normal LEDs and the pulse width controlled LEDs.
 
@@ -295,8 +292,7 @@ This project uses "zero based indexing".
 
 In this scenario the second and fourth light are not used. They will remain off the entire time.
 
-The first light is assigned to Renton airport.
-The third light will show SeaTac aiport.
+The first light is assigned to Renton airport. The third light will show SeaTac aiport.
 
 ```code
 [Pi] ------[LED]------[LED]------[LED]------[LED]
@@ -306,8 +302,7 @@ The third light will show SeaTac aiport.
 
 ## Testing The LED Wiring
 
-There is a self-test file included to help quickly validate your wiring.
-This works for both WS2801 and LED based maps.
+There is a self-test file included to help quickly validate your wiring. This works for both WS2801 and LED based maps.
 
 This file exercises the LED lights without having to wait for the entire mapping software to initialize.
 
@@ -354,8 +349,7 @@ Each station is:
 
 Any failures will list the identifier code and the reason.
 
-Not being able to fetch a weather report is not considered a fatal error if other data can be obtained.
-Any airport that had issues fetching weather will be listed, and may simply be temporarily down.
+Not being able to fetch a weather report is not considered a fatal error if other data can be obtained. Any airport that had issues fetching weather will be listed, and may simply be temporarily down.
 
 ## Running It At Boot
 
@@ -366,9 +360,9 @@ To run it at boot, perform the following steps:
 3. Select "Nano" (Option 1)
 4. Enter the following text at the _bottom_ of the file:
 
-```code
-@reboot python3 /home/pi/categorical-sectional/controller.py &
-```
+  ```code
+  @reboot python3 /home/pi/categorical-sectional/controller.py &
+  ```
 
 5. Save the file and exit.
 6. sudo reboot now
@@ -379,41 +373,42 @@ Capitalization counts. The map lights should come on with each boot now.
 
 This project uses "standard" airport coloring for flight rules category, along with some unique colors.
 
-| Flight Rule | WS2801         | PWM            | LED            |
-| ----------- | -------------- | -------------- | -------------- |
-| VFR         | Solid green    | Solid green    | Solid green    |
-| MVFR        | Solid blue     | Solid blue     | Solid blue     |
-| IFR         | Solid red      | Solid red      | Solid red      |
-| LIFR        | Solid magenta  | Solid magenta  | Blinking red   |
-| Smoke       | Solid gray     | Solid gray     | Solid gray     |
-| Night       | Solid yellow   | Solid yellow   | Solid yellow   |
-| Error       | Blinking white | Blinking white | Blinking white |
+Flight Rule | WS2801         | PWM            | LED
+----------- | -------------- | -------------- | --------------
+VFR         | Solid green    | Solid green    | Solid green
+MVFR        | Solid blue     | Solid blue     | Solid blue
+IFR         | Solid red      | Solid red      | Solid red
+LIFR        | Solid magenta  | Solid magenta  | Blinking red
+Smoke       | Solid gray     | Solid gray     | Solid gray
+Night       | Solid yellow   | Solid yellow   | Solid yellow
+Error       | Blinking white | Blinking white | Blinking white
 
 ## Apendix
 
-<https://learn.adafruit.com/12mm-led-pixels/wiring>
-<https://tutorials-raspberrypi.com/how-to-control-a-raspberry-pi-ws2801-rgb-led-strip/>
-<https://www.raspberrypi.org/documentation/linux/usage/cron.md>
+<https://learn.adafruit.com/12mm-led-pixels/wiring> <https://tutorials-raspberrypi.com/how-to-control-a-raspberry-pi-ws2801-rgb-led-strip/> <https://www.raspberrypi.org/documentation/linux/usage/cron.md>
 
 ## Version History
 
-| Version | Change                                                                                                                                                                            |
-| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1.6     | Updated documentation, wiring self-check file that uses the configuration to exercise each weather station for all colors.                                                        |
-| 1.5     | New options that expand the day/night lighting cycle. Allows for dimmed category colors to be used instread.                                                                      |
-| 1.4     | Changes to map initialization to help with bad airport identifiers. Improve handling of mismatch between four and three letter long identifiers when determining day/night cycle. |
-| 1.3     | Performance improvements.                                                                                                                                                         |
-| 1.2     | Migrated to Python 3.x                                                                                                                                                            |
-| 1.1     | Day / Night cycle.                                                                                                                                                                |
-| 1.0     | First release with adressable lights.                                                                                                                                             |
+Version | Change
+------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+1.7     | Allow for the brightness of the lights to be dimmed. This affects both the daytime and nighttime colors.
+1.6     | Updated documentation, wiring self-check file that uses the configuration to exercise each weather station for all colors.
+1.5     | New options that expand the day/night lighting cycle. Allows for dimmed category colors to be used instead of "night yellow.
+1.4     | Changes to map initialization to help with bad airport identifiers. Improve handling of mismatch between four and three letter long identifiers when determining day/night cycle.
+1.3     | Performance improvements.
+1.2     | Migrated to Python 3.x
+1.1     | Day / Night cycle.
+1.0     | First release with adressable lights.
 
 ## Credits
 
-Airport Location data from <http://ourairports.com/data/>
-Airport sunrise/sunset data from <https://sunrise-sunset.org/api>
+Airport Location data from <http://ourairports.com/data/> Airport sunrise/sunset data from <https://sunrise-sunset.org/api>
 
 ## License
 
 This project is covered by the GPL v3 liscense.
 
-Please see [LISCENSE.md](LISCENSE.md)
+Please see
+
+<liscense.md>
+</liscense.md>
