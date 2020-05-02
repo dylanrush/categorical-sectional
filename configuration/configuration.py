@@ -6,8 +6,8 @@ import os
 import unicodedata
 from pathlib import Path
 
-import lib.local_debug as local_debug
 from data_sources import weather
+from lib import local_debug
 
 if local_debug.is_debug():
     HIGH = 1
