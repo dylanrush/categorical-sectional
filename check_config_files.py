@@ -33,14 +33,18 @@ if len(airport_render_config) == 0:
 stations_unable_to_fetch_weather = []
 
 for station_id in airport_render_config:
-    safe_log(LOGGER, f'Checking configuration for {station_id}')
+    safe_log(
+        LOGGER,
+        'Checking configuration for {}'.format(station_id))
 
     led_index = airport_render_config[station_id]
 
     # Validate the index for the LED is within bounds
     if led_index < 0:
         terminal_error(
-            f'Found {station_id} has an LED at a negative position {led_index}')
+            'Found {} has an LED at a negative position {}'.format(
+                station_id,
+                led_index))
 
     # Validate that the station is in the CSV file
     try:
@@ -51,7 +55,9 @@ for station_id in airport_render_config:
 
     if data_file_icao_code is None or data_file_icao_code == '' or weather.INVALID in data_file_icao_code:
         terminal_error(
-            f'Unable to fetch the station {station_id} from the CSV data file. Please check that the station is in the CSV file. Error={e}')
+            'Unable to fetch the station {} from the CSV data file. Please check that the station is in the CSV file. Error={}'.format(
+                station_id,
+                e))
 
     # Validate that the station can have weather fetched
     metar = weather.get_metar(station_id, logger=LOGGER)
@@ -60,18 +66,24 @@ for station_id in airport_render_config:
         stations_unable_to_fetch_weather.append(station_id)
         safe_log_warning(
             LOGGER,
-            f'Unable to fetch weather for {station_id}/{led_index}')
+            'Unable to fetch weather for {}/{}'.format(
+                station_id,
+                led_index))
 
     # Validate that the station can have Sunrise/Sunset fetched
     day_night_info = weather.get_civil_twilight(station_id)
 
     if day_night_info is None:
         terminal_error(
-            f'Unable to fetch day/night info for {station_id}/{led_index}')
+            'Unable to fetch day/night info for {}/{}'.format(
+                station_id,
+                led_index))
 
     if len(day_night_info) != 6:
         terminal_error(
-            f'Unknown issue fetching day/night info for {station_id}/{led_index}')
+            'Unknown issue fetching day/night info for {}/{}'.format(
+                station_id,
+                led_index))
 
 safe_log(LOGGER, '')
 safe_log(LOGGER, '')
@@ -81,6 +93,6 @@ safe_log(LOGGER, '')
 safe_log(LOGGER, 'Unable to fetch the weather for the following stations:')
 
 for station in stations_unable_to_fetch_weather:
-    safe_log(LOGGER, f'\t {station}')
+    safe_log(LOGGER, '\t {}'.format(station))
 
 safe_log(LOGGER, 'Please check the station identifier. The station may be out of service, temporarily down, or may not exist.')
