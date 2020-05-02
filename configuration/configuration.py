@@ -41,6 +41,9 @@ def __get_resolved_filepath__(
         str -- The fully resolved filepath
     """
 
+    print("Attempting to resolve '{}'".format(filename))
+    print("__file__='{}'".format(__file__))
+
     not_normalized_path = str(Path(os.path.expanduser(filename)).resolve())
 
     if './' in filename:
@@ -48,7 +51,13 @@ def __get_resolved_filepath__(
             os.path.dirname(os.path.abspath(__file__)),
             os.path.normpath(filename))
 
-    return os.path.normpath(not_normalized_path)
+    print("Before normalization path='{}'".format(not_normalized_path))
+
+    normalized_path = os.path.normpath(not_normalized_path)
+
+    print("Normalized path='{}'".format(not_normalized_path))
+
+    return normalized_path
 
 
 def __load_config_file__(
