@@ -45,18 +45,20 @@ def __get_resolved_filepath__(
     print("__file__='{}'".format(__file__))
 
     try:
-        not_normalized_path = str(Path(os.path.expanduser(filename)).resolve())
+        raw_path = filename
 
         if './' in filename:
-            not_normalized_path = os.path.join(
+            raw_path = os.path.join(
                 os.path.dirname(os.path.abspath(__file__)),
-                os.path.normpath(filename))
+                filename)
+        else:
+            raw_path = str(Path(os.path.expanduser(filename)).resolve())
 
-        print("Before normalization path='{}'".format(not_normalized_path))
+        print("Before normalization path='{}'".format(raw_path))
 
-        normalized_path = os.path.normpath(not_normalized_path)
+        normalized_path = os.path.normpath(raw_path)
 
-        print("Normalized path='{}'".format(not_normalized_path))
+        print("Normalized path='{}'".format(raw_path))
 
         return normalized_path
     except:
