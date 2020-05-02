@@ -135,8 +135,9 @@ def get_color_from_condition(
 
     if metar_age is not None:
         metar_age_minutes = metar_age.total_seconds() / 60.0
-        safe_log(LOGGER,
-                 "{} - Issued {:.1f} minutes ago".format(category, metar_age_minutes))
+        safe_log(
+            LOGGER,
+            "{} - Issued {:.1f} minutes ago".format(category, metar_age_minutes))
 
         is_old = metar_age_minutes > weather.DEFAULT_METAR_INVALIDATE_MINUTES
         is_inactive = metar_age_minutes > weather.DEFAULT_METAR_STATION_INACTIVE
@@ -201,8 +202,9 @@ def set_airport_display(
 
         airport_conditions[airport] = (category, should_flash)
     except Exception as ex:
-        safe_log_warning(LOGGER,
-                         'set_airport_display() - {} - EX:{}'.format(airport, ex))
+        safe_log_warning(
+            LOGGER,
+            'set_airport_display() - {} - EX:{}'.format(airport, ex))
     finally:
         thread_lock_object.release()
 
@@ -237,8 +239,9 @@ def update_station_categorization(airport, utc_offset):
         category = get_airport_category(airport, metar, utc_offset)
         set_airport_display(airport, category, metar=metar)
     except Exception as e:
-        safe_log_warning(LOGGER,
-                         'While attempting to get category for {}, got EX:{}'.format(airport, e))
+        safe_log_warning(
+            LOGGER,
+            'While attempting to get category for {}, got EX:{}'.format(airport, e))
 
 
 def update_all_station_categorizations():
@@ -282,16 +285,19 @@ def get_airport_category(
         try:
             category = weather.get_category(airport, metar, logger=LOGGER)
             twilight = weather.get_civil_twilight(airport, logger=LOGGER)
-            safe_log(LOGGER,
-                     "{} - Rise(UTC):{}, Set(UTC):{}".format(airport, twilight[1], twilight[4]))
+            safe_log(
+                LOGGER,
+                "{} - Rise(UTC):{}, Set(UTC):{}".format(airport, twilight[1], twilight[4]))
             safe_log(LOGGER, "{} - Rise(HERE):{}, Set(HERE):{}".format(
                 airport, twilight[1] - utc_offset, twilight[4] - utc_offset))
         except Exception as e:
-            safe_log_warning(LOGGER,
-                             "Exception while attempting to categorize METAR:{} EX:{}".format(metar, e))
+            safe_log_warning(
+                LOGGER,
+                "Exception while attempting to categorize METAR:{} EX:{}".format(metar, e))
     except Exception as e:
-        safe_log(LOGGER,
-                 "Captured EX while attempting to get category for {} EX:{}".format(airport, e))
+        safe_log(
+            LOGGER,
+            "Captured EX while attempting to get category for {} EX:{}".format(airport, e))
         category = weather.INVALID
 
     safe_log(LOGGER, '~get_airport_category() => {}'.format(category))
@@ -338,8 +344,9 @@ def render_airport_displays(
 
             render_airport(airport, airport_flasher)
         except Exception as ex:
-            safe_log_warning(LOGGER,
-                             'Catch-all error in render_airport_displays of {} EX={}'.format(airport, ex))
+            safe_log_warning(
+                LOGGER,
+                'Catch-all error in render_airport_displays of {} EX={}'.format(airport, ex))
         finally:
             thread_lock_object.release()
 
