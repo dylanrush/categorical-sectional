@@ -25,7 +25,7 @@ try:
     airport_render_config = configuration.get_airport_configs()
 except Exception as e:
     terminal_error(
-        f'Unable to fetch the airport configuration. Please check the JSON files. Error={e}')
+        'Unable to fetch the airport configuration. Please check the JSON files. Error={}'.format(e))
 
 if len(airport_render_config) == 0:
     terminal_error('No airports found in the configuration file.')
