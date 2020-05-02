@@ -23,8 +23,32 @@ PWM = 'pwm'
 WS2801 = 'ws2801'
 
 
-__DEFAULT_CONFIG_FILE__ = './data/config.json'
+__DEFAULT_CONFIG_FILE__ = '../data/config.json'
 __USER_CONFIG_FILE__ = '~/weather_map/config.json'
+
+
+def __get_resolved_filepath__(
+    filename: str
+) -> str:
+    """
+    Try to resolve a filename to the proper full path.
+    Used to help resolve relative path issues and issues with the working path when started from crontab.
+
+    Arguments:
+        filename {str} -- The filename (optionally with a partial path) to resolve to a fully qualified file path.
+
+    Returns:
+        str -- The fully resolved filepath
+    """
+
+    not_normalized_path = str(Path(os.path.expanduser(filename)).resolve())
+
+    if './' in filename:
+        not_normalized_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            os.path.normpath(filename))
+
+    return os.path.normpath(not_normalized_path)
 
 
 def __load_config_file__(
@@ -40,8 +64,8 @@ def __load_config_file__(
         dict -- Any given configuration found.
     """
     try:
-        full_filename = str(
-            Path(os.path.expanduser(config_filename)).resolve())
+
+        full_filename = __get_resolved_filepath__(config_filename)
 
         with open(str(full_filename)) as config_file:
             config_text = config_file.read()
