@@ -22,6 +22,31 @@ STANDARD = 'led'
 PWM = 'pwm'
 WS2801 = 'ws2801'
 
+LED_MODE_KEY = "mode"
+PIXEL_COUNT_KEY = "pixel_count"
+SPI_DEVICE_KEY = "spi_device"
+SPI_PORT_KEY = "spi_port"
+PWM_FREQUENCY_KEY = "pwm_frequency"
+AIRPORTS_FILE_KEY = "airports_file"
+BLINK_OLD_STATIONS_KEY = "blink_old_stations"
+NIGHT_LIGHTS_KEY = "night_lights"
+NIGHT_POPULATED_YELLOW_KEY = "night_populated_yellow"
+NIGHT_CATEGORY_PROPORTION_KEY = "night_category_proportion"
+BRIGHTNESS_PROPORTION_KEY = "brightness_proportion"
+
+__VALID_KEYS__ = [
+    LED_MODE_KEY,
+    PIXEL_COUNT_KEY,
+    SPI_DEVICE_KEY,
+    SPI_PORT_KEY,
+    PWM_FREQUENCY_KEY,
+    AIRPORTS_FILE_KEY,
+    BLINK_OLD_STATIONS_KEY,
+    NIGHT_LIGHTS_KEY,
+    NIGHT_POPULATED_YELLOW_KEY,
+    NIGHT_CATEGORY_PROPORTION_KEY,
+    BRIGHTNESS_PROPORTION_KEY
+]
 
 __DEFAULT_CONFIG_FILE__ = '../data/config.json'
 __USER_CONFIG_FILE__ = '~/weather_map/config.json'
@@ -106,6 +131,21 @@ def __get_configuration__() -> dict:
 
 
 CONFIG = __get_configuration__()
+
+
+def update_configuration(
+    new_config: dict
+) -> dict:
+    if new_config is None:
+        return CONFIG
+
+    update_package = {}
+
+    for valid_key in __VALID_KEYS__:
+        if valid_key in new_config:
+            update_package[valid_key] = new_config[valid_key]
+
+    CONFIG.update(update_package)
 
 
 def __get_boolean_config_value__(
