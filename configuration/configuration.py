@@ -108,12 +108,45 @@ def __get_configuration__() -> dict:
 CONFIG = __get_configuration__()
 
 
+def __get_boolean_config_value__(
+    config_key: str,
+    default: bool = False
+) -> bool:
+    """
+    Get a configuration value from the config that is a boolean.
+    If the value is not in the config, then use the default.
+
+    Arguments:
+        config_key {str} -- The name of the setting.
+        default {bool} -- The default value if the setting is not found.
+
+    Returns:
+        bool -- The value to use for the configuration.
+    """
+    try:
+        if CONFIG is not None and config_key in CONFIG:
+            return CONFIG[config_key]
+    except:
+        return default
+
+
 def get_mode():
     """
     Returns the mode given in the config.
     """
 
     return CONFIG['mode']
+
+
+def get_blink_station_if_old_data() -> bool:
+    """
+    Should old stations blink if the data is considered too old?
+
+    Returns:
+        bool -- Should the station be blinked if the data is too old?
+    """
+
+    return __get_boolean_config_value__('blink_old_stations', True)
 
 
 def get_night_lights():
@@ -124,12 +157,7 @@ def get_night_lights():
         boolean -- True if we should light airports that are in the dark
         differently.
     """
-
-    try:
-        if CONFIG is not None and 'night_lights' in CONFIG:
-            return CONFIG['night_lights']
-    except:
-        return False
+    return __get_boolean_config_value__('night_lights')
 
 
 def get_night_populated_yellow():
@@ -141,11 +169,7 @@ def get_night_populated_yellow():
     Returns:
         boolean -- True if the color of the station should be yellow when it is dark.
     """
-    try:
-        if CONFIG is not None and 'night_populated_yellow' in CONFIG:
-            return CONFIG['night_populated_yellow']
-    except:
-        return True
+    return __get_boolean_config_value__('night_populated_yellow', True)
 
 
 def get_night_category_proportion():
