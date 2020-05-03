@@ -7,16 +7,19 @@ import time
 import lib.local_debug as local_debug
 from configuration import configuration
 from data_sources import weather
+from lib import safe_logging
 from lib.logger import Logger
 from renderers import led, led_pwm, ws2801
-from safe_logging import safe_log, safe_log_warning
 
 python_logger = logging.getLogger("check_lights_wiring")
 python_logger.setLevel(logging.DEBUG)
 LOGGER = Logger(python_logger)
 
 if not local_debug.IS_PI:
-    safe_log_warning(LOGGER, "This is only able to run on a Raspberry Pi.")
+    safe_logging.safe_log_warning(
+        LOGGER,
+        "This is only able to run on a Raspberry Pi.")
+
     exit(0)
 
 airport_render_config = configuration.get_airport_configs()
@@ -51,7 +54,7 @@ renderer = get_test_renderer()
 if __name__ == '__main__':
     # Start loading the METARs in the background
     # while going through the self-test
-    safe_log(LOGGER, "Testing all colors for all airports.")
+    safe_logging.safe_log(LOGGER, "Testing all colors for all airports.")
 
     # Test LEDS on startup
     colors_to_test = (
@@ -67,14 +70,14 @@ if __name__ == '__main__':
     )
 
     for color in colors_to_test:
-        safe_log(LOGGER, "Setting to {}".format(color))
+        safe_logging.safe_log(LOGGER, "Setting to {}".format(color))
 
         [renderer.set_led(airport_render_config[airport], colors[color])
             for airport in airport_render_config]
 
         time.sleep(0.5)
 
-    safe_log(LOGGER, "Starting airport indentification test")
+    safe_logging.safe_log(LOGGER, "Starting airport identification test")
 
     while True:
         for airport in airport_render_config:
@@ -83,7 +86,9 @@ if __name__ == '__main__':
                 led_index,
                 colors[weather.GREEN])
 
-            safe_log(LOGGER, "LED {} - {} - Now lit".format(led_index, airport))
+            safe_logging.safe_log(
+                LOGGER,
+                "LED {} - {} - Now lit".format(led_index, airport))
 
             input("Press Enter to continue...")
 

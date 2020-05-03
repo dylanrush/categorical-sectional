@@ -2,8 +2,8 @@
 Logging utilities for the WeatherMap
 """
 
-import traceback
 import inspect
+import traceback
 from datetime import datetime, timedelta
 
 TAB_TEXT = ' ' * 4
@@ -11,8 +11,8 @@ MODULE_NAME = '<module>'
 
 
 def __get_callstack_indent_count(
-    stack_adjustment=3
-):
+    stack_adjustment: int = 3
+) -> int:
     """
     Returns the number of indents that should be applied to the logging statement.
 
@@ -43,9 +43,9 @@ def __get_callstack_indent_count(
 
 
 def __get_indents(
-    count=0,
-    stack_adjustment=3
-):
+    count: int = 0,
+    stack_adjustment: int = 3
+) -> str:
     """
     Returns whitespace for the number of given indents.
 
@@ -80,7 +80,7 @@ def __get_indents(
 
 def safe_log(
     logger,
-    message
+    message: str
 ):
     """
     Logs an INFO level message safely. Also prints it to the screen.
@@ -102,7 +102,7 @@ def safe_log(
 
 def safe_log_warning(
     logger,
-    message
+    message: str
 ):
     """
     Logs a WARN level message safely. Also prints it to the screen.

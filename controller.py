@@ -38,10 +38,10 @@ import lib.colors as colors_lib
 import lib.local_debug as local_debug
 from configuration import configuration
 from data_sources import weather
+from lib import safe_logging
 from lib.logger import Logger
 from lib.recurring_task import RecurringTask
 from renderers import led, led_pwm
-from safe_logging import safe_log, safe_log_warning
 
 if not local_debug.is_debug():
     from renderers import ws2801
@@ -137,7 +137,7 @@ def get_color_from_condition(
 
     if metar_age is not None:
         metar_age_minutes = metar_age.total_seconds() / 60.0
-        safe_log(
+        safe_logging.safe_log(
             LOGGER,
             "{} - Issued {:.1f} minutes ago".format(category, metar_age_minutes))
 
@@ -189,7 +189,7 @@ def set_airport_display(
     Returns:
         bool -- True if the flight category changed (or was set for the first time).
     """
-    safe_log(
+    safe_logging.safe_log(
         LOGGER, 'set_airport_display({}, {}, {})'.format(
             airport,
             category,
@@ -209,16 +209,20 @@ def set_airport_display(
 
         airport_conditions[airport] = (category, should_flash)
     except Exception as ex:
-        safe_log_warning(
+        safe_logging.safe_log_warning(
             LOGGER,
             'set_airport_display() - {} - EX:{}'.format(airport, ex))
     finally:
         thread_lock_object.release()
 
     if changed:
-        safe_log(LOGGER, '{} NOW {}'.format(airport, category))
+        safe_logging.safe_log(
+            LOGGER,
+            '{} NOW {}'.format(airport, category))
 
-    safe_log(LOGGER, '~set_airport_display() => {}'.format(changed))
+    safe_logging.safe_log(
+        LOGGER,
+        '~set_airport_display() => {}'.format(changed))
 
     return changed
 
@@ -246,7 +250,7 @@ def update_station_categorization(airport, utc_offset):
         category = get_airport_category(airport, metar, utc_offset)
         set_airport_display(airport, category, metar=metar)
     except Exception as e:
-        safe_log_warning(
+        safe_logging.safe_log_warning(
             LOGGER,
             'While attempting to get category for {}, got EX:{}'.format(airport, e))
 
@@ -259,7 +263,7 @@ def update_all_station_categorizations():
 
     utc_offset = datetime.utcnow() - datetime.now()
 
-    safe_log(
+    safe_logging.safe_log(
         LOGGER,
         "update_all_station_categorizations(LOCAL={}, UTC={})".format(
             datetime.now(),
@@ -268,7 +272,9 @@ def update_all_station_categorizations():
     [update_station_categorization(airport, utc_offset)
         for airport in airport_render_config]
 
-    safe_log(LOGGER, '~update_all_station_categorizations()')
+    safe_logging.safe_log(
+        LOGGER,
+        '~update_all_station_categorizations()')
 
 
 def get_airport_category(
@@ -289,7 +295,7 @@ def get_airport_category(
     category = weather.INVALID
 
     try:
-        safe_log(
+        safe_logging.safe_log(
             LOGGER,
             'get_airport_category({}, {}, {})'.format(
                 airport,
@@ -299,28 +305,30 @@ def get_airport_category(
         try:
             category = weather.get_category(airport, metar, logger=LOGGER)
             twilight = weather.get_civil_twilight(airport, logger=LOGGER)
-            safe_log(
+            safe_logging.safe_log(
                 LOGGER,
                 "{} - Rise(UTC):{}, Set(UTC):{}".format(
                     airport,
                     twilight[1],
                     twilight[4]))
-            safe_log(
+            safe_logging.safe_log(
                 LOGGER, "{} - Rise(HERE):{}, Set(HERE):{}".format(
                     airport,
                     twilight[1] - utc_offset,
                     twilight[4] - utc_offset))
         except Exception as e:
-            safe_log_warning(
+            safe_logging.safe_log_warning(
                 LOGGER,
                 "Exception while attempting to categorize METAR:{} EX:{}".format(metar, e))
     except Exception as e:
-        safe_log(
+        safe_logging.safe_log(
             LOGGER,
             "Captured EX while attempting to get category for {} EX:{}".format(airport, e))
         category = weather.INVALID
 
-    safe_log(LOGGER, '~get_airport_category() => {}'.format(category))
+    safe_logging.safe_log(
+        LOGGER,
+        '~get_airport_category() => {}'.format(category))
 
     return category
 
@@ -364,7 +372,7 @@ def render_airport_displays(
 
             render_airport(airport, airport_flasher)
         except Exception as ex:
-            safe_log_warning(
+            safe_logging.safe_log_warning(
                 LOGGER,
                 'Catch-all error in render_airport_displays of {} EX={}'.format(airport, ex))
         finally:
@@ -395,8 +403,8 @@ def render_airport(
     log = airport not in airport_render_last_logged_by_station
 
     if airport in airport_render_last_logged_by_station:
-        time_since_last = datetime.utcnow() \
-            - airport_render_last_logged_by_station[airport]
+        time_since_last = datetime.utcnow()
+        - airport_render_last_logged_by_station[airport]
         log = time_since_last.total_seconds() > 60
 
     if log:
@@ -413,7 +421,7 @@ def render_airport(
             color_to_render[0],
             color_to_render[1],
             color_to_render[2])
-        safe_log(LOGGER, message)
+        safe_logging.safe_log(LOGGER, message)
         airport_render_last_logged_by_station[airport] = datetime.utcnow()
 
     if renderer is not None:
@@ -661,8 +669,9 @@ def wait_for_all_airports():
             airport_conditions[airport] = (category, False)
         except:
             airport_conditions[airport] = (weather.INVALID, False)
-            safe_log_warning(
-                LOGGER, "Error while initializing with airport=" + airport)
+            safe_logging.safe_log_warning(
+                LOGGER,
+                "Error while initializing with airport={}".format(airport))
         finally:
             thread_lock_object.release()
 
@@ -706,13 +715,17 @@ def __get_test_cycle_colors__() -> list:
 if __name__ == '__main__':
     # Start loading the METARs in the background
     # while going through the self-test
-    safe_log(LOGGER, "Initialize weather for all airports")
+    safe_logging.safe_log(
+        LOGGER,
+        "Initialize weather for all airports")
 
     weather.get_metars(airport_render_config.keys(), logger=LOGGER)
 
     # Test LEDS on startup
     for color in __get_test_cycle_colors__():
-        safe_log(LOGGER, "Setting to {}".format(color))
+        safe_logging.safe_log(
+            LOGGER,
+            "Setting to {}".format(color))
         __all_airports_to_color__(color)
         time.sleep(0.5)
 
