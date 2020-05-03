@@ -55,13 +55,13 @@ If you have not already migrated to a version that has the user configuration fi
 
 ```bash
 cd ~/categorical-sectional
-mkdir ~/weather-map
-cp data/*.json ~/weather-map/
+mkdir ~/weather_map
+cp data/*.json ~/weather_map/
 ```
 
-Please note that you may need to modify the value of `"airports_file"`. You will most like need to replace the `data/` portion with `~/weather-map/`
+Please note that you may need to modify the value of `"airports_file"`. You will most like need to replace the `data/` portion with `~/weather_map/`
 
-For example: `"airports_file": "data/kawo_to_kosh.json"` would become `"airports_file": "~/weather-map/kawo_to_kosh.json"`
+For example: `"airports_file": "data/kawo_to_kosh.json"` would become `"airports_file": "~/weather_map/kawo_to_kosh.json"`
 
 Once you have performed this backup process and are sure that your files are in the new location, you may update the software.
 
@@ -459,6 +459,7 @@ Error       | Blinking white | Blinking white | Blinking white
 
 Version | Change
 ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+1.9     | Add documentation about the upgrade process for existing installations. Add configuration to control if old data causes a light to blink or not.
 1.8     | Use the configuration files provided as a default base, and then source user configuration from the user directory.
 1.7     | Allow for the brightness of the lights to be dimmed. This affects both the daytime and nighttime colors.
 1.6     | Updated documentation, wiring self-check file that uses the configuration to exercise each weather station for all colors.
