@@ -687,7 +687,7 @@ def __get_test_cycle_colors__() -> list:
         weather.YELLOW,
         weather.WHITE,
         weather.GRAY,
-        weather.DARK_YELLOW,
+        weather.DARK_YELLOW
     ]
 
     colors_to_init = []
