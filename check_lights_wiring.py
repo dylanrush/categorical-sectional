@@ -4,9 +4,9 @@
 import logging
 import time
 
-import configuration
 import lib.local_debug as local_debug
-import weather
+from configuration import configuration
+from data_sources import weather
 from lib.logger import Logger
 from renderers import led, led_pwm, ws2801
 from safe_logging import safe_log, safe_log_warning
@@ -84,9 +84,9 @@ if __name__ == '__main__':
                 colors[weather.GREEN])
 
             safe_log(LOGGER, "LED {} - {} - Now lit".format(led_index, airport))
-            
+
             input("Press Enter to continue...")
-          
+
             renderer.set_led(
                 airport_render_config[airport],
                 colors[weather.OFF])
