@@ -469,7 +469,7 @@ Version | Change
 1.3     | Performance improvements.
 1.2     | Migrated to Python 3.x
 1.1     | Day / Night cycle.
-1.0     | First release with adressable lights.
+1.0     | First release with addressable lights.
 
 ## Credits
 
