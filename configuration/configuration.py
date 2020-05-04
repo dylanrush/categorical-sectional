@@ -133,9 +133,45 @@ def __get_configuration__() -> dict:
 CONFIG = __get_configuration__()
 
 
+def __write_user_configuration__() -> bool:
+    """
+    Writes the current configuration to the user directory.
+
+    Returns:
+        bool -- True if the configuration was written to disk
+    """
+    try:
+        full_filename = __get_resolved_filepath__(__USER_CONFIG_FILE__)
+        directory = os.path.dirname(full_filename)
+
+        if not os.path.exists(directory):
+            os.mkdir(directory)
+
+        with open(str(full_filename), "w") as config_file:
+            config_text = json.dumps(CONFIG, indent=4, sort_keys=True)
+            config_file.write(config_text)
+
+            return True
+    except Exception as ex:
+        print(
+            "Error while trying to write {}: EX={}".format(
+                __USER_CONFIG_FILE__,
+                ex))
+        return False
+
+
 def update_configuration(
     new_config: dict
 ) -> dict:
+    """
+    Given a new piece of configuration, update it gracefully.
+
+    Arguments:
+        new_config {dict} -- The new configuration... partial or whole.
+
+    Returns:
+        dict -- The updated configuration.
+    """
     if new_config is None:
         return CONFIG
 
@@ -146,6 +182,8 @@ def update_configuration(
             update_package[valid_key] = new_config[valid_key]
 
     CONFIG.update(update_package)
+
+    __write_user_configuration__()
 
     return CONFIG
 
