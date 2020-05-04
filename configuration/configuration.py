@@ -147,6 +147,8 @@ def update_configuration(
 
     CONFIG.update(update_package)
 
+    return CONFIG
+
 
 def __get_boolean_config_value__(
     config_key: str,
