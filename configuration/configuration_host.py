@@ -13,7 +13,7 @@ import sys
 import urllib
 from http.server import BaseHTTPRequestHandler
 
-import configuration
+from configuration import configuration
 
 VIEW_NAME_KEY = 'name'
 MEDIA_TYPE_KEY = 'media_type'
@@ -23,8 +23,9 @@ MEDIA_TYPE_VALUE = 'application/json'
 
 # EXAMPLES
 # Invoke-WebRequest -Uri "http://localhost:8080/settings" -Method GET -ContentType "application/json"
-# Invoke-WebRequest -Uri "http://localhost:8080/settings" -Method PUT -ContentType "application/json" -Body '{"flip_horizontal": true}'
-# curl -X PUT -d '{"declination": 17}' http://localhost:8080/settings
+# Invoke-WebRequest -Uri "http://localhost:8080/settings" -Method PUT -ContentType "application/json" -Body '{"night_category_proportion": 0.1}'
+# curl localhost:8080/settings
+# curl -X PUT -d '{"night_category_proportion": 0.1}' http://localhost:8080/settings
 
 ERROR_JSON = {'success': False}
 
@@ -52,8 +53,8 @@ def set_settings(
         payload = handler.get_payload()
         print("settings/PUT:")
         print(payload)
-        configuration.CONFIG.update_configuration(payload)
-        return json.dumps(configuration.CONFIG, indent=4, sort_keys=True)
+
+        return configuration.update_configuration(payload)
     else:
         return ERROR_JSON
 
@@ -97,12 +98,12 @@ class ConfigurationHost(BaseHTTPRequestHandler):
         self
     ) -> dict:
         try:
-            payload_len = int(self.headers.getheader('content-length', 0))
+            payload_len = int(self.headers.get('Content-Length'))
             payload = self.rfile.read(payload_len)
             payload = json.loads(payload)
             return payload
-        except:
-            return {}
+        except Exception as ex:
+            return {"ERROR": str(ex)}
 
     def __handle_invalid_route__(
         self
@@ -141,7 +142,7 @@ class ConfigurationHost(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write('Only GET is supported\n')
 
-    def __finish_get_put_delete_request__(
+    def __finish_request__(
         self,
         route,
         method: str
@@ -155,7 +156,7 @@ class ConfigurationHost(BaseHTTPRequestHandler):
                         'Content-type', route['media_type'])
                 self.end_headers()
                 if method != 'DELETE':
-                    self.wfile.write(json.dumps(content))
+                    self.wfile.write(json.dumps(content).encode())
             else:
                 self.send_response(404)
                 self.end_headers()
@@ -179,7 +180,7 @@ class ConfigurationHost(BaseHTTPRequestHandler):
             if 'file' in route:
                 self.__handle_file_request__(route, method)
             else:
-                self.__finish_get_put_delete_request__(route, method)
+                self.__finish_request__(route, method)
 
     def handle_method(
         self,
