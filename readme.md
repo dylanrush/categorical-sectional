@@ -459,6 +459,7 @@ Error       | Blinking white | Blinking white | Blinking white
 
 Version | Change
 ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+1.10    | Add service that allows the configuration to be updated remotely without using the command line.
 1.9     | Add documentation about the upgrade process for existing installations. Add configuration to control if old data causes a light to blink or not.
 1.8     | Use the configuration files provided as a default base, and then source user configuration from the user directory.
 1.7     | Allow for the brightness of the lights to be dimmed. This affects both the daytime and nighttime colors.
