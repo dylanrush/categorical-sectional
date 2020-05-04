@@ -1,6 +1,6 @@
 from http.server import HTTPServer
 
-import configuration_host
+from configuration import configuration_host
 
 CONFIGURATION_HOST_PORT = 8080
 
@@ -47,9 +47,4 @@ class WeatherMapServer(object):
         self.__local_ip__ = self.get_server_ip()
         server_address = (self.__local_ip__, self.__port__)
         self.__httpd__ = HTTPServer(
-            server_address, configuration_host.ConfigurationHost)
-
-
-if __name__ == '__main__':
-    host = WeatherMapServer()
-    host.run()
+            server_address, configuration_host.ConfigurationHost)    
