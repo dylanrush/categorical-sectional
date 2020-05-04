@@ -27,7 +27,7 @@ To complete the project you will need to supply your own chart and backing board
 
 Soldering is required for three (3) wires, along with some electrical tape.
 
-To finish the instalation you will need a monitor, and a keyboard.
+To finish the installation you will need a monitor, and a keyboard.
 
 #### Other Raspberry Pis
 
@@ -45,11 +45,41 @@ Barrel jack adapters                         | \$7.99  | <https://www.amazon.com
 Individually addressable LEDs (WS2801 based) | \$39.95 | <https://www.amazon.com/12mm-Diffused-Digital-Pixels-Strand/dp/B073MZWBYS/ref=sr_1_1?ie=UTF8&qid=1528558371&sr=8-1&keywords=adafruit+ws2801>
 4 Pin JST SM Plugs                           | \$7.99  | <https://www.amazon.com/Visdoll-Pairs-Female-Connector-Cable/dp/B075K48BD9/ref=sr_1_8?ie=UTF8&qid=1528559351&sr=8-8&keywords=4+Pin+JST+SM+Plug>
 
+### Upgrade Instructions
+
+If you have an older version of the software (V1.6 or earlier), it is highly recommended that you copy your configuration files into the user configuration directory.
+
+The user configuration files and directory are explained in the `~/weather_map/config.json` section.
+
+If you have not already migrated to a version that has the user configuration files, open a command line on the Raspberry Pi and execute the following commands:
+
+```bash
+cd ~/categorical-sectional
+mkdir ~/weather_map
+cp data/*.json ~/weather_map/
+```
+
+Please note that you may need to modify the value of `"airports_file"`. You will most like need to replace the `data/` portion with `~/weather_map/`
+
+For example: `"airports_file": "data/kawo_to_kosh.json"` would become `"airports_file": "~/weather_map/kawo_to_kosh.json"`
+
+Once you have performed this backup process and are sure that your files are in the new location, you may update the software.
+
+**WARNING**: The following steps will discard any modifications you have performed.
+
+```bash
+cd ~/categorical-sectional
+git fetch
+git reset --hard HEAD
+git checkout master
+git pull
+```
+
 ### Bootstrapping The Raspberry Pi
 
-#### OS Instalation
+#### OS Installation
 
-This section gets you started with instaling the software.
+This section gets you started with installing the software.
 
 A full tutorial on how to install the Operating System is available at: <https://www.raspberrypi.org/documentation/installation/noobs.md>
 
@@ -134,7 +164,7 @@ Green/Teal | 19                                          | MOSI
 - Connect the Male JST and LED connectors together.
 - Connect the barrel jack into the Neopixel strip.
 - Add the SD card to the Pi.
-- Plug inthe NeoPixels first, then the Raspberry Pi.
+- Plug in the NeoPixels first, then the Raspberry Pi.
 
 ## Understanding The Configuration Files
 
@@ -168,6 +198,7 @@ You do not need to include ALL of these values. Any values provided in this file
   "spi_port": 0,
   "pwm_frequency": 100,
   "airports_file": "data/kawo_to_kosh.json",
+  "blink_old_stations": true,
   "night_lights": true,
   "night_populated_yellow": false,
   "night_category_proportion": 0.05,
@@ -182,6 +213,7 @@ Here is an example of using overriding values:
 ```json
 {
   "airports_file": "~/weather_map/puget_sound_region.json",
+  "blink_old_stations": false,
   "night_category_proportion": 0.10,
   "brightness_proportion": 0.5
 }
@@ -189,9 +221,17 @@ Here is an example of using overriding values:
 
 In this example we are using the file `puget_sound_region.json` to define our mapping. This file is expected to be in the `/home/pi/weather_map` folder. We are also reducing the overall brightness (ever during the day) by 50% of what the lights are capable of.
 
+#### blink_old_stations
+
+Set this to `false` if you would like the stations to remain the last known category/color even if the data is old.
+
+The default is `true`. When the value is set to `true` any station with data older than 90 minutes will start blinking to indicate that the data is old.
+
+When new data is received that has an issue date less than 90 minutes from the current time, then the light will stop blinking.
+
 #### night_lights
 
-Set this to true if you would like the weather stations to change colors based on the time of day.
+Set this to `true` if you would like the weather stations to change colors based on the time of day.
 
 If you are using WS2801 or PWM based lights, then this is a gradual process.
 
@@ -201,11 +241,11 @@ In the morning, the light will increase back to a bright yellow as the office su
 
 #### night_populated_yellow
 
-Set this to true if you would like the day/night transition to show stations that are currently in "full dark" using yellow.
+Set this to `true` if you would like the day/night transition to show stations that are currently in "full dark" using yellow.
 
 This will transition/fade into yellow from the standard category color.
 
-Setting this to false will result in the category color fading. The amount the category fades is determined by `night_category_proportion`
+Setting this to `false` will result in the category color fading. The amount the category fades is determined by `night_category_proportion`
 
 #### night_category_proportion
 
@@ -419,6 +459,7 @@ Error       | Blinking white | Blinking white | Blinking white
 
 Version | Change
 ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+1.9     | Add documentation about the upgrade process for existing installations. Add configuration to control if old data causes a light to blink or not.
 1.8     | Use the configuration files provided as a default base, and then source user configuration from the user directory.
 1.7     | Allow for the brightness of the lights to be dimmed. This affects both the daytime and nighttime colors.
 1.6     | Updated documentation, wiring self-check file that uses the configuration to exercise each weather station for all colors.

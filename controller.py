@@ -153,12 +153,14 @@ def get_color_from_condition(
     if is_inactive:
         return (weather.INOP, False)
 
+    should_blink = is_old and configuration.get_blink_station_if_old_data()
+
     if category == weather.VFR:
-        return (weather.GREEN, is_old)
+        return (weather.GREEN, should_blink)
     elif category == weather.MVFR:
-        return (weather.BLUE, is_old)
+        return (weather.BLUE, should_blink)
     elif category == weather.IFR:
-        return (weather.RED, is_old)
+        return (weather.RED, should_blink)
     elif category == weather.LIFR:
         # Only blink for normal LEDs.
         # PWM and WS2801 have their own color.
@@ -166,7 +168,7 @@ def get_color_from_condition(
     elif category == weather.NIGHT:
         return (weather.YELLOW, False)
     elif category == weather.SMOKE:
-        return (weather.GRAY, is_old)
+        return (weather.GRAY, should_blink)
 
     # Error
     return (weather.OFF, False)
@@ -444,7 +446,7 @@ def _get_standard_led_night_color(
     return starting_color
 
 
-def _get_rgb_night_color_to_render(
+def __get_rgb_night_color_to_render__(
     color_by_category,
     proportions
 ):
@@ -457,14 +459,100 @@ def _get_rgb_night_color_to_render(
     # then only use the period between sunset/sunrise start and civil twilight
     if proportions[0] > 0.0:
         color_to_render = colors_lib.get_color_mix(
-            color_by_category, target_night_color, proportions[0])
+            color_by_category,
+            target_night_color,
+            proportions[0])
     elif proportions[1] > 0.0:
         color_to_render = colors_lib.get_color_mix(
-            target_night_color, color_by_category, proportions[1])
+            target_night_color,
+            color_by_category,
+            proportions[1])
     else:
         color_to_render = target_night_color
 
     return color_to_render
+
+
+def __get_night_color_to_render__(
+    color_by_category: list,
+    proportions: list
+) -> list:
+    """
+    Calculate the color an airport should be based on the day/night cycle.
+    Based on the configuration mixes the color with "Night Yellow" or dims the LEDs.
+    A station that is in full daylight will be its normal color.
+    A station that is in full darkness with be Night Yellow or dimmed to the night level.
+    A station that is in sunset or sunrise will be mixed appropriately.
+
+    Arguments:
+        color_by_category {list} -- [description]
+        proportions {list} -- [description]
+
+    Returns:
+        list -- [description]
+    """
+
+    color_to_render = weather.INOP
+
+    if proportions[0] <= 0.0 and proportions[1] <= 0.0:
+        if configuration.get_night_populated_yellow():
+            color_to_render = colors[weather.DARK_YELLOW]
+        else:
+            color_to_render = __get_rgb_night_color_to_render__(
+                color_by_category,
+                proportions)
+    # Do not allow color mixing for standard LEDs
+    # Instead if we are going to render NIGHT then
+    # have the NIGHT color represent that the station
+    # is in a twilight period.
+    elif configuration.get_mode() == configuration.STANDARD:
+        if proportions[0] > 0.0 or proportions[1] < 1.0:
+            color_to_render = color_by_rules[weather.NIGHT]
+        elif proportions[0] <= 0.0 and proportions[1] <= 0.0:
+            color_to_render = colors[weather.DARK_YELLOW]
+    elif not configuration.get_night_populated_yellow():
+        color_to_render = __get_rgb_night_color_to_render__(
+            color_by_category,
+            proportions)
+    elif proportions[0] > 0.0:
+        color_to_render = colors_lib.get_color_mix(
+            colors[weather.DARK_YELLOW],
+            color_by_rules[weather.NIGHT],
+            proportions[0])
+    elif proportions[1] > 0.0:
+        color_to_render = colors_lib.get_color_mix(
+            color_by_rules[weather.NIGHT],
+            color_by_category,
+            proportions[1])
+
+    return color_to_render
+
+
+def __get_dimmed_color__(
+    starting_color: list
+) -> list:
+    """
+    Given a starting color, get the version that is dimmed.
+
+    Arguments:
+        starting_color {list} -- The starting color that will be dimmed.
+
+    Returns:
+        list -- The color with the dimming adjustment.
+    """
+    dimmed_color = []
+    brightness_adjustment = configuration.get_brightness_proportion()
+    for color in starting_color:
+        reduced_color = float(color) * brightness_adjustment
+
+        # Some colors are floats, some are integers.
+        # Make sure we keep everything the same.
+        if isinstance(color, int):
+            reduced_color = int(reduced_color)
+
+        dimmed_color.append(reduced_color)
+
+    return dimmed_color
 
 
 def get_mix_and_color(
@@ -486,35 +574,9 @@ def get_mix_and_color(
     proportions = weather.get_twilight_transition(airport)
 
     if configuration.get_night_lights():
-        if proportions[0] <= 0.0 and proportions[1] <= 0.0:
-            if configuration.get_night_populated_yellow():
-                color_to_render = colors[weather.DARK_YELLOW]
-            else:
-                color_to_render = _get_rgb_night_color_to_render(
-                    color_by_category,
-                    proportions)
-        # Do not allow color mixing for standard LEDs
-        # Instead if we are going to render NIGHT then
-        # have the NIGHT color represent that the station
-        # is in a twilight period.
-        elif configuration.get_mode() == configuration.STANDARD:
-            if proportions[0] > 0.0 or proportions[1] < 1.0:
-                color_to_render = color_by_rules[weather.NIGHT]
-            elif proportions[0] <= 0.0 and proportions[1] <= 0.0:
-                color_to_render = colors[weather.DARK_YELLOW]
-        elif not configuration.get_night_populated_yellow():
-            color_to_render = _get_rgb_night_color_to_render(
-                color_by_category, proportions)
-        elif proportions[0] > 0.0:
-            color_to_render = colors_lib.get_color_mix(
-                colors[weather.DARK_YELLOW],
-                color_by_rules[weather.NIGHT],
-                proportions[0])
-        elif proportions[1] > 0.0:
-            color_to_render = colors_lib.get_color_mix(
-                color_by_rules[weather.NIGHT],
-                color_by_category,
-                proportions[1])
+        color_to_render = __get_night_color_to_render__(
+            color_by_category,
+            proportions)
 
     final_color = []
     brightness_adjustment = configuration.get_brightness_proportion()
@@ -552,6 +614,16 @@ def all_airports(
         return
 
     [renderer.set_led(airport_render_config[airport], colors[color])
+        for airport in airport_render_config]
+
+
+def __all_airports_to_color__(
+    color: list
+):
+    if renderer is None:
+        return
+
+    [renderer.set_led(airport_render_config[airport], color)
         for airport in airport_render_config]
 
 
@@ -597,15 +669,8 @@ def wait_for_all_airports():
     return True
 
 
-if __name__ == '__main__':
-    # Start loading the METARs in the background
-    # while going through the self-test
-    safe_log(LOGGER, "Initialize weather for all airports")
-
-    weather.get_metars(airport_render_config.keys(), logger=LOGGER)
-
-    # Test LEDS on startup
-    colors_to_init = (
+def __get_test_cycle_colors__() -> list:
+    base_colors_test = [
         weather.LOW,
         weather.RED,
         weather.BLUE,
@@ -614,12 +679,41 @@ if __name__ == '__main__':
         weather.WHITE,
         weather.GRAY,
         weather.DARK_YELLOW,
-        weather.OFF
-    )
+    ]
 
-    for color in colors_to_init:
+    colors_to_init = []
+
+    for color in base_colors_test:
+        is_global_dimming = configuration.get_brightness_proportion() < 1.0
+        color_to_cycle = colors[color]
+        colors_to_init.append(color_to_cycle)
+        if is_global_dimming:
+            colors_to_init.append(__get_dimmed_color__(color_to_cycle))
+        colors_to_init.append(__get_night_color_to_render__(
+            color_to_cycle,
+            [0.0, 0.0]))
+        if is_global_dimming:
+            colors_to_init.append(__get_dimmed_color__(
+                __get_night_color_to_render__(
+                    color_to_cycle,
+                    [0.0, 0.0])))
+
+    colors_to_init.append(colors[weather.OFF])
+
+    return colors_to_init
+
+
+if __name__ == '__main__':
+    # Start loading the METARs in the background
+    # while going through the self-test
+    safe_log(LOGGER, "Initialize weather for all airports")
+
+    weather.get_metars(airport_render_config.keys(), logger=LOGGER)
+
+    # Test LEDS on startup
+    for color in __get_test_cycle_colors__():
         safe_log(LOGGER, "Setting to {}".format(color))
-        all_airports(color)
+        __all_airports_to_color__(color)
         time.sleep(0.5)
 
     all_airports(weather.OFF)
