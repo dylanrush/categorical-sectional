@@ -36,7 +36,7 @@ from datetime import datetime
 
 import lib.colors as colors_lib
 import lib.local_debug as local_debug
-from configuration import configuration
+from configuration import configuration, configuration_server
 from data_sources import weather
 from lib import safe_logging
 from lib.logger import Logger
@@ -712,6 +712,24 @@ def __get_test_cycle_colors__() -> list:
     return colors_to_init
 
 
+def __test_all_leds__(
+    logger: Logger
+):
+    """
+    Test all of the LEDs, independent of the configuration
+    to make sure the wiring is correct and that none have failed.
+
+    Arguments:
+        logger {Logger} -- The logger being used.
+    """
+    for color in __get_test_cycle_colors__():
+        safe_logging.safe_log(
+            logger,
+            "Setting to {}".format(color))
+        __all_airports_to_color__(color)
+        time.sleep(0.5)
+
+
 if __name__ == '__main__':
     # Start loading the METARs in the background
     # while going through the self-test
@@ -721,20 +739,23 @@ if __name__ == '__main__':
 
     weather.get_metars(airport_render_config.keys(), logger=LOGGER)
 
-    # Test LEDS on startup
-    for color in __get_test_cycle_colors__():
-        safe_logging.safe_log(
-            LOGGER,
-            "Setting to {}".format(color))
-        __all_airports_to_color__(color)
-        time.sleep(0.5)
+    __test_all_leds__(LOGGER)
+
+    web_server = configuration_server.WeatherMapServer()
 
     all_airports(weather.OFF)
 
-    update_categories_task = RecurringTask(
+    RecurringTask(
         'UpdateCategorizations',
         60,
         update_all_station_categorizations,
+        LOGGER,
+        True)
+
+    RecurringTask(
+        "rest_host",
+        0.1,
+        web_server.run,
         LOGGER,
         True)
 
