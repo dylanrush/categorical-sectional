@@ -640,7 +640,9 @@ def render_thread():
     Main logic loop for rendering the lights.
     """
 
-    safe_log(LOGGER, "Starting rendering thread")
+    safe_logging.safe_log(
+        LOGGER,
+        "Starting rendering thread")
 
     while True:
         try:
