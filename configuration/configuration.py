@@ -146,15 +146,27 @@ def __write_user_configuration__(
         bool -- True if the configuration was written to disk
     """
     try:
+        print("Starting to write file.")
+
         full_filename = __get_resolved_filepath__(__USER_CONFIG_FILE__)
+        print("full_filename=`{}`".format(full_filename))
+
         directory = os.path.dirname(full_filename)
+        print("directory=`{}`".format(directory))
 
         if not os.path.exists(directory):
+            print("Attempting to create directory `{}`".format(directory))
             os.mkdir(directory)
 
         with open(str(full_filename), "w") as config_file:
+            print("Opened `{}` for write.".format(full_filename))
+
             config_text = json.dumps(config, indent=4, sort_keys=True)
+            print("config_text=`{}`".format(config_text))
+
             config_file.write(config_text)
+
+            print("Finished writing file.")
 
             return True
     except Exception as ex:
