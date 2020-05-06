@@ -393,6 +393,9 @@ def render_airport(
 
     condition, blink = get_airport_condition(airport)
     color_by_category = color_by_rules[condition]
+
+    now = datetime.utcnow()
+
     if blink and airport_flasher:
         color_by_category = colors[weather.OFF]
 
@@ -403,9 +406,14 @@ def render_airport(
     log = airport not in airport_render_last_logged_by_station
 
     if airport in airport_render_last_logged_by_station:
-        time_since_last = datetime.utcnow()
-        - airport_render_last_logged_by_station[airport]
-        log = time_since_last.total_seconds() > 60
+        try:
+            time_since_last = now - \
+                airport_render_last_logged_by_station[airport]
+            log = time_since_last.total_seconds() > 60
+        except Exception as ex:
+            safe_logging.safe_log(
+                'Attempting to determine if should log, EX={}'.format(ex))
+            log = True
 
     if log:
         message_format = 'STATION={}, CAT={:5}, BLINK={}, COLOR={:3}:{:3}:{:3}, P_O2N={:.1f}, P_N2C={:.1f}, RENDER={:3}:{:3}:{:3}'
@@ -422,7 +430,7 @@ def render_airport(
             color_to_render[1],
             color_to_render[2])
         safe_logging.safe_log(LOGGER, message)
-        airport_render_last_logged_by_station[airport] = datetime.utcnow()
+        airport_render_last_logged_by_station[airport] = now
 
     if renderer is not None:
         renderer.set_led(
