@@ -80,6 +80,7 @@ def __get_resolved_filepath__(
                 os.path.dirname(os.path.abspath(__file__)),
                 filename)
         else:
+            print("Attempting to expand user pathing.")
             raw_path = str(Path(os.path.expanduser(filename)).resolve())
 
         print("Before normalization path='{}'".format(raw_path))
@@ -89,7 +90,8 @@ def __get_resolved_filepath__(
         print("Normalized path='{}'".format(raw_path))
 
         return normalized_path
-    except:
+    except Exception as ex:
+        print("__get_resolved_filepath__:Attempted to resolve. got EX={}".format(ex))
         return None
 
 
@@ -164,8 +166,11 @@ def __write_user_configuration__(
         print("directory=`{}`".format(directory))
 
         if not os.path.exists(directory):
-            print("Attempting to create directory `{}`".format(directory))
-            os.mkdir(directory)
+            try:
+                print("Attempting to create directory `{}`".format(directory))
+                os.mkdir(directory)
+            except Exception as ex:
+                print("While attempting to create directory, EX={}".format(ex))
 
         with open(str(full_filename), "w") as config_file:
             print("Opened `{}` for write.".format(full_filename))
