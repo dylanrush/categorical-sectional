@@ -102,7 +102,7 @@ class ConfigurationHost(BaseHTTPRequestHandler):
             payload = self.rfile.read(payload_len)
 
             if isinstance(payload, bytes):
-                payload = payload(encoding="utf-8")
+                payload = payload.decode(encoding="utf-8")
 
             payload = json.loads(payload)
             return payload
