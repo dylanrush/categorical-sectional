@@ -3,6 +3,7 @@ Handles configuration loading and constants.
 """
 import json
 import os
+import threading
 import unicodedata
 from pathlib import Path
 
@@ -50,6 +51,8 @@ __VALID_KEYS__ = [
 
 __DEFAULT_CONFIG_FILE__ = '../data/config.json'
 __USER_CONFIG_FILE__ = '~/weather_map/config.json'
+
+__lock__ = threading.Lock()
 
 
 def __get_resolved_filepath__(
@@ -133,7 +136,9 @@ def __get_configuration__() -> dict:
 CONFIG = __get_configuration__()
 
 
-def __write_user_configuration__() -> bool:
+def __write_user_configuration__(
+    config: dict
+) -> bool:
     """
     Writes the current configuration to the user directory.
 
@@ -148,7 +153,7 @@ def __write_user_configuration__() -> bool:
             os.mkdir(directory)
 
         with open(str(full_filename), "w") as config_file:
-            config_text = json.dumps(CONFIG, indent=4, sort_keys=True)
+            config_text = json.dumps(config, indent=4, sort_keys=True)
             config_file.write(config_text)
 
             return True
@@ -173,7 +178,7 @@ def update_configuration(
         dict -- The updated configuration.
     """
     if new_config is None:
-        return CONFIG
+        return CONFIG.copy()
 
     update_package = {}
 
@@ -181,11 +186,14 @@ def update_configuration(
         if valid_key in new_config:
             update_package[valid_key] = new_config[valid_key]
 
+    __lock__.acquire()
     CONFIG.update(update_package)
+    config_copy = CONFIG.copy()
+    __lock__.release()
 
-    __write_user_configuration__()
+    __write_user_configuration__(config_copy)
 
-    return CONFIG
+    return config_copy
 
 
 def __get_boolean_config_value__(

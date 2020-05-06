@@ -37,7 +37,7 @@ def get_settings(
     Handles a get-the-settings request.
     """
     if configuration.CONFIG is not None:
-        return configuration.CONFIG
+        return configuration.CONFIG.copy()
     else:
         return ERROR_JSON
 
