@@ -103,7 +103,7 @@ class ConfigurationHost(BaseHTTPRequestHandler):
             payload = json.loads(payload)
             return payload
         except Exception as ex:
-            return {"ERROR": str(ex)}
+            return {"get_payload:ERROR": str(ex)}
 
     def __handle_invalid_route__(
         self
