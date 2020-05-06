@@ -100,6 +100,10 @@ class ConfigurationHost(BaseHTTPRequestHandler):
         try:
             payload_len = int(self.headers.get('Content-Length'))
             payload = self.rfile.read(payload_len)
+
+            if isinstance(payload, bytes):
+                payload = payload(encoding="utf-8")
+
             payload = json.loads(payload)
             return payload
         except Exception as ex:
