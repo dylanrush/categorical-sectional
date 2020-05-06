@@ -148,8 +148,17 @@ def __write_user_configuration__(
     try:
         print("Starting to write file.")
 
-        full_filename = __get_resolved_filepath__(__USER_CONFIG_FILE__)
-        print("full_filename=`{}`".format(full_filename))
+        full_filename = None
+
+        try:
+            full_filename = __get_resolved_filepath__(__USER_CONFIG_FILE__)
+            print("full_filename=`{}`".format(full_filename))
+        except:
+            pass
+
+        if full_filename is None:
+            print("Unable to resolve, using relative path + name instead.")
+            full_filename = __USER_CONFIG_FILE__
 
         directory = os.path.dirname(full_filename)
         print("directory=`{}`".format(directory))
