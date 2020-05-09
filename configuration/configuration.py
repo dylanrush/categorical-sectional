@@ -18,6 +18,9 @@ else:
     HIGH = GPIO.HIGH
     LOW = GPIO.LOW
 
+# TODO - Change the relative pathing of the Airports files into an absolute path so when a config is written the to use dir the pathing still works.
+# TODO - Implement file uploading WITH FILE NAME and then write that to the user directory.... with the correct pathing.
+
 # Modes
 STANDARD = 'led'
 PWM = 'pwm'
