@@ -12,6 +12,7 @@ var express_1 = __importDefault(require("express"));
 var body_parser_1 = __importDefault(require("body-parser"));
 var express_handlebars_1 = __importDefault(require("express-handlebars"));
 var ip_1 = __importDefault(require("ip"));
+var isPi = require("detect-rpi");
 /**
  * Returns the address of the WeatherMap host.
  *
@@ -26,6 +27,9 @@ function getAddress() {
  * @returns {number}
  */
 function getWebServerPort() {
+    if (isPi()) {
+        return 80;
+    }
     return 3000;
 }
 function getWeatherMapRestUri() {

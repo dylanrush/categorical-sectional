@@ -9,6 +9,8 @@ import bodyParser from "body-parser";
 import expressHandlebars from "express-handlebars";
 import ip from "ip";
 
+const isPi = require(`detect-rpi`)
+
 /**
  * Returns the address of the WeatherMap host.
  *
@@ -24,6 +26,10 @@ function getAddress(): string {
  * @returns {number}
  */
 function getWebServerPort(): number {
+  if (isPi()) {
+    return 80
+  }
+
   return 3000;
 }
 
