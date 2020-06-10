@@ -7,6 +7,8 @@
         "METAR",
         "MVFR",
         "Marzulli",
-        "gpio"
-    ]
+        "gpio",
+        "ifeq"
+    ],
+    "python.pythonPath": "/usr/bin/python3"
 }

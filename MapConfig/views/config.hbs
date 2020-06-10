@@ -1,0 +1,133 @@
+<datalist id="light_types">
+    <option value="ws2801">WS2801</option>
+    <option value="pwm">PWM</option>
+    <option value="led">LED</option>
+</datalist>
+<datalist id="boolean">
+    <option value="true">True</option>
+    <option value="false">False</option>
+</datalist>
+<p>
+<form name="settingsForm" action="/" method="POST">
+    <br>
+    <h2>Immediate Settings</h2>
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Value</th>
+        </tr>
+        <tr>
+            <td>Blink Stations With Old Data</td>
+            <td style="align-items: flex-start; align-content: flex-start; text-align: left;">
+                <label class="switch">
+                    <input onchange="settingsForm.submit()" name="blink_old_stations" id="blink_old_stations" type="checkbox" value="true" {{#if configJson.blink_old_stations}}checked{{/if}}/>
+                    <span class="slider round"></span>
+                </label>
+            </td>
+        </tr>
+        <tr>
+            <td>Enable "Night Mode"</td>
+            <td style="align-items: flex-start; align-content: flex-start; text-align: left;">
+                <label class="switch">
+                    <input onchange="settingsForm.submit()" name="night_lights" id="night_lights" type="checkbox" value="true" {{#if configJson.night_lights}}checked{{/if}}/>
+                    <span class="slider round"></span>
+                </label>
+            </td>
+        </tr>
+        <tr>
+            <td>Fade Stations To "Night Populated Yellow"</td>
+            <td style="align-items: flex-start; align-content: flex-start; text-align: left;">
+                <label class="switch">
+                    <input onchange="settingsForm.submit()" name="night_populated_yellow" id="night_populated_yellow" type="checkbox" value="true" {{#if configJson.night_populated_yellow}}checked{{/if}}/>
+                    <span class="slider round"></span>
+                </label>
+            </td>
+        </tr>
+        <tr>
+            <td>Night Time Dimming Proportion</td>
+            <td><input
+                onchange="settingsForm.submit()"
+                name="night_category_proportion"
+                id="night_category_proportion"
+                type="range"
+                min="0.0"
+                max="1.0"
+                step="0.05"
+                value="{{configJson.night_category_proportion}}"/></td>
+        </tr>
+        <tr>
+            <td>Overall Brightness Adjustment</td>
+            <td><input
+                onchange="settingsForm.submit()"
+                name="brightness_proportion"
+                id="brightness_proportion"
+                type="range"
+                min="0.0"
+                max="1.0"
+                step="0.05"
+                value="{{configJson.brightness_proportion}}"/></td>
+        </tr>
+    </table>
+    <br>
+    <br>
+    <h2>Reboot Required</h2>
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Value</th>
+        </tr>
+        <tr>
+            <td>Light Mode</td>
+            <td style="align-items: flex-start; align-content: flex-start; text-align: left;">
+                <input type="radio" name="mode" class="form-radio" value="ws2801" {{#ifeq configJson.mode "ws2801"}}checked{{/ifeq}}>&nbsp;WS2801<br>
+                <input type="radio" name="mode" class="form-radio" value="pwm" {{#ifeq configJson.mode "pwm"}}checked{{/ifeq}}>&nbsp;PWM LEDs<br>
+                <input type="radio" name="mode" class="form-radio" value="led" {{#ifeq configJson.mode "led"}}checked{{/ifeq}}>&nbsp;LEDs<br><br>
+            </td>
+        </tr>
+        <tr>
+            <td>Pixel Count</td>
+            <td><input name="pixel_count" id="pixel_count" type="number" min="1" max="200"
+                    value="{{configJson.pixel_count}}" /></td>
+        </tr>
+        <tr>
+            <td>SPI Device</td>
+            <td><input name="spi_device" id="spi_device" type="number" min="1" max="4"
+                    value="{{configJson.spi_device}}" /></td>
+        </tr>
+        <tr>
+            <td>SPI Port</td>
+            <td><input name="spi_port" id="spi_port" type="number" min="1" max="4" value="{{configJson.spi_port}}" />
+            </td>
+        </tr>
+        <tr>
+            <td>PWM Frequency</td>
+            <td><input name="pwm_frequency" id="pwm_frequency" type="number" min="0" max="1000"
+                    value="{{configJson.pwm_frequency}}" /></td>
+        </tr>
+        <!--
+        <tr>
+            <td>Airports File</td>
+            <td><input name="airports_file" id="airports_file" type="file" value="{{configJson.airports_file}}" /></td>
+        </tr>
+        -->
+    </table>
+    <br>
+    <br>
+    <input type="submit" value="UPDATE" />
+</form>
+<script>
+    document.getElementById("mode").value = {{ configJson.mode }};
+    document.getElementById("pixel_count").value = {{ configJson.pixel_count }};
+    document.getElementById("spi_device").value = {{ configJson.spi_device }};
+    document.getElementById("spi_port").value = {{ configJson.spi_port }};
+    document.getElementById("pwm_frequency").value = {{ configJson.pwm_frequency }};
+    //document.getElementById("airports_file").value = {{ configJson.airports_file }};
+    document.getElementById("blink_old_stations").value = {{ configJson.blink_old_stations }};
+    document.getElementById("night_lights").value = {{ configJson.night_lights }};
+    document.getElementById("night_populated_yellow").value = {{ configJson.night_populated_yellow }};
+    document.getElementById("brightness_proportion").value = {{ configJson.brightness_proportion }};
+    document.getElementById("night_category_proportion").value = {{ configJson.night_category_proportion }};
+    document.getElementById("brightness_proportion").value = {{ configJson.brightness_proportion }};
+</script>
+</p>
+<br>

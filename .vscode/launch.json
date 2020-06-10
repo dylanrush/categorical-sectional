@@ -13,6 +13,18 @@
             "console": "integratedTerminal"
         },
         {
+            "type": "node",
+            "request": "launch",
+            "name": "WeatherMapConfig",
+            "program": "${workspaceFolder}/MapConfig/build/index.js",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/**/*.js"
+            ]
+        },
+        {
             "name": "Python: Configuration Server",
             "type": "python",
             "request": "launch",

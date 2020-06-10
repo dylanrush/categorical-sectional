@@ -208,6 +208,15 @@ def get_faa_csv_identifier(
     return None
 
 
+def clear_daytime_cache():
+    __light_fetch_lock__.acquire()
+
+    try:
+        __daylight_cache__.clear()
+    finally:
+        __light_fetch_lock__.release()
+
+
 def get_civil_twilight(
     airport_icao_code,
     current_utc_time=None,

@@ -14,6 +14,7 @@ import urllib
 from http.server import BaseHTTPRequestHandler
 
 from configuration import configuration
+from data_sources import weather
 
 VIEW_NAME_KEY = 'name'
 MEDIA_TYPE_KEY = 'media_type'
@@ -44,7 +45,7 @@ def get_settings(
 
 def set_settings(
     handler
-):
+) -> dict:
     """
     Handles a set-the-settings request.
     """
@@ -54,7 +55,12 @@ def set_settings(
         print("settings/PUT:")
         print(payload)
 
-        return configuration.update_configuration(payload)
+        response = configuration.update_configuration(payload)
+
+        if payload is not None and configuration.NIGHT_POPULATED_YELLOW_KEY in payload:
+            weather.clear_daytime_cache()
+
+        return response
     else:
         return ERROR_JSON
 
