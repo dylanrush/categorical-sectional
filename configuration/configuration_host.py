@@ -55,10 +55,12 @@ def set_settings(
         print("settings/PUT:")
         print(payload)
 
-        response = configuration.update_configuration(payload)
-
-        if payload is not None and configuration.NIGHT_POPULATED_YELLOW_KEY in payload:
+        if payload is not None \
+                and configuration.NIGHT_POPULATED_YELLOW_KEY in payload\
+                and payload[configuration.NIGHT_POPULATED_YELLOW_KEY] is not configuration.get_night_populated_yellow():
             weather.clear_daytime_cache()
+
+        response = configuration.update_configuration(payload)
 
         return response
     else:
