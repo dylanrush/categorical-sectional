@@ -47,4 +47,4 @@ class WeatherMapServer(object):
         self.__local_ip__ = self.get_server_ip()
         server_address = (self.__local_ip__, self.__port__)
         self.__httpd__ = HTTPServer(
-            server_address, configuration_host.ConfigurationHost)    
+            server_address, configuration_host.ConfigurationHost)

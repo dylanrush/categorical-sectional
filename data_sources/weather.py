@@ -163,7 +163,7 @@ def __is_cache_valid__(
                 return (True, cache[airport_icao_code][1])
             else:
                 return (False, cache[airport_icao_code][1])
-    except:
+    except Exception:
         pass
 
     return (False, None)
@@ -538,7 +538,7 @@ def get_metar_from_report_line(
 
         identifier = metar.split(' ')[0]
         __set_cache__(identifier, __metar_report_cache__, metar)
-    except:
+    except Exception:
         metar = None
 
     return (identifier, metar)
@@ -661,6 +661,8 @@ def get_metar(
         use_cache {bool} -- Should we use the cache? Set to false to bypass the cache. (default: {True})
     """
 
+    empty_return = '~get_metar() => None'
+
     safe_logging.safe_log(logger, 'get_metar({})'.format(airport_icao_code))
 
     if airport_icao_code is None or len(airport_icao_code) < 1:
@@ -706,7 +708,7 @@ def get_metar(
                     airport_icao_code))
             safe_logging.safe_log(
                 logger,
-                '~get_metar() => None')
+                empty_return)
 
             return None
 
@@ -717,7 +719,7 @@ def get_metar(
                     airport_icao_code))
             safe_logging.safe_log(
                 logger,
-                '~get_metar() => None')
+                empty_return)
             return None
 
         safe_logging.safe_log(
@@ -734,7 +736,7 @@ def get_metar(
 
     except Exception as e:
         safe_logging.safe_log(logger, 'get_metar got EX:{}'.format(e))
-        safe_logging.safe_log(logger, '~get_metar() => None')
+        safe_logging.safe_log(logger, empty_return)
 
         return None
 

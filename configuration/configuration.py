@@ -85,12 +85,12 @@ def __get_resolved_filepath__(
         else:
             print("Attempting to expand user pathing.")
             raw_path = Path(os.path.expanduser(filename))
-            
+
             raw_path = str(raw_path)
 
         print("Before normalization path='{}'".format(raw_path))
 
-        normalized_path=os.path.normpath(raw_path)
+        normalized_path = os.path.normpath(raw_path)
 
         print("Normalized path='{}'".format(raw_path))
 
@@ -113,11 +113,11 @@ def __load_config_file__(
         dict -- Any given configuration found.
     """
     try:
-        full_filename=__get_resolved_filepath__(config_filename)
+        full_filename = __get_resolved_filepath__(config_filename)
 
         with open(str(full_filename)) as config_file:
-            config_text=config_file.read()
-            configuration=json.loads(config_text)
+            config_text = config_file.read()
+            configuration = json.loads(config_text)
 
             return configuration
     except Exception as ex:
@@ -132,15 +132,15 @@ def __get_configuration__() -> dict:
     Returns:
         dict -- The default configuration with the user changes applied over top.
     """
-    configuration=__load_config_file__(__DEFAULT_CONFIG_FILE__)
-    user_configuration=__load_config_file__(__USER_CONFIG_FILE__)
+    configuration = __load_config_file__(__DEFAULT_CONFIG_FILE__)
+    user_configuration = __load_config_file__(__USER_CONFIG_FILE__)
 
     configuration.update(user_configuration)
 
     return configuration
 
 
-CONFIG=__get_configuration__()
+CONFIG = __get_configuration__()
 
 
 def __write_user_configuration__(
@@ -155,19 +155,19 @@ def __write_user_configuration__(
     try:
         print("Starting to write file.")
 
-        full_filename=None
+        full_filename = None
 
         try:
-            full_filename=__get_resolved_filepath__(__USER_CONFIG_FILE__)
+            full_filename = __get_resolved_filepath__(__USER_CONFIG_FILE__)
             print("full_filename=`{}`".format(full_filename))
-        except:
+        except Exception:
             pass
 
         if full_filename is None:
             print("Unable to resolve, using relative path + name instead.")
-            full_filename=__USER_CONFIG_FILE__
+            full_filename = __USER_CONFIG_FILE__
 
-        directory=os.path.dirname(full_filename)
+        directory = os.path.dirname(full_filename)
         print("directory=`{}`".format(directory))
 
         if not os.path.exists(directory):
@@ -180,7 +180,7 @@ def __write_user_configuration__(
         with open(str(full_filename), "w") as config_file:
             print("Opened `{}` for write.".format(full_filename))
 
-            config_text=json.dumps(config, indent=4, sort_keys=True)
+            config_text = json.dumps(config, indent=4, sort_keys=True)
             print("config_text=`{}`".format(config_text))
 
             config_file.write(config_text)
@@ -211,15 +211,15 @@ def update_configuration(
     if new_config is None:
         return CONFIG.copy()
 
-    update_package={}
+    update_package = {}
 
     for valid_key in __VALID_KEYS__:
         if valid_key in new_config:
-            update_package[valid_key]=new_config[valid_key]
+            update_package[valid_key] = new_config[valid_key]
 
     __lock__.acquire()
     CONFIG.update(update_package)
-    config_copy=CONFIG.copy()
+    config_copy = CONFIG.copy()
     __lock__.release()
 
     __write_user_configuration__(config_copy)
@@ -229,7 +229,7 @@ def update_configuration(
 
 def __get_boolean_config_value__(
     config_key: str,
-    default: bool=False
+    default: bool = False
 ) -> bool:
     """
     Get a configuration value from the config that is a boolean.
@@ -245,7 +245,7 @@ def __get_boolean_config_value__(
     try:
         if CONFIG is not None and config_key in CONFIG:
             return CONFIG[config_key]
-    except:
+    except Exception:
         return default
 
 
@@ -300,10 +300,13 @@ def get_night_category_proportion():
     Returns:
         float -- A number between 0.0 (off) and 1.0 (true category color), inclusive
     """
+
+    default_mix = 0.5
+
     try:
         if CONFIG is not None and 'night_category_proportion' in CONFIG:
             try:
-                unclamped=float(CONFIG['night_category_proportion'])
+                unclamped = float(CONFIG['night_category_proportion'])
 
                 if unclamped < 0.0:
                     return 0.0
@@ -312,10 +315,10 @@ def get_night_category_proportion():
                     return 1.0
 
                 return unclamped
-            except:
-                return 0.5
-    except:
-        return 0.5
+            except Exception:
+                return default_mix
+    except Exception:
+        return default_mix
 
 
 def get_airport_configuration_section():
@@ -328,7 +331,7 @@ def get_airport_configuration_section():
         load the airport configuration from.
     """
 
-    mode=get_mode()
+    mode = get_mode()
 
     if mode == STANDARD:
         return PWM
@@ -346,7 +349,7 @@ def get_brightness_proportion() -> float:
     try:
         if CONFIG is not None and 'brightness_proportion' in CONFIG:
             return CONFIG['brightness_proportion']
-    except:
+    except Exception:
         return 1.0
 
 
@@ -432,7 +435,7 @@ def get_airport_configs():
         dictionary -- Airport identifier keying lighting configuration.
     """
 
-    mode=CONFIG['mode']
+    mode = CONFIG['mode']
     if mode == PWM or mode == STANDARD:
         return __load_gpio_airport_pins__(get_airport_file())
     elif mode == WS2801:
@@ -452,15 +455,15 @@ def __load_gpio_airport_pins__(
         dict -- A dictionary of GPIO pin tuples keyed by ICAO code.
     """
 
-    out_airport_pins_map={}
+    out_airport_pins_map = {}
 
-    json_config=__load_config_file__(config_file)
+    json_config = __load_config_file__(config_file)
 
-    airports=json_config[get_airport_configuration_section()]
+    airports = json_config[get_airport_configuration_section()]
 
     for airport_data in airports:
-        airport_code=airport_data.keys()[0]
-        out_airport_pins_map[airport_code.upper()]=(
+        airport_code = airport_data.keys()[0]
+        out_airport_pins_map[airport_code.upper()] = (
             airport_data[airport_code][0],
             airport_data[airport_code][1],
             airport_data[airport_code][2])
@@ -481,17 +484,17 @@ def __load_airport_ws2801__(
         dict -- A dictionary keyed by airport identifier that holds the pixel index and a reserved value.
     """
 
-    out_airport_map={}
+    out_airport_map = {}
 
-    json_config=__load_config_file__(config_file)
-    airports=json_config[WS2801]
+    json_config = __load_config_file__(config_file)
+    airports = json_config[WS2801]
 
     for airport_data in airports:
-        keylist=[]
+        keylist = []
         keylist.extend(iter(airport_data.keys()))
-        airport_code=keylist[0]
-        normalized_code=airport_code.upper()
+        airport_code = keylist[0]
+        normalized_code = airport_code.upper()
 
-        out_airport_map[normalized_code]=airport_data[airport_code]['neopixel']
+        out_airport_map[normalized_code] = airport_data[airport_code]['neopixel']
 
     return out_airport_map

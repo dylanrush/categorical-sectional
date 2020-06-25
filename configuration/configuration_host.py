@@ -145,7 +145,7 @@ class ConfigurationHost(BaseHTTPRequestHandler):
                     shutil.copyfileobj(f, self.wfile)
                 finally:
                     f.close()
-            except:
+            except Exception:
                 self.send_response(404)
                 self.end_headers()
                 self.wfile.write('File not found\n')
