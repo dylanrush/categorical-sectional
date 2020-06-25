@@ -297,7 +297,7 @@ label {
 
 .rangeSlider {
   -webkit-appearance: none;
-  width: 100%;
+  width: 75%;
   height: 26px;
   border-radius: 4px;
   border-color: black;
