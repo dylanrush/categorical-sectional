@@ -1,199 +1,72 @@
-<datalist id="light_types">
-    <option value="ws2801">WS2801</option>
-    <option value="pwm">PWM</option>
-    <option value="led">LED</option>
-</datalist>
-<datalist id="boolean">
-    <option value="true">True</option>
-    <option value="false">False</option>
-</datalist>
-
 <div id="content">
     <h2>Remote Control</h2>
     &nbsp;<br>
-    <!--
-    <div id="buttonGroup" style="align-content: center;">
-        <button style="width: 50%;" class="tablink" onclick="openPage('RemoteControlTab', this, 'teal')"
-            id="remoteControl">Remote Control</button>
-        <button style="width: 50%;" class="tablink" onclick="openPage('AdvancedSettingsTab', this, 'teal')"
-            id="advancedSettings">AdvancedSettings</button>
-    </div>
-    -->
-
-<!--
-    <div id="RemoteControlTab" class="tabcontent">
-        &nbsp;<br>
-        &nbsp;<br>
-        -->
-        <form name="remoteControlSettingsForm" action="/" method="POST" style="height: 60%; max-height: 800px;">
-            <table style="width: 100%; height: 20%; max-height: 200px;">
-                <colgroup>
-                    <col style="width: 50%;">
-                    <col style="width: 50%;">
-                </colgroup>
-                <tr>
-                    <th>Name</th>
-                    <th>Value</th>
-                </tr>
-                <tr>
-                    <td>Blink Stations With Old Data</td>
-                    <td style="align-items: flex-start; align-content: flex-start; text-align: left;">
-                        <label class="switch">
-                            <input onchange="remoteControlSettingsForm.submit()" name="blink_old_stations"
-                                id="blink_old_stations" type="checkbox" value="true"
-                                {{#if configJson.blink_old_stations}}checked{{/if}} />
-                            <span class="slider round"></span>
-                        </label>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Enable "Night Mode"</td>
-                    <td style="align-items: flex-start; align-content: flex-start; text-align: left;">
-                        <label class="switch">
-                            <input onchange="remoteControlSettingsForm.submit()" name="night_lights" id="night_lights"
-                                type="checkbox" value="true" {{#if configJson.night_lights}}checked{{/if}} />
-                            <span class="slider round"></span>
-                        </label>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Fade Stations To "Night Populated Yellow"</td>
-                    <td style="align-items: flex-start; align-content: flex-start; text-align: left;">
-                        <label class="switch">
-                            <input onchange="remoteControlSettingsForm.submit()" name="night_populated_yellow"
-                                id="night_populated_yellow" type="checkbox" value="true"
-                                {{#if configJson.night_populated_yellow}}checked{{/if}} />
-                            <span class="slider round"></span>
-                        </label>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Night Time Dimming Proportion</td>
-                    <td><input onchange="remoteControlSettingsForm.submit()" name="night_category_proportion"
-                            id="night_category_proportion" type="range" class="rangeSlider" min="0.0" max="1.0"
-                            step="0.05" value="{{configJson.night_category_proportion}}" />
-                    </td>
-                </tr>
-                <tr>
-                    <td>Overall Brightness Adjustment</td>
-                    <td><input onchange="remoteControlSettingsForm.submit()" name="brightness_proportion"
-                            id="brightness_proportion" type="range" class="rangeSlider" min="0.0" max="1.0" step="0.05"
-                            value="{{configJson.brightness_proportion}}" /></td>
-                </tr>
-            </table>
-        </form>
-        <!--
-    </div>
-    <div id="AdvancedSettingsTab" class="tabcontent">
-        &nbsp;<br>
-        &nbsp;<br>
-        &nbsp;<br>
-        <h2 style="background-color: red;">Reboot Required After Updating</h2>
-        &nbsp;<br>
-        <form name="rebootSettingsForm" action="/" method="POST" style="height: 60%; max-height: 800px;">
-            <table style="width: 100%; height: 20%; max-height: 200px;">
-                <colgroup>
-                    <col style="width: 50%;">
-                    <col style="width: 50%;">
-                </colgroup>
-                <tr>
-                    <th>Name</th>
-                    <th>Value</th>
-                </tr>
-                <tr>
-                    <td>Light Mode</td>
-                    <td style="align-items: flex-start; align-content: flex-start; text-align: left;">
-                        <input type="radio" name="mode" class="form-radio" value="ws2801"
-                            {{#ifeq configJson.mode "ws2801"}}checked{{/ifeq}}>&nbsp;WS2801<br>
-                        <input type="radio" name="mode" class="form-radio" value="pwm"
-                            {{#ifeq configJson.mode "pwm"}}checked{{/ifeq}}>&nbsp;PWM LEDs<br>
-                        <input type="radio" name="mode" class="form-radio" value="led"
-                            {{#ifeq configJson.mode "led"}}checked{{/ifeq}}>&nbsp;LEDs<br><br>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Pixel Count</td>
-                    <td><input name="pixel_count" id="pixel_count" type="number" min="1" max="200"
-                            value="{{configJson.pixel_count}}" /></td>
-                </tr>
-                <tr>
-                    <td>SPI Device</td>
-                    <td><input name="spi_device" id="spi_device" type="number" min="1" max="4"
-                            value="{{configJson.spi_device}}" /></td>
-                </tr>
-                <tr>
-                    <td>SPI Port</td>
-                    <td><input name="spi_port" id="spi_port" type="number" min="1" max="4"
-                            value="{{configJson.spi_port}}" />
-                    </td>
-                </tr>
-                <tr>
-                    <td>PWM Frequency</td>
-                    <td><input name="pwm_frequency" id="pwm_frequency" type="number" min="0" max="1000"
-                            value="{{configJson.pwm_frequency}}" /></td>
-                </tr> -->
-                <!--
-        <tr>
-            <td>Airports File</td>
-            <td><input name="airports_file" id="airports_file" type="file" value="{{configJson.airports_file}}" /></td>
-        </tr>
-        -->
-        <!--
-            </table>
-            <br>
-            <br>
-            <input type="submit" value="UPDATE" />
-        </form>
-    </div>
-    -->
+    <form name="remoteControlSettingsForm" action="/" method="POST" style="height: 60%; max-height: 800px;">
+        <table style="width: 100%; height: 20%; max-height: 200px;">
+            <colgroup>
+                <col style="width: 50%;">
+                <col style="width: 50%;">
+            </colgroup>
+            <tr>
+                <th>Name</th>
+                <th>Value</th>
+            </tr>
+            <tr>
+                <td>Blink Stations With Old Data</td>
+                <td style="align-items: flex-start; align-content: flex-start; text-align: left;">
+                    <label class="switch">
+                        <input onchange="remoteControlSettingsForm.submit()" name="blink_old_stations"
+                            id="blink_old_stations" type="checkbox" value="true"
+                            {{#if configJson.blink_old_stations}}checked{{/if}} />
+                        <span class="slider round"></span>
+                    </label>
+                </td>
+            </tr>
+            <tr>
+                <td>Enable "Night Mode"</td>
+                <td style="align-items: flex-start; align-content: flex-start; text-align: left;">
+                    <label class="switch">
+                        <input onchange="remoteControlSettingsForm.submit()" name="night_lights" id="night_lights"
+                            type="checkbox" value="true" {{#if configJson.night_lights}}checked{{/if}} />
+                        <span class="slider round"></span>
+                    </label>
+                </td>
+            </tr>
+            <tr>
+                <td>Fade Stations To "Night Populated Yellow"</td>
+                <td style="align-items: flex-start; align-content: flex-start; text-align: left;">
+                    <label class="switch">
+                        <input onchange="remoteControlSettingsForm.submit()" name="night_populated_yellow"
+                            id="night_populated_yellow" type="checkbox" value="true"
+                            {{#if configJson.night_populated_yellow}}checked{{/if}} />
+                        <span class="slider round"></span>
+                    </label>
+                </td>
+            </tr>
+            <tr>
+                <td>Night Time Dimming Proportion</td>
+                <td><input onchange="remoteControlSettingsForm.submit()" name="night_category_proportion"
+                        id="night_category_proportion" type="range" class="rangeSlider" min="0.0" max="1.0" step="0.05"
+                        value="{{configJson.night_category_proportion}}" />
+                </td>
+            </tr>
+            <tr>
+                <td>Overall Brightness Adjustment</td>
+                <td><input onchange="remoteControlSettingsForm.submit()" name="brightness_proportion"
+                        id="brightness_proportion" type="range" class="rangeSlider" min="0.0" max="1.0" step="0.05"
+                        value="{{configJson.brightness_proportion}}" /></td>
+            </tr>
+        </table>
+    </form>
 </div>
 <script>
     function setElementValue(name, value) {
         if (value != undefined && value != null && !isNaN(value)) {
-            document.getElementById(name) = value;
+            document.getElementById(name).value = value;
         }
     }
 
-/*
-    setElementValue("mode", {{ configJson.mode }});
-    setElementValue("pixel_count", {{ configJson.pixel_count }});
-    setElementValue("spi_device", {{ configJson.spi_device }});
-    setElementValue("spi_port", {{ configJson.spi_port }});
-    setElementValue("pwm_frequency", {{ configJson.pwm_frequency }});
-*/
-
-    setElementValue("blink_old_stations").value = {{ configJson.blink_old_stations }};
-    setElementValue("night_lights").value = {{ configJson.night_lights }};
-    setElementValue("night_populated_yellow").value = {{ configJson.night_populated_yellow }};
-    setElementValue("brightness_proportion").value = {{ configJson.brightness_proportion }};
-    setElementValue("night_category_proportion").value = {{ configJson.night_category_proportion }};
-    setElementValue("brightness_proportion").value = {{ configJson.brightness_proportion }};
-
-    function openPage(pageName, elmnt, color) {
-        // Hide all elements with class="tabcontent" by default */
-        var i, tabcontent, tablinks;
-        tabcontent = document.getElementsByClassName("tabcontent");
-        for (i = 0; i < tabcontent.length; i++) {
-            tabcontent[i].style.display = "none";
-        }
-
-        // Remove the background color of all tablinks/buttons
-        tablinks = document.getElementsByClassName("tablink");
-        for (i = 0; i < tablinks.length; i++) {
-            tablinks[i].style.backgroundColor = "";
-        }
-
-        // Show the specific tab content
-        document.getElementById(pageName).style.display = "block";
-
-        // Add the specific color to the button used to open the tab content
-        elmnt.style.backgroundColor = color;
-    }
+    setElementValue("brightness_proportion", {{ configJson.brightness_proportion }});
+    setElementValue("night_category_proportion", {{ configJson.night_category_proportion }});
+    setElementValue("brightness_proportion", {{ configJson.brightness_proportion }});
 </script>
-
-<!--
-<script>
-    // Open the default tab.
-    document.getElementById("remoteControl").click();
-</script>
--->
