@@ -117,7 +117,15 @@ def __load_config_file__(
 
         with open(str(full_filename)) as config_file:
             config_text = config_file.read()
-            configuration = json.loads(config_text)
+            loaded_configuration = json.loads(config_text)
+
+            configuration = {}
+
+            for config_key in loaded_configuration.keys():
+                value = loaded_configuration[config_key]
+
+                if value is not None:
+                    configuration[config_key] = value
 
             return configuration
     except Exception as ex:
@@ -214,7 +222,7 @@ def update_configuration(
     update_package = {}
 
     for valid_key in __VALID_KEYS__:
-        if valid_key in new_config:
+        if valid_key in new_config and new_config[valid_key] is not None:
             update_package[valid_key] = new_config[valid_key]
 
     __lock__.acquire()

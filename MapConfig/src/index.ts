@@ -58,7 +58,9 @@ function mergeIntoHash(
     hash = {};
   }
 
-  if (value != undefined) {
+  if (value != undefined
+    && value != null
+    && !isNaN(value)) {
     hash[key] = value;
   }
 
