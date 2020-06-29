@@ -9,6 +9,7 @@ import re
 import threading
 import urllib.request
 from datetime import datetime, timedelta
+from lib.colors import clamp
 
 import requests
 
@@ -486,6 +487,9 @@ def get_twilight_transition(
         proportion_off_to_night = get_proportion_between_times(
             light_times[0],
             current_utc_time, light_times[1])
+    
+    proportion_off_to_night = clamp(-1.0, proportion_off_to_night, 1.0)
+    proportion_night_to_color = clamp(-1.0, proportion_night_to_color, 1.0)
 
     return proportion_off_to_night, proportion_night_to_color
 
