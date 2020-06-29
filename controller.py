@@ -467,8 +467,8 @@ def __get_rgb_night_color_to_render__(
     proportions
 ):
     target_night_color = colors_lib.get_color_mix(
-        color_by_category,
         colors[weather.OFF],
+        color_by_category,
         configuration.get_night_category_proportion())
 
     # For the scenario where we simply dim the LED to account for sunrise/sunset
