@@ -63,19 +63,19 @@ def interpolate(
     >>> interpolate(20, 10, 0.5)
     15
     >>> interpolate(255, 0, 0.0)
-    0
+    255
     >>> interpolate(255, 0, 0)
-    0
+    255
     >>> interpolate(255, 0, 1)
-    255
-    >>> interpolate(255, 0, 1.5)
-    255
-    >>> interpolate(255, 0, -0.5)
     0
+    >>> interpolate(255, 0, 1.5)
+    0
+    >>> interpolate(255, 0, -0.5)
+    255
     >>> interpolate(255, 0, 0.1)
-    25
-    >>> interpolate(255, 0, 0.9)
     229
+    >>> interpolate(255, 0, 0.9)
+    25
 
     Returns:
         float -- The number that is the given amount between the left and right.
@@ -84,11 +84,6 @@ def interpolate(
     left_value = clamp(0.0, left_value, 255.0)
     right_value = clamp(0.0, right_value, 255.0)
     proportion = clamp(0.0, proportion, 1.0)
-
-    if right_value < left_value:
-        swap = left_value
-        left_value = right_value
-        right_value = swap
 
     return clamp(
         0,
