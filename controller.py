@@ -349,7 +349,7 @@ def get_airport_condition(
     try:
         if airport in airport_conditions:
             return airport_conditions[airport][0], airport_conditions[airport][1]
-    except:
+    except Exception:
         pass
 
     return weather.INVALID, False
@@ -677,7 +677,7 @@ def wait_for_all_airports():
             metar = weather.get_metar(airport, logger=LOGGER)
             category = get_airport_category(airport, metar, utc_offset)
             airport_conditions[airport] = (category, False)
-        except:
+        except Exception:
             airport_conditions[airport] = (weather.INVALID, False)
             safe_logging.safe_log_warning(
                 LOGGER,
@@ -777,8 +777,6 @@ if __name__ == '__main__':
         try:
             time.sleep(0.1)
         except KeyboardInterrupt:
-            break
-        except SystemExit:
             break
 
     if not local_debug.is_debug():
