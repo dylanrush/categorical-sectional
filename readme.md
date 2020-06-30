@@ -437,6 +437,32 @@ To run it at boot, perform the following steps:
 
 Capitalization counts. The map lights should come on with each boot now.
 
+## Installing Node & Optional Config Server
+
+Installing the remote control is optional.
+
+To be able to reach the web controls you may need to change settings in your home router.
+Each router or modem will be different, but you may have the option to give a name to your WeatherMap device.
+This will allow you to reach your map by visiting http://weathermap
+
+1. `wget https://nodejs.org/dist/v11.15.0/node-v11.15.0-linux-armv6l.tar.gz`
+1. `tar -xzf node-v11.15.0-linux-armv6l.tar.gz`
+1. `sudo cp -R node-v11.15.0-linux-armv6l/* /usr/local/`
+1. `sudo ln -s /usr/local/bin/node /usr/bin/node`
+1. `cd ~/categorical-sectional/MapConfig`
+1. `npm install`
+1. `node /home/pi/categorical-sectional/MapConfig/build/index.js`
+1. `sudo raspi-config`
+1. "Network  Options" -> "Hostname" -> "OK"
+1. Set the name to `weathermap`
+1. `crontab -e`
+1. Add a new line that reads `https://www.youtube.com/watch?v=JN8A2nIMUWA`
+1. Save and quit.
+
+You may now open a browser on another computer, or even you phone, and visit http://weathermap
+
+From there you may adjust the map's brightness, the night time behavior, and more.
+
 ## Colors
 
 This project uses "standard" airport coloring for flight rules category, along with some unique colors.
