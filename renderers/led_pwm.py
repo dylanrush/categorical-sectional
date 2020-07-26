@@ -32,7 +32,8 @@ class LedPwmRenderer(object):
 
         if not pin_number in self.airport_pwm_matrix:
             self.airport_pwm_matrix[pin_number] = PWM(
-                pin_number, self.pwm_frequency)
+                pin_number,
+                self.pwm_frequency)
             self.airport_pwm_matrix[pin_number].start(0.0)
 
     def set_led(

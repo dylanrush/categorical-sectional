@@ -36,6 +36,7 @@ from datetime import datetime
 
 import lib.colors as colors_lib
 import lib.local_debug as local_debug
+import renderer
 from configuration import configuration, configuration_server
 from data_sources import weather
 from lib import safe_logging
@@ -56,13 +57,8 @@ python_logger.addHandler(HANDLER)
 
 thread_lock_object = threading.Lock()
 
-if local_debug.is_debug():
-    from lib.local_debug import PWM
-else:
-    import RPi.GPIO as GPIO
-    from RPi.GPIO import PWM
-
 if not local_debug.is_debug():
+    import RPi.GPIO as GPIO
     GPIO.setmode(GPIO.BOARD)
 
 airport_render_config = configuration.get_airport_configs()
@@ -81,47 +77,8 @@ color_by_rules = {
 
 airport_render_last_logged_by_station = {}
 
-if local_debug.is_debug():
-    pass
-elif configuration.get_mode() == configuration.WS2801:
-    from renderers import ws2801
-elif configuration.get_mode() == configuration.WS281x:
-    from renderers import ws281x
-else:
-    import led, led_pwm
 
-
-def get_renderer():
-    """
-    Returns the renderer to use based on the type of
-    LED lights given in the config.
-
-    Returns:
-        renderer -- Object that takes the colors and airport config and
-        sets the LEDs.
-    """
-
-    if local_debug.is_debug():
-        return None
-
-    if configuration.get_mode() == configuration.WS2801:
-        pixel_count = configuration.CONFIG[configuration.PIXEL_COUNT_KEY]
-        spi_port = configuration.CONFIG[configuration.SPI_PORT_KEY]
-        spi_device = configuration.CONFIG[configuration.SPI_DEVICE_KEY]
-
-        return ws2801.Ws2801Renderer(pixel_count, spi_port, spi_device)
-    elif configuration.get_mode() == configuration.WS281x:
-        pixel_count = configuration.CONFIG[configuration.PIXEL_COUNT_KEY]
-        gpio_pin = configuration.CONFIG[configuration.GPIO_PIN_KEY]
-
-        return ws281x.Ws281xRenderer(pixel_count, gpio_pin)
-    elif configuration.get_mode() == configuration.PWM:
-        return led_pwm.LedPwmRenderer(airport_render_config)
-    else:
-        # "Normal" LEDs
-        return led.LedRenderer(airport_render_config)
-
-renderer = get_renderer()
+renderer = renderer.get_renderer(airport_render_config)
 
 
 def get_color_from_condition(
