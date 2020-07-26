@@ -18,7 +18,11 @@ class LedRenderer(object):
     the GPIO pins using Pulse Width Modulation (PWM).
     """
 
-    def set_led(self, airport_pins, color):
+    def set_led(
+        self,
+        airport_pins,
+        color
+    ):
         """
         Sets the color of a LED based on the pins for that LED
 
@@ -31,7 +35,16 @@ class LedRenderer(object):
             GPIO.setup(airport_pins, GPIO.OUT)
             GPIO.output(airport_pins, color)
 
-    def __init__(self, airport_pins):
+    def show(
+        self
+    ):
+        # Here for interfacing/duck typing
+        pass
+
+    def __init__(
+        self,
+        airport_pins
+    ):
         """
         Create a new PWM LED renderer.
 

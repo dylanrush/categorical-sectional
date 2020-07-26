@@ -15,33 +15,42 @@ import Adafruit_GPIO.SPI as SPI
 
 
 class Ws2801Renderer(object):
-    def __init__(self, pixel_count, spi_port, spi_device):
+    def __init__(
+        self,
+        pixel_count,
+        spi_port,
+        spi_device
+    ):
         """
         Create a new controller for the WS2801 based lights
 
         Arguments:
-            pixel_count {int} -- The total number of neopixels. Probably a multple of 25.
+            pixel_count {int} -- The total number of neopixels. Probably a multiple of 25.
             spi_port {int} -- The SPI port the neopixels are on.
             spi_device {int} -- The SPI device on the port that the neopixels are on.
         """
 
-        self.pixel_count = pixel_count
+        self.__pixel_count__ = pixel_count
 
         if not local_debug.is_debug():
             # Specify a hardware SPI connection on /dev/spidev0.0:
-            self.pixels = Adafruit_WS2801.WS2801Pixels(
-                self.pixel_count, spi=SPI.SpiDev(spi_port, spi_device))
+            self.__pixels__ = Adafruit_WS2801.WS2801Pixels(
+                pixel_count,
+                spi=SPI.SpiDev(spi_port, spi_device))
 
             # Clear all the pixels to turn them off.
-            self.pixels.clear()
-            self.pixels.show()  # Make sure to call show() after changing any pixels!
+            self.__pixels__.clear()
 
-            [self.pixels.set_pixel(pixel, Adafruit_WS2801.RGB_to_color(0, 0, 0))
-                for pixel in range(0, self.pixel_count)]
+            [self.__pixels__.set_pixel(pixel, Adafruit_WS2801.RGB_to_color(0, 0, 0))
+                for pixel in range(0, pixel_count)]
 
-            self.pixels.show()
+            self.__pixels__.show()
 
-    def set_led(self, pixel_index, color):
+    def set_led(
+        self,
+        pixel_index,
+        color
+    ):
         """
         Sets the given airport to the given color
 
@@ -49,7 +58,18 @@ class Ws2801Renderer(object):
             pixel_index {int} -- The index of the pixel to set
             color {int array} -- The RGB (0-255) array of the color we want to set.
         """
+
+        if (pixel_index < 0):
+            return
+
+        if (pixel_index >= self.__pixel_count__):
+            return
+
         if not local_debug.is_debug():
-            self.pixels.set_pixel(pixel_index, Adafruit_WS2801.RGB_to_color(
+            self.__pixels__.set_pixel(pixel_index, Adafruit_WS2801.RGB_to_color(
                 color[0], color[1], color[2]))
-            self.pixels.show()
+
+    def show(
+        self
+    ):
+        self.__pixels__.show()

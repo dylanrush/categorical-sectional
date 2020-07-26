@@ -18,7 +18,10 @@ class LedPwmRenderer(object):
     the GPIO pins using Pulse Width Modulation (PWM).
     """
 
-    def __create_pwm_for_pin__(self, pin_number):
+    def __create_pwm_for_pin__(
+        self,
+        pin_number
+    ):
         """
         Makes sure a PWM object exists for each pin.
         Creates and starts the pin if needed.
@@ -32,10 +35,14 @@ class LedPwmRenderer(object):
                 pin_number, self.pwm_frequency)
             self.airport_pwm_matrix[pin_number].start(0.0)
 
-    def set_led(self, airport_pins, color):
+    def set_led(
+        self,
+        airport_pins,
+        color
+    ):
         """
         Sets the color of an airport using LED/PWM
-        
+
         Arguments:
             airport_pins {array of int} -- An array holding the pin used for R, G, B colors. In that order
             color {array} -- Three number array that corresponds to each RGB pin to set the PWM power to.
@@ -48,7 +55,16 @@ class LedPwmRenderer(object):
         self.airport_pwm_matrix[airport_pins[1]].ChangeDutyCycle(color[1])
         self.airport_pwm_matrix[airport_pins[2]].ChangeDutyCycle(color[2])
 
-    def __init__(self, airport_pins):
+    def show(
+        self
+    ):
+        # Here for interfacing/duck typing
+        pass
+
+    def __init__(
+        self,
+        airport_pins
+    ):
         """
         Create a new PWM LED renderer.
 
