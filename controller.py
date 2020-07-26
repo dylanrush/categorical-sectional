@@ -44,7 +44,7 @@ from lib.recurring_task import RecurringTask
 from renderers import led, led_pwm
 
 if not local_debug.is_debug():
-    from renderers import ws2801
+    from renderers import ws2801, ws281x
 
 
 airport_conditions = {}
@@ -101,10 +101,16 @@ def get_renderer():
         return None
 
     if configuration.get_mode() == configuration.WS2801:
-        pixel_count = configuration.CONFIG["pixel_count"]
-        spi_port = configuration.CONFIG["spi_port"]
-        spi_device = configuration.CONFIG["spi_device"]
+        pixel_count = configuration.CONFIG[configuration.PIXEL_COUNT_KEY]
+        spi_port = configuration.CONFIG[configuration.SPI_PORT_KEY]
+        spi_device = configuration.CONFIG[configuration.SPI_DEVICE_KEY]
+
         return ws2801.Ws2801Renderer(pixel_count, spi_port, spi_device)
+    elif configuration.get_mode() == configuration.WS281x:
+        pixel_count = configuration.CONFIG[configuration.PIXEL_COUNT_KEY]
+        gpio_pin = configuration.CONFIG[configuration.GPIO_PIN_KEY]
+
+        return ws281x.Ws281xRenderer(pixel_count, gpio_pin)
     elif configuration.get_mode() == configuration.PWM:
         return led_pwm.LedPwmRenderer(airport_render_config)
     else:
@@ -378,6 +384,9 @@ def render_airport_displays(
         finally:
             thread_lock_object.release()
 
+    if renderer is not None:
+        renderer.show()
+
 
 def render_airport(
     airport,
@@ -632,6 +641,8 @@ def all_airports(
     [renderer.set_led(airport_render_config[airport], colors[color])
         for airport in airport_render_config]
 
+    renderer.show()
+
 
 def __all_airports_to_color__(
     color: list
@@ -641,6 +652,8 @@ def __all_airports_to_color__(
 
     [renderer.set_led(airport_render_config[airport], color)
         for airport in airport_render_config]
+
+    renderer.show()
 
 
 def render_thread():
