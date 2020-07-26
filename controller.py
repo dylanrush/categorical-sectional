@@ -41,11 +41,6 @@ from data_sources import weather
 from lib import safe_logging
 from lib.logger import Logger
 from lib.recurring_task import RecurringTask
-from renderers import led, led_pwm
-
-if not local_debug.is_debug():
-    from renderers import ws2801, ws281x
-
 
 airport_conditions = {}
 python_logger = logging.getLogger("weathermap")
@@ -86,6 +81,15 @@ color_by_rules = {
 
 airport_render_last_logged_by_station = {}
 
+if local_debug.is_debug():
+    pass
+elif configuration.get_mode() == configuration.WS2801:
+    from renderers import ws2801
+elif configuration.get_mode() == configuration.WS281x:
+    from renderers import ws281x
+else:
+    import led, led_pwm
+
 
 def get_renderer():
     """
@@ -116,7 +120,6 @@ def get_renderer():
     else:
         # "Normal" LEDs
         return led.LedRenderer(airport_render_config)
-
 
 renderer = get_renderer()
 
