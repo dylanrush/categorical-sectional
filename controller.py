@@ -1,7 +1,7 @@
 # Live Sectional Map controller
 # Dylan Rush 2017
 # Additional modifications:
-#   2018, John Marzulli
+#   2018-2020, John Marzulli
 # dylanhrush.com
 # Uses RPi.GPIO library: https://sourceforge.net/p/raspberry-gpio-python/wiki/BasicUsage/
 # Free for personal use. Prohibited for commercial without consent
