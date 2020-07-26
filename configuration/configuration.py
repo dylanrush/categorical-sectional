@@ -25,11 +25,13 @@ else:
 STANDARD = 'led'
 PWM = 'pwm'
 WS2801 = 'ws2801'
+WS281x = 'ws281x'
 
 LED_MODE_KEY = "mode"
 PIXEL_COUNT_KEY = "pixel_count"
 SPI_DEVICE_KEY = "spi_device"
 SPI_PORT_KEY = "spi_port"
+GPIO_PIN_KEY = "gpio_pin"
 PWM_FREQUENCY_KEY = "pwm_frequency"
 AIRPORTS_FILE_KEY = "airports_file"
 BLINK_OLD_STATIONS_KEY = "blink_old_stations"
