@@ -4,7 +4,10 @@ from setuptools import setup
 installs = [
     'pytest',
     'Adafruit_WS2801',
-    'requests'
+    'requests',
+    'rpi_ws281x',
+    'adafruit-blinka',
+    'adafruit-circuitpython-neopixel'
 ]
 
 if not local_debug.is_debug():
