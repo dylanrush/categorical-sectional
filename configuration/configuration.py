@@ -376,7 +376,7 @@ def get_colors():
     Returns the colors based on the config.
     """
 
-    if get_mode() == WS2801:
+    if get_mode() == WS2801 or get_mode() == WS281x:
         return __get_ws2801_colors__()
     elif get_mode() == PWM:
         return __get_pwm_colors__()
@@ -448,7 +448,7 @@ def get_airport_configs():
     mode = CONFIG['mode']
     if mode == PWM or mode == STANDARD:
         return __load_gpio_airport_pins__(get_airport_file())
-    elif mode == WS2801:
+    elif mode == WS2801 or mode == WS281x:
         return __load_airport_ws2801__(get_airport_file())
     else:
         raise Exception('Unable to determine light types')

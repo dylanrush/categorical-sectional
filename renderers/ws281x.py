@@ -7,7 +7,6 @@ License: Public Domain
 from __future__ import division
 import time
 
-# Import the WS2801 module.
 import lib.local_debug as local_debug
 
 import board
@@ -31,16 +30,13 @@ class Ws281xRenderer(object):
 
         self.__pixel_count__ = pixel_count
 
-        board.D18
-
         if not local_debug.is_debug():
             self.__pixels__ = neopixel.NeoPixel(
-                gpio_pin,
+                board.D18, #gpio_pin,
                 pixel_count,
                 pixel_order=neopixel.RGB)
 
             # Clear all the pixels to turn them off.
-            self.__pixels__.clear()
             self.__pixels__.fill((0, 0, 0))
 
             self.__pixels__.show()

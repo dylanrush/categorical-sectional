@@ -59,7 +59,12 @@ thread_lock_object = threading.Lock()
 
 if not local_debug.is_debug():
     import RPi.GPIO as GPIO
-    GPIO.setmode(GPIO.BOARD)
+    try:
+        GPIO.setmode(GPIO.BOARD)
+    except:
+        # ws281x causes an exception
+        # when you try to set the board type
+        pass
 
 airport_render_config = configuration.get_airport_configs()
 colors = configuration.get_colors()
