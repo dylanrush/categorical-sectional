@@ -34,7 +34,7 @@ class Ws281xRenderer(object):
             self.__pixels__ = neopixel.NeoPixel(
                 board.D18, #gpio_pin,
                 pixel_count,
-                pixel_order=neopixel.RGB)
+                pixel_order=neopixel.GRB)
 
             # Clear all the pixels to turn them off.
             self.__pixels__.fill((0, 0, 0))
