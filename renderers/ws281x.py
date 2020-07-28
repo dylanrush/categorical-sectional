@@ -31,8 +31,10 @@ class Ws281xRenderer(object):
         self.__pixel_count__ = pixel_count
 
         if not local_debug.is_debug():
+            from adafruit_blinka.microcontroller.bcm283x.pin import Pin
+
             self.__pixels__ = neopixel.NeoPixel(
-                board.D18, #gpio_pin,
+                Pin(gpio_pin), # board.D18, #gpio_pin,
                 pixel_count,
                 pixel_order=neopixel.GRB)
 

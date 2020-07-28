@@ -36,6 +36,8 @@ def get_renderer(
         pixel_count = configuration.CONFIG[configuration.PIXEL_COUNT_KEY]
         gpio_pin = configuration.CONFIG[configuration.GPIO_PIN_KEY]
 
+        print("Setting up WS281x on Pin{} for {} lights".format(gpio_pin, pixel_count))
+
         return ws281x.Ws281xRenderer(pixel_count, gpio_pin)
     elif configuration.get_mode() == configuration.PWM:
         return led_pwm.LedPwmRenderer(airport_render_config)
