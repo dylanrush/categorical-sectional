@@ -48,10 +48,7 @@ if __name__ == '__main__':
     for color in colors_to_test:
         safe_logging.safe_log(LOGGER, "Setting to {}".format(color))
 
-        [renderer.set_led(airport_render_config[airport], colors[color])
-            for airport in airport_render_config]
-
-        renderer.show()
+        renderer.set_all(colors[color])
 
         time.sleep(0.5)
 

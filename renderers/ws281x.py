@@ -42,11 +42,24 @@ class Ws281xRenderer(object):
             self.__pixels__.fill((0, 0, 0))
 
             self.__pixels__.show()
+    
+    def set_all(
+        self,
+        color: list
+    ):
+        """
+        Sets all of the leds to the same color.
+
+        Args:
+            color (list): The color we want to set all of the LEDs to.
+        """
+        self.__pixels__.fill(color)
+        self.__pixels__.show()
 
     def set_led(
         self,
         pixel_index: int,
-        color
+        color: list
     ):
         """
         Sets the given airport to the given color
