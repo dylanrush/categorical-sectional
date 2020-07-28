@@ -35,7 +35,7 @@ WHITE = 'WHITE'
 LOW = 'LOW'
 OFF = 'OFF'
 
-__light_fetch_lock__ = threading.Lock()
+__cache_lock__ = threading.Lock()
 __rest_session__ = requests.Session()
 __daylight_cache__ = {}
 __metar_report_cache__ = {}
@@ -119,7 +119,8 @@ def __get_utc_datetime__(
 
 def __set_cache__(
     airport_icao_code,
-    cache, value
+    cache,
+    value
 ):
     """
     Sets the given cache to have the given value.
@@ -131,12 +132,17 @@ def __set_cache__(
         value {object} -- The value to store in the cache.
     """
 
-    cache[airport_icao_code] = (datetime.utcnow(), value)
+    __cache_lock__.acquire()
+    try:
+        cache[airport_icao_code] = (datetime.utcnow(), value)
+    finally:
+        __cache_lock__.release()
 
 
 def __is_cache_valid__(
     airport_icao_code,
-    cache, cache_life_in_minutes=8
+    cache,
+    cache_life_in_minutes=8
 ):
     """
     Returns TRUE and the cached value if the cached value
@@ -151,6 +157,8 @@ def __is_cache_valid__(
         [type] -- [description]
     """
 
+    __cache_lock__.acquire()
+
     if cache is None:
         return (False, None)
 
@@ -160,12 +168,14 @@ def __is_cache_valid__(
         if airport_icao_code in cache:
             time_since_last_fetch = now - cache[airport_icao_code][0]
 
-            if (time_since_last_fetch is not None and (time_since_last_fetch.total_seconds()) / 60.0) < cache_life_in_minutes:
+            if time_since_last_fetch is not None and (((time_since_last_fetch.total_seconds()) / 60.0) < cache_life_in_minutes):
                 return (True, cache[airport_icao_code][1])
             else:
                 return (False, cache[airport_icao_code][1])
     except Exception:
         pass
+    finally:
+        __cache_lock__.release()
 
     return (False, None)
 
@@ -210,12 +220,12 @@ def get_faa_csv_identifier(
 
 
 def clear_daytime_cache():
-    __light_fetch_lock__.acquire()
+    __cache_lock__.acquire()
 
     try:
         __daylight_cache__.clear()
     finally:
-        __light_fetch_lock__.release()
+        __cache_lock__.release()
 
 
 def get_civil_twilight(
@@ -240,83 +250,80 @@ def get_civil_twilight(
         5 - when it is full dark
     """
 
-    __light_fetch_lock__.acquire()
+    if current_utc_time is None:
+        current_utc_time = datetime.utcnow()
 
-    try:
-        if current_utc_time is None:
-            current_utc_time = datetime.utcnow()
+    is_cache_valid, cached_value = __is_cache_valid__(
+        airport_icao_code,
+        __daylight_cache__,
+        4 * 60)
 
-        is_cache_valid, cached_value = __is_cache_valid__(
-            airport_icao_code, __daylight_cache__, 4 * 60)
-
-        # Make sure that the sunrise time we are using is still valid...
-        if is_cache_valid:
-            hours_since_sunrise = (
-                current_utc_time - cached_value[1]).total_seconds() / 3600
-            if hours_since_sunrise > 24:
-                is_cache_valid = False
-                safe_logging.safe_log_warning(
-                    logger,
-                    "Twilight cache for {} had a HARD miss with delta={}".format(
-                        airport_icao_code,
-                        hours_since_sunrise))
-                current_utc_time += timedelta(hours=1)
-
-        if is_cache_valid and use_cache:
-            return cached_value
-
-        faa_code = get_faa_csv_identifier(airport_icao_code)
-
-        if faa_code is None:
-            return None
-
-        # Using "formatted=0" returns the times in a full datetime format
-        # Otherwise you need to do some silly math to figure out the date
-        # of the sunrise or sunset.
-        url = "http://api.sunrise-sunset.org/json?lat=" + \
-            str(__airport_locations__[faa_code]["lat"]) + \
-            "&lng=" + str(__airport_locations__[faa_code]["long"]) + \
-            "&date=" + str(current_utc_time.year) + "-" + str(current_utc_time.month) + "-" + str(current_utc_time.day) + \
-            "&formatted=0"
-
-        json_result = []
-        try:
-            json_result = __rest_session__.get(
-                url, timeout=DEFAULT_READ_SECONDS).json()
-        except Exception as ex:
+    # Make sure that the sunrise time we are using is still valid...
+    if is_cache_valid:
+        hours_since_sunrise = (
+            current_utc_time - cached_value[1]).total_seconds() / 3600
+        if hours_since_sunrise > 24:
+            is_cache_valid = False
             safe_logging.safe_log_warning(
                 logger,
-                '~get_civil_twilight() => None; EX:{}'.format(ex))
-            return []
+                "Twilight cache for {} had a HARD miss with delta={}".format(
+                    airport_icao_code,
+                    hours_since_sunrise))
+            current_utc_time += timedelta(hours=1)
 
-        if json_result is not None and "status" in json_result and json_result["status"] == "OK" and "results" in json_result:
-            sunrise = __get_utc_datetime__(json_result["results"]["sunrise"])
-            sunset = __get_utc_datetime__(json_result["results"]["sunset"])
-            sunrise_start = __get_utc_datetime__(
-                json_result["results"]["civil_twilight_begin"])
-            sunset_end = __get_utc_datetime__(
-                json_result["results"]["civil_twilight_end"])
-            sunrise_length = sunrise - sunrise_start
-            sunset_length = sunset_end - sunset
-            avg_transition_time = timedelta(
-                seconds=(sunrise_length.seconds + sunset_length.seconds) / 2)
-            sunrise_and_sunset = [
-                sunrise_start,
-                sunrise,
-                sunrise + avg_transition_time,
-                sunset - avg_transition_time,
-                sunset,
-                sunset_end]
-            __set_cache__(
-                airport_icao_code,
-                __daylight_cache__,
-                sunrise_and_sunset)
+    if is_cache_valid and use_cache:
+        return cached_value
 
-            return sunrise_and_sunset
+    faa_code = get_faa_csv_identifier(airport_icao_code)
 
+    if faa_code is None:
         return None
-    finally:
-        __light_fetch_lock__.release()
+
+    # Using "formatted=0" returns the times in a full datetime format
+    # Otherwise you need to do some silly math to figure out the date
+    # of the sunrise or sunset.
+    url = "http://api.sunrise-sunset.org/json?lat=" + \
+        str(__airport_locations__[faa_code]["lat"]) + \
+        "&lng=" + str(__airport_locations__[faa_code]["long"]) + \
+        "&date=" + str(current_utc_time.year) + "-" + str(current_utc_time.month) + "-" + str(current_utc_time.day) + \
+        "&formatted=0"
+
+    json_result = []
+    try:
+        json_result = __rest_session__.get(
+            url, timeout=DEFAULT_READ_SECONDS).json()
+    except Exception as ex:
+        safe_logging.safe_log_warning(
+            logger,
+            '~get_civil_twilight() => None; EX:{}'.format(ex))
+        return []
+
+    if json_result is not None and "status" in json_result and json_result["status"] == "OK" and "results" in json_result:
+        sunrise = __get_utc_datetime__(json_result["results"]["sunrise"])
+        sunset = __get_utc_datetime__(json_result["results"]["sunset"])
+        sunrise_start = __get_utc_datetime__(
+            json_result["results"]["civil_twilight_begin"])
+        sunset_end = __get_utc_datetime__(
+            json_result["results"]["civil_twilight_end"])
+        sunrise_length = sunrise - sunrise_start
+        sunset_length = sunset_end - sunset
+        avg_transition_time = timedelta(
+            seconds=(sunrise_length.seconds + sunset_length.seconds) / 2)
+        sunrise_and_sunset = [
+            sunrise_start,
+            sunrise,
+            sunrise + avg_transition_time,
+            sunset - avg_transition_time,
+            sunset,
+            sunset_end]
+        __set_cache__(
+            airport_icao_code,
+            __daylight_cache__,
+            sunrise_and_sunset)
+
+        return sunrise_and_sunset
+
+    return None
 
 
 def is_daylight(
@@ -563,46 +570,52 @@ def get_metars(
         Returns INVALID as the value for the key if an error occurs.
     """
 
-    metars = {}
-
     safe_logging.safe_log(
         logger,
         'get_metars([{}])'.format(','.join(airport_icao_codes)))
 
-    try:
-        metars = get_metar_reports_from_web(airport_icao_codes)
-
-    except Exception as e:
-        safe_logging.safe_log_warning(
-            logger,
-            'get_metars EX:{}'.format(e))
-        metars = {}
-
-    safe_logging.safe_log(
-        logger,
-        'Attempting to reconcile METARs not returned with cache.')
-
-    stations_to_use_cache_for = filter(
-        lambda x: x not in metars or metars[x] is None,
-        airport_icao_codes)
+    metars = {}
 
     # For the airports and identifiers that we were not able to get
     # a result for, see if we can fill in the results.
-    for identifier in stations_to_use_cache_for:
+    for identifier in airport_icao_codes:
         # If we did not get a report, but do
         # still have an old report, then use the old
         # report.
-        if identifier in __metar_report_cache__:
+        cache_valid, report = __is_cache_valid__(
+            identifier,
+            __metar_report_cache__)
+
+        if cache_valid and report is not None:
             safe_logging.safe_log_warning(
                 logger,
                 'Falling back to cached METAR for {}'.format(identifier))
-            metars[identifier] = __metar_report_cache__[identifier][1]
+            metars[identifier] = report[1]
         # Fall back to an "INVALID" if everything else failed.
         else:
-            safe_logging.safe_log_warning(
-                logger,
-                'METAR for {} being set to INVALID'.format(identifier))
-            metars[identifier] = INVALID
+            try:
+                new_metars = get_metar_reports_from_web([identifier])
+                new_report = new_metars[identifier]
+
+                if new_report is None or len(new_report) < 1:
+                    continue
+
+                __set_cache__(
+                    identifier,
+                    __metar_report_cache__,
+                    new_report)
+                metars[identifier] = new_report
+
+                safe_logging.safe_log(
+                    logger,
+                    '{}:{}'.format(identifier, new_report))
+
+            except Exception as e:
+                safe_logging.safe_log_warning(
+                    logger,
+                    'get_metars, being set to INVALID EX:{}'.format(e))
+
+                metars[identifier] = INVALID
 
     safe_logging.safe_log(
         logger,
@@ -671,7 +684,8 @@ def get_metar(
         safe_logging.safe_log(logger, 'Invalid or empty airport code')
 
     is_cache_valid, cached_metar = __is_cache_valid__(
-        airport_icao_code, __metar_report_cache__)
+        airport_icao_code,
+        __metar_report_cache__)
 
     # Make sure that we used the most recent reports we can.
     # Metars are normally updated hourly.
