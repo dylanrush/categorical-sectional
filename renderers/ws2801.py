@@ -56,7 +56,13 @@ class Ws2801Renderer(object):
         Args:
             color (list): The color we want to set all of the LEDs to.
         """
-        self.__pixels__.set_pixels(color)
+        indices = range(self.__pixel_count__)
+        ws2801_color = Adafruit_WS2801.RGB_to_color(
+                color[0],
+                color[1],
+                color[2])
+        for index in indices:
+            self.__pixels__.set_pixel(index, ws2801_color)
         self.__pixels__.show()
 
     def set_led(
