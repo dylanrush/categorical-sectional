@@ -2,7 +2,9 @@ from configuration import configuration
 from lib.logger import Logger
 
 
-def wheel(pos):
+def wheel(
+    pos
+):
     # Input a value 0 to 255 to get a color value.
     # The colours are a transition r - g - b - back to r.
     if pos < 0 or pos > 255:
@@ -41,15 +43,16 @@ class RainbowVisualizer(object):
         renderer,
         time_slice: float
     ):
-        if renderer is None:
-            return
-
         pixel_count = configuration.CONFIG[configuration.PIXEL_COUNT_KEY]
 
-        for j in range(255):
+        for j in range(256):  # one cycle of all 256 colors in the wheel
             for i in range(pixel_count):
-                pixel_index = (i * 256 // pixel_count) + j
-                renderer.set_led(i, wheel(pixel_index & 255))
-            renderer.show()
-            sleep_time = 0.001 - time_slice
-            time.sleep(sleep_time)
+                # tricky math! we use each pixel as a fraction of the full 96-color wheel
+                # (thats the i / strip.numPixels() part)
+                # Then add in j which makes the colors go around per pixel
+                # the % 96 is to make the wheel cycle around
+                color = wheel(((i * 256 // pixel_count) + j) % 256)
+
+                if renderer is not None:
+                    renderer.set_led(i, color)
+                    renderer.show()
