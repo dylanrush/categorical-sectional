@@ -221,11 +221,6 @@ def __get_test_cycle_colors__() -> list:
         colors_to_init.append(color_to_cycle)
         if is_global_dimming:
             colors_to_init.append(__get_dimmed_color__(color_to_cycle))
-        if is_global_dimming:
-            colors_to_init.append(__get_dimmed_color__(
-                __get_night_color_to_render__(
-                    color_to_cycle,
-                    [0.0, 0.0])))
 
     colors_to_init.append(colors[weather.OFF])
 
