@@ -35,6 +35,21 @@ class LedPwmRenderer(object):
                 pin_number,
                 self.pwm_frequency)
             self.airport_pwm_matrix[pin_number].start(0.0)
+    
+    def set_all(
+        self,
+        color: list
+    ):
+        """
+        Sets all of the leds to the same color.
+
+        Args:
+            color (list): The color we want to set all of the LEDs to.
+        """
+
+        for pin_set in self.__pins__:
+            self.set_led(pin_set, color)
+
 
     def set_led(
         self,
@@ -73,5 +88,6 @@ class LedPwmRenderer(object):
             airport_pins {dictionary} -- GPIO pins to PWM keyed by airport name.
         """
 
+        self.__pins__ = airport_pins
         self.pwm_frequency = 100.0
         self.airport_pwm_matrix = {}

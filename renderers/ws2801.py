@@ -45,6 +45,19 @@ class Ws2801Renderer(object):
                 for pixel in range(0, pixel_count)]
 
             self.__pixels__.show()
+    
+    def set_all(
+        self,
+        color: list
+    ):
+        """
+        Sets all of the leds to the same color.
+
+        Args:
+            color (list): The color we want to set all of the LEDs to.
+        """
+        self.__pixels__.set_pixels(color)
+        self.__pixels__.show()
 
     def set_led(
         self,

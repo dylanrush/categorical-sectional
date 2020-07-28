@@ -609,17 +609,13 @@ def all_airports(
     renderer.show()
 
 
-def __all_airports_to_color__(
+def __all_leds_to_color__(
     color: list
 ):
     if renderer is None:
         return
-
-    [renderer.set_led(airport_render_config[airport], color)
-        for airport in airport_render_config]
-
-    renderer.show()
-
+    
+    renderer.set_all(color)
 
 def render_thread():
     """
@@ -714,7 +710,7 @@ def __test_all_leds__(
         safe_logging.safe_log(
             logger,
             "Setting to {}".format(color))
-        __all_airports_to_color__(color)
+        __all_leds_to_color__(color)
         time.sleep(0.5)
 
 

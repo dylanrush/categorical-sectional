@@ -18,6 +18,20 @@ class LedRenderer(object):
     the GPIO pins using Pulse Width Modulation (PWM).
     """
 
+    def set_all(
+        self,
+        color: list
+    ):
+        """
+        Sets all of the leds to the same color.
+
+        Args:
+            color (list): The color we want to set all of the LEDs to.
+        """
+
+        for pin_set in self.__pins__:
+            self.set_led(pin_set, color)
+
     def set_led(
         self,
         airport_pins,
@@ -51,6 +65,8 @@ class LedRenderer(object):
         Arguments:
             airport_pins {dictionary} -- GPIO pins to PWM keyed by airport name.
         """
+
+        self.__pins__ = airport_pins
 
         for airport in airport_pins:
             pins = airport_pins[airport]
