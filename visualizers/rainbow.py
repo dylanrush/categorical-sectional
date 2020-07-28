@@ -41,12 +41,15 @@ class RainbowVisualizer(object):
         renderer,
         time_slice: float
     ):
+        if renderer is None:
+            return
+
         pixel_count = configuration.CONFIG[configuration.PIXEL_COUNT_KEY]
 
         for j in range(255):
             for i in range(pixel_count):
                 pixel_index = (i * 256 // pixel_count) + j
-                pixels[i] = wheel(pixel_index & 255)
-            pixels.show()
+                renderer.set_led(i, wheel(pixel_index & 255))
+            renderer.show()
             sleep_time = 0.001 - time_slice
             time.sleep(sleep_time)
