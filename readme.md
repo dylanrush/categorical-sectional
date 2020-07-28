@@ -485,6 +485,7 @@ Error       | Blinking white | Blinking white | Blinking white
 
 Version | Change
 ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2.0     | Add a remote control app that allows for brightness, night effects, and more to be changed on the fly. Add support for WS2811 and WS2812 based lights. Major performance improvements for adressable RGB LEDs. Selectable visualizers.
 1.10    | Add service that allows the configuration to be updated remotely without using the command line.
 1.9     | Add documentation about the upgrade process for existing installations. Add configuration to control if old data causes a light to blink or not.
 1.8     | Use the configuration files provided as a default base, and then source user configuration from the user directory.

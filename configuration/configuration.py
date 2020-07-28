@@ -39,6 +39,7 @@ NIGHT_LIGHTS_KEY = "night_lights"
 NIGHT_POPULATED_YELLOW_KEY = "night_populated_yellow"
 NIGHT_CATEGORY_PROPORTION_KEY = "night_category_proportion"
 BRIGHTNESS_PROPORTION_KEY = "brightness_proportion"
+VISUALIZER_INDEX_KEY = "visualizer"
 
 __VALID_KEYS__ = [
     LED_MODE_KEY,
@@ -51,7 +52,8 @@ __VALID_KEYS__ = [
     NIGHT_LIGHTS_KEY,
     NIGHT_POPULATED_YELLOW_KEY,
     NIGHT_CATEGORY_PROPORTION_KEY,
-    BRIGHTNESS_PROPORTION_KEY
+    BRIGHTNESS_PROPORTION_KEY,
+    VISUALIZER_INDEX_KEY
 ]
 
 __DEFAULT_CONFIG_FILE__ = '../data/config.json'
@@ -237,6 +239,28 @@ def update_configuration(
     return config_copy
 
 
+def __get_number_config_value__(
+    config_key: str,
+    default: float = 0
+) -> float:
+    """
+    Get a configuration value from the config that is a boolean.
+    If the value is not in the config, then use the default.
+
+    Arguments:
+        config_key {str} -- The name of the setting.
+        default {float} -- The default value if the setting is not found.
+
+    Returns:
+        bool -- The value to use for the configuration.
+    """
+    try:
+        if CONFIG is not None and config_key in CONFIG:
+            return float(CONFIG[config_key])
+    except Exception:
+        return default
+
+
 def __get_boolean_config_value__(
     config_key: str,
     default: bool = False
@@ -265,6 +289,15 @@ def get_mode():
     """
 
     return CONFIG['mode']
+
+def get_visualizer_index():
+    """
+    Returns the index of the visualizer we will use.
+
+    Returns:
+        int: The index of the visualizer to use.
+    """
+    return int(__get_number_config_value__(VISUALIZER_INDEX_KEY, 0))
 
 
 def get_blink_station_if_old_data() -> bool:
@@ -314,19 +347,17 @@ def get_night_category_proportion():
     default_mix = 0.5
 
     try:
-        if CONFIG is not None and 'night_category_proportion' in CONFIG:
-            try:
-                unclamped = float(CONFIG['night_category_proportion'])
+        unclamped = __get_number_config_value__(
+            NIGHT_CATEGORY_PROPORTION_KEY,
+            default_mix)
 
-                if unclamped < 0.0:
-                    return 0.0
+        if unclamped < 0.0:
+            return 0.0
 
-                if unclamped > 1.0:
-                    return 1.0
-
-                return unclamped
-            except Exception:
-                return default_mix
+        if unclamped > 1.0:
+            return 1.0
+        
+        return unclamped
     except Exception:
         return default_mix
 
@@ -356,11 +387,11 @@ def get_brightness_proportion() -> float:
     Returns:
         float -- The amount that the final color will be multiplied by
     """
+    default = 1.0
     try:
-        if CONFIG is not None and 'brightness_proportion' in CONFIG:
-            return CONFIG['brightness_proportion']
+        return __get_number_config_value__('brightness_proportion', default)
     except Exception:
-        return 1.0
+        return default
 
 
 def get_airport_file():

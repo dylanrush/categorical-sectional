@@ -487,7 +487,7 @@ def get_twilight_transition(
         proportion_off_to_night = get_proportion_between_times(
             light_times[0],
             current_utc_time, light_times[1])
-    
+
     proportion_off_to_night = clamp(-1.0, proportion_off_to_night, 1.0)
     proportion_night_to_color = clamp(-1.0, proportion_night_to_color, 1.0)
 
@@ -667,20 +667,11 @@ def get_metar(
 
     empty_return = '~get_metar() => None'
 
-    safe_logging.safe_log(logger, 'get_metar({})'.format(airport_icao_code))
-
     if airport_icao_code is None or len(airport_icao_code) < 1:
         safe_logging.safe_log(logger, 'Invalid or empty airport code')
 
     is_cache_valid, cached_metar = __is_cache_valid__(
         airport_icao_code, __metar_report_cache__)
-
-    safe_logging.safe_log(
-        logger,
-        'Cache for {} is {}, {}'.format(
-            airport_icao_code,
-            is_cache_valid,
-            cached_metar))
 
     # Make sure that we used the most recent reports we can.
     # Metars are normally updated hourly.
@@ -688,14 +679,6 @@ def get_metar(
             and cached_metar != INVALID \
             and use_cache \
             and (get_metar_age(cached_metar).total_seconds() / 60.0) < DEFAULT_METAR_LIFESPAN_MINUTES:
-        safe_logging.safe_log(
-            logger,
-            'Immediately returning cached METAR for {}'.format(
-                airport_icao_code))
-
-        safe_logging.safe_log(
-            logger,
-            '~get_metar() => {}'.format(cached_metar))
         return cached_metar
 
     try:
@@ -912,11 +895,6 @@ def get_category(
 
     if metar_age is not None:
         metar_age_minutes = metar_age.total_seconds() / 60.0
-        safe_logging.safe_log(
-            logger,
-            "{} - Issued {:.1f} minutes ago".format(
-                airport_icao_code,
-                metar_age_minutes))
     else:
         safe_logging.safe_log_warning(
             logger,
