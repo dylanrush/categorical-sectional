@@ -274,11 +274,9 @@ if __name__ == '__main__':
 
     wait_for_all_airports()
 
-    render_task = RecurringTask('Render', 0, render_thread, LOGGER, True)
-
     while True:
         try:
-            time.sleep(0.1)
+            render_thread()
         except KeyboardInterrupt:
             break
 

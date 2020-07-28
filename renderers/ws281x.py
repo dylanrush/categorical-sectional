@@ -36,12 +36,15 @@ class Ws281xRenderer(object):
             self.__pixels__ = neopixel.NeoPixel(
                 Pin(gpio_pin), # board.D18, #gpio_pin,
                 pixel_count,
+                auto_write=False,
                 pixel_order=neopixel.GRB)
 
             # Clear all the pixels to turn them off.
             self.__pixels__.fill((0, 0, 0))
 
             self.__pixels__.show()
+        else:
+            self.__pixels__ = range(pixel_count)
     
     def set_all(
         self,
@@ -74,9 +77,7 @@ class Ws281xRenderer(object):
         if pixel_index < 0:
             return
 
-        if not local_debug.is_debug():
-            self.__pixels__[pixel_index] = (color[0], color[1], color[2])
-            self.__pixels__.show()
+        self.__pixels__[pixel_index] = color
 
     def show(
         self

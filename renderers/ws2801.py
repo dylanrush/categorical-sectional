@@ -78,9 +78,15 @@ class Ws2801Renderer(object):
         if (pixel_index >= self.__pixel_count__):
             return
 
-        if not local_debug.is_debug():
-            self.__pixels__.set_pixel(pixel_index, Adafruit_WS2801.RGB_to_color(
-                color[0], color[1], color[2]))
+        try:
+            self.__pixels__.set_pixel(
+                    pixel_index,
+                    Adafruit_WS2801.RGB_to_color(
+                        color[0],
+                        color[1],
+                        color[2]))
+        except:
+            pass
 
     def show(
         self

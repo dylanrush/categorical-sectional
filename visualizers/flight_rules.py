@@ -369,27 +369,22 @@ class FlightRulesVisualizer(object):
         super().__init__()
 
         self.__logger__ = logger
-        self.__blink_timer__ = datetime.utcnow()
 
     def update(
         self,
         renderer,
         time_slice: float
     ):
-        seconds_since_cycle_start = (
-            datetime.utcnow() - self.__blink_timer__).total_seconds()
-
-        if seconds_since_cycle_start < 1.0:
-            render_airport_displays(
+        render_airport_displays(
                 renderer,
                 self.__logger__,
                 True)
-        elif seconds_since_cycle_start < 2.0:
-            pass
-        elif seconds_since_cycle_start < 3.0:
-            render_airport_displays(
+
+        time.sleep(1.0)
+
+        render_airport_displays(
                 renderer,
                 self.__logger__,
                 False)
-        else:
-            self.__blink_timer__ = datetime.utcnow()
+
+        time.sleep(1.0)

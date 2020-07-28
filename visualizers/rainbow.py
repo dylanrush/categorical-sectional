@@ -34,25 +34,26 @@ class RainbowVisualizer(object):
         super().__init__()
 
         self.__logger__ = logger
-        self.__blink_timer__ = 0.0
 
-        airport_render_last_logged_by_station = {}
 
     def update(
         self,
         renderer,
         time_slice: float
     ):
-        pixel_count = configuration.CONFIG[configuration.PIXEL_COUNT_KEY]
+        pixel_count = configuration.CONFIG[configuration.PIXEL_COUNT_KEY] #1
 
-        for j in range(256):  # one cycle of all 256 colors in the wheel
+        for j in range(255):  # one cycle of all 256 colors in the wheel
             for i in range(pixel_count):
+                pixel_index = (i * 256 // pixel_count) + j
                 # tricky math! we use each pixel as a fraction of the full 96-color wheel
                 # (thats the i / strip.numPixels() part)
                 # Then add in j which makes the colors go around per pixel
                 # the % 96 is to make the wheel cycle around
-                color = wheel(((i * 256 // pixel_count) + j) % 256)
+                color = wheel(pixel_index & 255)
 
                 if renderer is not None:
-                    renderer.set_led(i, color)
-                    renderer.show()
+                    renderer.set_led(i, color) #.set_all(color)
+
+            if renderer is not None:
+                renderer.show()
