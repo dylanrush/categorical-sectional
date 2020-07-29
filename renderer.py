@@ -2,7 +2,7 @@ import lib.local_debug as local_debug
 from configuration import configuration
 
 if local_debug.is_debug():
-    pass
+    from renderers import debug
 elif configuration.get_mode() == configuration.WS2801:
     from renderers import ws2801
 elif configuration.get_mode() == configuration.WS281x:
@@ -24,8 +24,7 @@ def get_renderer(
     """
 
     if local_debug.is_debug():
-        return None
-
+        return debug.DebugRenderer(configuration.CONFIG[configuration.PIXEL_COUNT_KEY])
     if configuration.get_mode() == configuration.WS2801:
         pixel_count = configuration.CONFIG[configuration.PIXEL_COUNT_KEY]
         spi_port = configuration.CONFIG[configuration.SPI_PORT_KEY]
@@ -36,7 +35,9 @@ def get_renderer(
         pixel_count = configuration.CONFIG[configuration.PIXEL_COUNT_KEY]
         gpio_pin = configuration.CONFIG[configuration.GPIO_PIN_KEY]
 
-        print("Setting up WS281x on Pin{} for {} lights".format(gpio_pin, pixel_count))
+        print("Setting up WS281x on Pin{} for {} lights".format(
+            gpio_pin,
+            pixel_count))
 
         return ws281x.Ws281xRenderer(pixel_count, gpio_pin)
     elif configuration.get_mode() == configuration.PWM:

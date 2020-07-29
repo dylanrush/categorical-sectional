@@ -124,9 +124,6 @@ def all_airports(
         of the color to set for ALL airports.
     """
 
-    if renderer is None:
-        return
-
     [renderer.set_led(airport_render_config[airport], colors[color])
         for airport in airport_render_config]
 
@@ -136,9 +133,6 @@ def all_airports(
 def __all_leds_to_color__(
     color: list
 ):
-    if renderer is None:
-        return
-
     renderer.set_all(color)
 
 
