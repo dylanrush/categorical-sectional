@@ -39,6 +39,7 @@ __cache_lock__ = threading.Lock()
 __rest_session__ = requests.Session()
 __daylight_cache__ = {}
 __metar_report_cache__ = {}
+__station_last_called__ = {}
 
 DEFAULT_READ_SECONDS = 15
 DEFAULT_METAR_LIFESPAN_MINUTES = 60
@@ -555,6 +556,33 @@ def get_metar_from_report_line(
     return (identifier, metar)
 
 
+def __is_station_ok_to_call__(
+    icao_code: str
+) -> bool:
+    """
+    Tells us if a station is OK to make a call to.
+    This rate limits calls when a METAR is expired
+    but the station has not yet updated.
+
+    Args:
+        icao_code (str): The station identifier code.
+
+    Returns:
+        bool: True if that station is OK to call.
+    """
+
+    if icao_code not in __station_last_called__:
+        return True
+
+    try:
+        delta_time = datetime.utcnow() - __station_last_called__[icao_code]
+        time_since_last_call = (delta_time.total_seconds()) / 60.0
+
+        return time_since_last_call > 1.0
+    except:
+        return True
+
+
 def get_metars(
     airport_icao_codes,
     logger=None
@@ -586,10 +614,10 @@ def get_metars(
             identifier,
             __metar_report_cache__)
 
-        if cache_valid and report is not None:
-            safe_logging.safe_log_warning(
-                logger,
-                'Falling back to cached METAR for {}'.format(identifier))
+        is_ready_to_call = __is_station_ok_to_call__(identifier)
+
+        if cache_valid and report is not None and not is_ready_to_call:
+            # Falling back to cached METAR for rate limiting
             metars[identifier] = report
         # Fall back to an "INVALID" if everything else failed.
         else:
@@ -659,6 +687,7 @@ def get_metar_reports_from_web(
             # If we get a good report, go ahead and shove it into the results.
             if metar is not None:
                 metars[identifier] = metar
+                __station_last_called__[identifier] = datetime.utcnow()
 
     return metars
 
@@ -689,8 +718,6 @@ def get_metar(
 
     # Make sure that we used the most recent reports we can.
     # Metars are normally updated hourly.
-    #
-    # TODO - Make the cache expiration date more dynamic so the metar age can also be used.
     if is_cache_valid \
             and cached_metar != INVALID \
             and use_cache \
