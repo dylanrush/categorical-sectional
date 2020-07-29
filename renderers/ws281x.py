@@ -25,7 +25,6 @@ class Ws281xRenderer(object):
         Arguments:
             pixel_count {int} -- The total number of neopixels.
             gpio_pin -- The GPIO pin the WS281x data pin is on. This is IO addressing, NOT physical addressing.
-            spi_device {int} -- The SPI device on the port that the neopixels are on.
         """
 
         self.__pixel_count__ = pixel_count
