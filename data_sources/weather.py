@@ -590,7 +590,7 @@ def get_metars(
             safe_logging.safe_log_warning(
                 logger,
                 'Falling back to cached METAR for {}'.format(identifier))
-            metars[identifier] = report[1]
+            metars[identifier] = report
         # Fall back to an "INVALID" if everything else failed.
         else:
             try:
@@ -689,6 +689,8 @@ def get_metar(
 
     # Make sure that we used the most recent reports we can.
     # Metars are normally updated hourly.
+    #
+    # TODO - Make the cache expiration date more dynamic so the metar age can also be used.
     if is_cache_valid \
             and cached_metar != INVALID \
             and use_cache \
