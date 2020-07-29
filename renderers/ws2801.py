@@ -41,11 +41,8 @@ class Ws2801Renderer(object):
             # Clear all the pixels to turn them off.
             self.__pixels__.clear()
 
-            [self.__pixels__.set_pixel(pixel, Adafruit_WS2801.RGB_to_color(0, 0, 0))
-                for pixel in range(0, pixel_count)]
+            self.set_all((0, 0, 0))
 
-            self.__pixels__.show()
-    
     def set_all(
         self,
         color: list
@@ -58,12 +55,12 @@ class Ws2801Renderer(object):
         """
         indices = range(self.__pixel_count__)
         ws2801_color = Adafruit_WS2801.RGB_to_color(
-                color[0],
-                color[1],
-                color[2])
-        for index in indices:
-            self.__pixels__.set_pixel(index, ws2801_color)
-        self.__pixels__.show()
+            color[0],
+            color[1],
+            color[2])
+
+        [self.__pixels__.set_pixel(index, ws2801_color)
+            for index in indices]
 
     def set_led(
         self,
@@ -86,11 +83,11 @@ class Ws2801Renderer(object):
 
         try:
             self.__pixels__.set_pixel(
-                    pixel_index,
-                    Adafruit_WS2801.RGB_to_color(
-                        color[0],
-                        color[1],
-                        color[2]))
+                pixel_index,
+                Adafruit_WS2801.RGB_to_color(
+                    color[0],
+                    color[1],
+                    color[2]))
         except:
             pass
 
