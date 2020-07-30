@@ -79,8 +79,7 @@ def render_airport_displays(
                 logger,
                 'Catch-all error in render_airport_displays of {} EX={}'.format(airport, ex))
 
-    if renderer is not None:
-        renderer.show()
+    renderer.show()
 
 
 def get_airport_category(
@@ -227,10 +226,9 @@ def render_airport(
         color_by_category,
         airport)
 
-    if renderer is not None:
-        renderer.set_led(
-            airport_render_config[airport],
-            color_to_render)
+    renderer.set_led(
+        airport_render_config[airport],
+        color_to_render)
 
 
 def __get_rgb_night_color_to_render__(

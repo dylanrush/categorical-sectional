@@ -35,13 +35,12 @@ class RainbowVisualizer(object):
 
         self.__logger__ = logger
 
-
     def update(
         self,
         renderer,
         time_slice: float
     ):
-        pixel_count = configuration.CONFIG[configuration.PIXEL_COUNT_KEY] #1
+        pixel_count = configuration.CONFIG[configuration.PIXEL_COUNT_KEY]  # 1
 
         for j in range(255):  # one cycle of all 256 colors in the wheel
             for i in range(pixel_count):
@@ -52,8 +51,6 @@ class RainbowVisualizer(object):
                 # the % 96 is to make the wheel cycle around
                 color = wheel(pixel_index & 255)
 
-                if renderer is not None:
-                    renderer.set_led(i, color) #.set_all(color)
+                renderer.set_led(i, color)  # .set_all(color)
 
-            if renderer is not None:
-                renderer.show()
+            renderer.show()
