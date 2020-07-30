@@ -1,7 +1,6 @@
 <datalist id="light_types">
     <option value="ws2801">WS2801</option>
-    <option value="pwm">PWM</option>
-    <option value="led">LED</option>
+    <option value="ws281x">NeoPixel / WS281X</option>
 </datalist>
 <datalist id="boolean">
     <option value="true">True</option>
@@ -27,10 +26,8 @@
                 <td style="align-items: flex-start; align-content: flex-start; text-align: left;">
                     <input type="radio" name="mode" class="form-radio" value="ws2801"
                         {{#ifeq configJson.mode "ws2801"}}checked{{/ifeq}}>&nbsp;WS2801<br>
-                    <input type="radio" name="mode" class="form-radio" value="pwm"
-                        {{#ifeq configJson.mode "pwm"}}checked{{/ifeq}}>&nbsp;PWM LEDs<br>
-                    <input type="radio" name="mode" class="form-radio" value="led"
-                        {{#ifeq configJson.mode "led"}}checked{{/ifeq}}>&nbsp;LEDs<br><br>
+                    <input type="radio" name="mode" class="form-radio" value="ws281x"
+                        {{#ifeq configJson.mode "ws281x"}}checked{{/ifeq}}>&nbsp;NeoPixel/WS281x<br>
                 </td>
             </tr>
             <tr>
@@ -49,11 +46,6 @@
                         value="{{configJson.spi_port}}" />
                 </td>
             </tr>
-            <tr>
-                <td>PWM Frequency</td>
-                <td><input name="pwm_frequency" id="pwm_frequency" type="number" min="0" max="1000"
-                        value="{{configJson.pwm_frequency}}" /></td>
-            </tr> -->
             <!--
         <tr>
             <td>Airports File</td>
@@ -77,7 +69,6 @@
     setElementValue("pixel_count", {{ configJson.pixel_count }});
     setElementValue("spi_device", {{ configJson.spi_device }});
     setElementValue("spi_port", {{ configJson.spi_port }});
-    setElementValue("pwm_frequency", {{ configJson.pwm_frequency }});
 
     setElementValue("blink_old_stations", {{ configJson.blink_old_stations }});
     setElementValue("night_lights", {{ configJson.night_lights }});

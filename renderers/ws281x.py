@@ -12,6 +12,9 @@ import lib.local_debug as local_debug
 import board
 import neopixel
 
+#TODO - Add "Clear" function to all renderers
+#TODO - Clear on visualizer switch
+
 
 class Ws281xRenderer(object):
     def __init__(

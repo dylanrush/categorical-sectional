@@ -161,9 +161,7 @@ def get_color_from_condition(
     elif category == weather.IFR:
         return (weather.RED, should_blink)
     elif category == weather.LIFR:
-        # Only blink for normal LEDs.
-        # PWM and WS2801 have their own color.
-        return (weather.LOW, configuration.get_mode() == configuration.STANDARD)
+        return (weather.LOW, should_blink)
     elif category == weather.NIGHT:
         return (weather.YELLOW, False)
     elif category == weather.SMOKE:

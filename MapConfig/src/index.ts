@@ -251,11 +251,6 @@ app.post("/", function (request, response) {
   );
   updateHash = mergeIntoHash(
     updateHash,
-    "pwm_frequency",
-    getNumber(request.body.pwm_frequency)
-  );
-  updateHash = mergeIntoHash(
-    updateHash,
     "airports_file",
     request.body.airports_file
   );

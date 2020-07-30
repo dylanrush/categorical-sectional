@@ -8,7 +8,7 @@ elif configuration.get_mode() == configuration.WS2801:
 elif configuration.get_mode() == configuration.WS281x:
     from renderers import ws281x
 else:
-    from renderers import led, led_pwm
+    from renderers import debug
 
 
 def get_renderer(
@@ -25,6 +25,7 @@ def get_renderer(
 
     if local_debug.is_debug():
         return debug.DebugRenderer(configuration.CONFIG[configuration.PIXEL_COUNT_KEY])
+
     if configuration.get_mode() == configuration.WS2801:
         pixel_count = configuration.CONFIG[configuration.PIXEL_COUNT_KEY]
         spi_port = configuration.CONFIG[configuration.SPI_PORT_KEY]
@@ -40,8 +41,5 @@ def get_renderer(
             pixel_count))
 
         return ws281x.Ws281xRenderer(pixel_count, gpio_pin)
-    elif configuration.get_mode() == configuration.PWM:
-        return led_pwm.LedPwmRenderer(airport_render_config)
-    else:
-        # "Normal" LEDs
-        return led.LedRenderer(airport_render_config)
+
+    return debug.DebugRenderer(configuration.CONFIG[configuration.PIXEL_COUNT_KEY])

@@ -196,7 +196,6 @@ You do not need to include ALL of these values. Any values provided in this file
   "pixel_count": 50,
   "spi_device": 0,
   "spi_port": 0,
-  "pwm_frequency": 100,
   "airports_file": "data/kawo_to_kosh.json",
   "blink_old_stations": true,
   "night_lights": true,
@@ -233,7 +232,7 @@ When new data is received that has an issue date less than 90 minutes from the c
 
 Set this to `true` if you would like the weather stations to change colors based on the time of day.
 
-If you are using WS2801 or PWM based lights, then this is a gradual process.
+This is a gradual process.
 
 First the light will fade from the flight condition color to a bright yellow to indicate "Populated night". As the station gets darker, the light fades to a darker yellow by the time the station is "pitch black" in night.
 
@@ -278,7 +277,7 @@ This controls which type of LED system to use for controlling the lights.
 Value  | Description
 ------ | ------------------------------------------------------------------------------------------------
 ws2801 | Use WS2801 based light strands like those from AdaFruit
-pwm    | Use pulse width modulation based LEDs. This can have their colors changed more than normal LEDs.
+ws281x | Use WS2811, WS2812, or WS2812B LEDs. These are branded as "NeoPixels" by AdaFruit.
 led    | Use standard LEDs that have a positive wire for each color and a common ground.
 
 #### pixel_count
@@ -288,10 +287,6 @@ If you are using ws2801 based LEDs then you may need to change "pixel_count". Ea
 #### spi_device and spi_port
 
 You will probably not need to change this. If you do need to change this, then you probably know what to do.
-
-#### pwm_frequency
-
-Used if you are using PWM LEDs.
 
 #### airports_file
 
@@ -305,15 +300,6 @@ This shows the two sections for an example airport file.
 
 ```json
 {
-  "pwm": [
-    { "KRNT": [3, 5, 7] },
-    { "KSEA": [11, 13, 15] },
-    { "KPLU": [19, 21, 23] },
-    { "KOLM": [29, 31, 33] },
-    { "KTIW": [32, 35, 37] },
-    { "KPWT": [36, 38, 40] },
-    { "KSHN": [8, 10, 12] }
-  ],
   "ws2801": [
     { "KRNT": { "neopixel": 0 } },
     { "KSEA": { "neopixel": 2 } },
@@ -330,21 +316,11 @@ This shows the two sections for an example airport file.
 
 There are two sections:
 
-##### pwm
-
-Contains the airport name and wiring information. The first number is the wire controlling the red LED, then the green LED, and finally the blue LED.
-
-These wire numbers refer to the **physical** board number on the Raspberry pie.
-
-So for KRNT (Renton), the wire leading to the Red LED would be wired to the GPIO board at pin 3\. The Blue LED would be wired to pin 5, and the green LED wire would be wired to pin 7.
-
-_NOTE:_ The "pwm" section is used by both the normal LEDs and the pulse width controlled LEDs.
-
 ##### ws2801
 
-This section contains the information required to control a strand of WS2801 lights.
+This section contains the information required to control a strand of WS2801 OR WS281x led strips.
 
-Once again, this starts with an airport or weather station identifier.
+This starts with an airport or weather station identifier.
 
 Next to contains a "neopixel" identifier. This is the order of the light on the strand.
 
@@ -467,15 +443,15 @@ From there you may adjust the map's brightness, the night time behavior, and mor
 
 This project uses "standard" airport coloring for flight rules category, along with some unique colors.
 
-Flight Rule | WS2801         | PWM            | LED
------------ | -------------- | -------------- | --------------
-VFR         | Solid green    | Solid green    | Solid green
-MVFR        | Solid blue     | Solid blue     | Solid blue
-IFR         | Solid red      | Solid red      | Solid red
-LIFR        | Solid magenta  | Solid magenta  | Blinking red
-Smoke       | Solid gray     | Solid gray     | Solid gray
-Night       | Solid yellow   | Solid yellow   | Solid yellow
-Error       | Blinking white | Blinking white | Blinking white
+Flight Rule | Color          |
+----------- | -------------- |
+VFR         | Solid green    |
+MVFR        | Solid blue     |
+IFR         | Solid red      |
+LIFR        | Solid magenta  |
+Smoke       | Solid gray     |
+Night       | Solid yellow   |
+Error       | Blinking white |
 
 ## Apendix
 
@@ -485,7 +461,7 @@ Error       | Blinking white | Blinking white | Blinking white
 
 Version | Change
 ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-2.0     | Add a remote control app that allows for brightness, night effects, and more to be changed on the fly. Add support for WS2811 and WS2812 based lights. Major performance improvements for adressable RGB LEDs. Selectable visualizers.
+2.0     | Add a remote control app that allows for brightness, night effects, and more to be changed on the fly. Add support for WS2811 and WS2812 based lights. Major performance improvements for adressable RGB LEDs. Selectable visualizers. Removed support for hard wired GPIO based LEDs.
 1.10    | Add service that allows the configuration to be updated remotely without using the command line.
 1.9     | Add documentation about the upgrade process for existing installations. Add configuration to control if old data causes a light to blink or not.
 1.8     | Use the configuration files provided as a default base, and then source user configuration from the user directory.

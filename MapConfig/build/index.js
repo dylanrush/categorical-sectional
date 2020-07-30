@@ -180,7 +180,6 @@ app.post("/", function (request, response) {
     updateHash = mergeIntoHash(updateHash, "pixel_count", getNumber(request.body.pixel_count));
     updateHash = mergeIntoHash(updateHash, "spi_device", getNumber(request.body.spi_device));
     updateHash = mergeIntoHash(updateHash, "spi_port", getNumber(request.body.spi_port));
-    updateHash = mergeIntoHash(updateHash, "pwm_frequency", getNumber(request.body.pwm_frequency));
     updateHash = mergeIntoHash(updateHash, "airports_file", request.body.airports_file);
     updateHash = mergeIntoHash(updateHash, "blink_old_stations", getBoolean(request.body.blink_old_stations));
     updateHash = mergeIntoHash(updateHash, "night_lights", getBoolean(request.body.night_lights));

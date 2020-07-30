@@ -23,7 +23,6 @@ else:
 
 # Modes
 STANDARD = 'led'
-PWM = 'pwm'
 WS2801 = 'ws2801'
 WS281x = 'ws281x'
 
@@ -32,7 +31,6 @@ PIXEL_COUNT_KEY = "pixel_count"
 SPI_DEVICE_KEY = "spi_device"
 SPI_PORT_KEY = "spi_port"
 GPIO_PIN_KEY = "gpio_pin"
-PWM_FREQUENCY_KEY = "pwm_frequency"
 AIRPORTS_FILE_KEY = "airports_file"
 BLINK_OLD_STATIONS_KEY = "blink_old_stations"
 NIGHT_LIGHTS_KEY = "night_lights"
@@ -46,7 +44,6 @@ __VALID_KEYS__ = [
     PIXEL_COUNT_KEY,
     SPI_DEVICE_KEY,
     SPI_PORT_KEY,
-    PWM_FREQUENCY_KEY,
     AIRPORTS_FILE_KEY,
     BLINK_OLD_STATIONS_KEY,
     NIGHT_LIGHTS_KEY,
@@ -372,12 +369,7 @@ def get_airport_configuration_section():
         load the airport configuration from.
     """
 
-    mode = get_mode()
-
-    if mode == STANDARD:
-        return PWM
-
-    return mode
+    return get_mode()
 
 
 def get_brightness_proportion() -> float:
@@ -404,55 +396,7 @@ def get_airport_file():
 
 def get_colors():
     """
-    Returns the colors based on the config.
-    """
-
-    if get_mode() == WS2801 or get_mode() == WS281x:
-        return __get_ws2801_colors__()
-    elif get_mode() == PWM:
-        return __get_pwm_colors__()
-
-    return __get_led_colors__()
-
-
-def __get_led_colors__():
-    """
-    Returns colors for normal GPIO use.
-    """
-    return {
-        weather.RED: (HIGH, LOW, LOW),
-        weather.GREEN: (LOW, HIGH, LOW),
-        weather.BLUE: (LOW, LOW, HIGH),
-        weather.LOW: (HIGH, LOW, LOW),
-        weather.OFF: (LOW, LOW, LOW),
-        weather.YELLOW: (HIGH, HIGH, LOW),
-        weather.GRAY: (LOW, LOW, LOW),
-        weather.WHITE: (HIGH, HIGH, HIGH)
-    }
-
-
-def __get_pwm_colors__():
-    """Returns colors for Pulse Width Modulation control
-
-    Returns:
-        dictionary -- Color keys to frequency
-    """
-
-    return {
-        weather.RED: (20.0, 0.0, 0.0),
-        weather.GREEN: (0.0, 50.0, 0.0),
-        weather.BLUE: (0.0, 0.0, 100.0),
-        weather.LOW: (20.0, 0.0, 100.0),
-        weather.OFF: (0.0, 0.0, 0.0),
-        weather.GRAY: (10.0, 20.0, 40.0),
-        weather.YELLOW: (20.0, 50.0, 0.0),
-        weather.WHITE: (20.0, 50, 100.0)
-    }
-
-
-def __get_ws2801_colors__():
-    """
-    Returns the color codes for a WS2801 based light set.
+    Returns the RGB colors based on the config.
     """
 
     return {
@@ -476,40 +420,7 @@ def get_airport_configs():
         dictionary -- Airport identifier keying lighting configuration.
     """
 
-    mode = CONFIG['mode']
-    if mode == PWM or mode == STANDARD:
-        return __load_gpio_airport_pins__(get_airport_file())
-    elif mode == WS2801 or mode == WS281x:
-        return __load_airport_ws2801__(get_airport_file())
-    else:
-        raise Exception('Unable to determine light types')
-
-
-def __load_gpio_airport_pins__(
-    config_file: str
-) -> dict:
-    """
-    Loads the mapping of airport ICAO codes to the GPIO
-    pin mapping from the configuration file.
-
-    Returns:
-        dict -- A dictionary of GPIO pin tuples keyed by ICAO code.
-    """
-
-    out_airport_pins_map = {}
-
-    json_config = __load_config_file__(config_file)
-
-    airports = json_config[get_airport_configuration_section()]
-
-    for airport_data in airports:
-        airport_code = airport_data.keys()[0]
-        out_airport_pins_map[airport_code.upper()] = (
-            airport_data[airport_code][0],
-            airport_data[airport_code][1],
-            airport_data[airport_code][2])
-
-    return out_airport_pins_map
+    return __load_airport_ws2801__(get_airport_file())
 
 
 def __load_airport_ws2801__(
