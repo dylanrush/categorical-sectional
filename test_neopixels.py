@@ -16,7 +16,7 @@ num_pixels = 100
 ORDER = neopixel.GRB
 
 pixels = neopixel.NeoPixel(
-    pixel_pin, num_pixels, brightness=0.2, auto_write=False, pixel_order=ORDER
+    pixel_pin, num_pixels, auto_write=False, pixel_order=ORDER
 )
 
 
@@ -50,27 +50,27 @@ def rainbow_cycle(wait):
         pixels.show()
         time.sleep(wait)
 
+print("Starting primary color and dimming test")
 
-# Comment this line out if you have RGBW/GRBW NeoPixels
-pixels.fill((255, 0, 0))
-# Uncomment this line if you have RGBW/GRBW NeoPixels
-# pixels.fill((255, 0, 0, 0))
-pixels.show()
-time.sleep(1)
+for color in [(255, 0, 0), (0, 255, 0), (0, 0, 255)]:
+    for proportion in [255, 128, 64, 32, 16, 8, 4, 2, 0]:
+        adjustment = proportion / 255.0
 
-# Comment this line out if you have RGBW/GRBW NeoPixels
-pixels.fill((0, 255, 0))
-# Uncomment this line if you have RGBW/GRBW NeoPixels
-# pixels.fill((0, 255, 0, 0))
-pixels.show()
-time.sleep(1)
+        print("Adjusting {} to {}".format(color, adjustment))
 
-# Comment this line out if you have RGBW/GRBW NeoPixels
-pixels.fill((0, 0, 255))
-# Uncomment this line if you have RGBW/GRBW NeoPixels
-# pixels.fill((0, 0, 255, 0))
-pixels.show()
-time.sleep(1)
+        final_color = []
+
+        for component in color:
+            final_color.append(int(component * adjustment))
+
+        print("Final color is {}".format(final_color))
+
+        pixels.fill(tuple(final_color))
+        pixels.show()
+
+        time.sleep(1)
+
+print("Starting color cycle test")
 
 while True:
     rainbow_cycle(0.001)  # rainbow cycle with 1ms delay per step
