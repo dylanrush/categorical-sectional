@@ -5,6 +5,7 @@ License: Public Domain
 """
 
 from __future__ import division
+
 import time
 
 import lib.local_debug as local_debug
@@ -22,8 +23,10 @@ class DebugRenderer(object):
             pixel_count {int} -- The total number of neopixels.
         """
 
-        self.__pixel_count__ = pixel_count
-        self.__pixels__ = [(0, 0, 0)] * pixel_count
+        super().__init__()
+
+        self.pixel_count = pixel_count
+        self.pixels = [(0, 0, 0)] * pixel_count
         self.__is_dirty__ = False
 
     def set_all(
@@ -36,7 +39,7 @@ class DebugRenderer(object):
         Args:
             color (list): The color we want to set all of the LEDs to.
         """
-        self.__pixels__ = [color] * self.__pixel_count__
+        self.pixels = [color] * self.pixel_count
         self.show()
 
     def set_led(
@@ -51,16 +54,21 @@ class DebugRenderer(object):
             pixel_index {int} -- The index of the pixel to set
             color {int array} -- The RGB (0-255) array of the color we want to set.
         """
-        if pixel_index >= self.__pixel_count__:
+        if pixel_index >= self.pixel_count:
             return
 
         if pixel_index < 0:
             return
 
-        self.__pixels__[pixel_index] = color
+        self.pixels[pixel_index] = color
         self.__is_dirty__ = True
 
     def show(
         self
     ):
         self.__is_dirty__ = False
+
+    def clear(
+        self
+    ):
+        self.set_all((0, 0, 0))
