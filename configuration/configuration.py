@@ -287,6 +287,7 @@ def get_mode():
 
     return CONFIG['mode']
 
+
 def get_visualizer_index():
     """
     Returns the index of the visualizer we will use.
@@ -353,7 +354,7 @@ def get_night_category_proportion():
 
         if unclamped > 1.0:
             return 1.0
-        
+
         return unclamped
     except Exception:
         return default_mix
