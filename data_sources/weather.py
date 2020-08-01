@@ -9,11 +9,11 @@ import re
 import threading
 import urllib.request
 from datetime import datetime, timedelta
-from lib.colors import clamp
 
 import requests
 
 from lib import safe_logging
+from lib.colors import clamp
 
 INVALID = 'INVALID'
 INOP = 'INOP'
@@ -598,10 +598,6 @@ def get_metars(
         Returns INVALID as the value for the key if an error occurs.
     """
 
-    safe_logging.safe_log(
-        logger,
-        'get_metars([{}])'.format(','.join(airport_icao_codes)))
-
     metars = {}
 
     # For the airports and identifiers that we were not able to get
@@ -645,9 +641,6 @@ def get_metars(
 
                 metars[identifier] = INVALID
 
-    safe_logging.safe_log(
-        logger,
-        '~get_metars() => [{}]'.format(','.join(metars)))
     return metars
 
 
@@ -707,8 +700,6 @@ def get_metar(
         use_cache {bool} -- Should we use the cache? Set to false to bypass the cache. (default: {True})
     """
 
-    empty_return = '~get_metar() => None'
-
     if airport_icao_code is None or len(airport_icao_code) < 1:
         safe_logging.safe_log(logger, 'Invalid or empty airport code')
 
@@ -718,17 +709,13 @@ def get_metar(
 
     # Make sure that we used the most recent reports we can.
     # Metars are normally updated hourly.
-    if is_cache_valid \
-            and cached_metar != INVALID \
-            and use_cache \
-            and (get_metar_age(cached_metar).total_seconds() / 60.0) < DEFAULT_METAR_LIFESPAN_MINUTES:
-        return cached_metar
+    if is_cache_valid and cached_metar != INVALID:
+        metar_age = get_metar_age(cached_metar).total_seconds() / 60.0
+
+        if use_cache and metar_age < DEFAULT_METAR_LIFESPAN_MINUTES:
+            return cached_metar
 
     try:
-        safe_logging.safe_log(
-            logger,
-            'Getting single metar for {}'.format(
-                airport_icao_code))
         metars = get_metars([airport_icao_code], logger=logger)
 
         if metars is None:
@@ -736,9 +723,6 @@ def get_metar(
                 logger,
                 'Get a None while attempting to get METAR for {}'.format(
                     airport_icao_code))
-            safe_logging.safe_log(
-                logger,
-                empty_return)
 
             return None
 
@@ -747,20 +731,8 @@ def get_metar(
                 logger,
                 'Got a result, but {} was not in results package'.format(
                     airport_icao_code))
-            safe_logging.safe_log(
-                logger,
-                empty_return)
+
             return None
-
-        safe_logging.safe_log(
-            logger,
-            'Returning METAR {}'.format(
-                metars[airport_icao_code]))
-
-        safe_logging.safe_log(
-            logger,
-            '~get_metar() => {}'.format(
-                metars[airport_icao_code]))
 
         return metars[airport_icao_code]
 
