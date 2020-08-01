@@ -57,6 +57,7 @@ python_logger.addHandler(HANDLER)
 
 thread_lock_object = threading.Lock()
 
+
 if not local_debug.is_debug():
     import RPi.GPIO as GPIO
     try:
@@ -73,7 +74,8 @@ renderer = renderer.get_renderer(airport_render_config)
 
 VISUALIZERS = [
     flight_rules.FlightRulesVisualizer(python_logger),
-    rainbow.RainbowVisualizer(python_logger)
+    rainbow.RainbowVisualizer(python_logger),
+    rainbow.LightCycleVisualizer(python_logger)
 ]
 
 
@@ -136,6 +138,25 @@ def __all_leds_to_color__(
     renderer.set_all(color)
 
 
+def get_station_by_led(
+    index: int
+) -> str:
+    """
+    Given an LED, find the station it is representing.
+
+    Args:
+        index (int): [description]
+
+    Returns:
+        str: The identifier of the station.
+    """
+    for station in airport_render_config:
+        if airport_render_config[station] == index:
+            return station
+
+    return "UNK"
+
+
 def render_thread():
     """
     Main logic loop for rendering the lights.
@@ -147,6 +168,9 @@ def render_thread():
 
     tic = time.perf_counter()
     toc = time.perf_counter()
+    debug_pixels_timer = None
+
+    last_visualizer = 0
 
     while True:
         try:
@@ -162,9 +186,26 @@ def render_thread():
             if visualizer_index >= len(VISUALIZERS):
                 visualizer_index = 0
 
+            if visualizer_index != last_visualizer:
+                renderer.clear()
+                last_visualizer = visualizer_index
+
             VISUALIZERS[visualizer_index].update(
                 renderer,
                 delta_time)
+
+            show_debug_pixels = debug_pixels_timer is None or (
+                datetime.utcnow() - debug_pixels_timer).total_seconds() > 60.0
+
+            if show_debug_pixels:
+                for index in range(renderer.pixel_count):
+                    station = get_station_by_led(index)
+                    LOGGER.log_info_message('[{}/{}]={}'.format(
+                        station,
+                        index,
+                        renderer.pixels[index]))
+
+                debug_pixels_timer = datetime.utcnow()
 
             toc = time.perf_counter()
         except KeyboardInterrupt:
