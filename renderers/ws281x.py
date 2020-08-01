@@ -76,7 +76,7 @@ class Ws281xRenderer(DebugRenderer):
             return
 
         self.__leds__[pixel_index] = color
-        super.set_led(pixel_index, color)
+        super().set_led(pixel_index, color)
 
     def show(
         self
