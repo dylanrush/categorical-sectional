@@ -5,18 +5,16 @@ License: Public Domain
 """
 
 from __future__ import division
+
 import time
 
-import lib.local_debug as local_debug
-
 import board
+import lib.local_debug as local_debug
 import neopixel
-
-#TODO - Add "Clear" function to all renderers
-#TODO - Clear on visualizer switch
+from renderers.debug import DebugRenderer
 
 
-class Ws281xRenderer(object):
+class Ws281xRenderer(DebugRenderer):
     def __init__(
         self,
         pixel_count,
@@ -30,24 +28,20 @@ class Ws281xRenderer(object):
             gpio_pin -- The GPIO pin the WS281x data pin is on. This is IO addressing, NOT physical addressing.
         """
 
-        self.__pixel_count__ = pixel_count
+        super().__init__(pixel_count)
 
         if not local_debug.is_debug():
             from adafruit_blinka.microcontroller.bcm283x.pin import Pin
 
-            self.__pixels__ = neopixel.NeoPixel(
-                Pin(gpio_pin), # board.D18, #gpio_pin,
+            self.__leds__ = neopixel.NeoPixel(
+                Pin(gpio_pin),  # board.D18, #gpio_pin,
                 pixel_count,
                 auto_write=False,
                 pixel_order=neopixel.GRB)
 
             # Clear all the pixels to turn them off.
-            self.__pixels__.fill((0, 0, 0))
+            self.set_all((0, 0, 0))
 
-            self.__pixels__.show()
-        else:
-            self.__pixels__ = range(pixel_count)
-    
     def set_all(
         self,
         color: list
@@ -58,8 +52,10 @@ class Ws281xRenderer(object):
         Args:
             color (list): The color we want to set all of the LEDs to.
         """
-        self.__pixels__.fill(color)
-        self.__pixels__.show()
+
+        self.__leds__.fill(color)
+        self.__leds__.show()
+        super().set_all(color)
 
     def set_led(
         self,
@@ -73,15 +69,17 @@ class Ws281xRenderer(object):
             pixel_index {int} -- The index of the pixel to set
             color {int array} -- The RGB (0-255) array of the color we want to set.
         """
-        if pixel_index >= self.__pixel_count__:
+        if pixel_index >= self.pixel_count:
             return
 
         if pixel_index < 0:
             return
 
-        self.__pixels__[pixel_index] = color
+        self.__leds__[pixel_index] = color
+        super.set_led(pixel_index, color)
 
     def show(
         self
     ):
-        self.__pixels__.show()
+        self.__leds__.show()
+        super().show()

@@ -5,16 +5,17 @@ License: Public Domain
 """
 
 from __future__ import division
+
 import time
 
+import Adafruit_GPIO.SPI as SPI
+import Adafruit_WS2801
 # Import the WS2801 module.
 import lib.local_debug as local_debug
-
-import Adafruit_WS2801
-import Adafruit_GPIO.SPI as SPI
+from renderers.debug import DebugRenderer
 
 
-class Ws2801Renderer(object):
+class Ws2801Renderer(DebugRenderer):
     def __init__(
         self,
         pixel_count,
@@ -30,16 +31,18 @@ class Ws2801Renderer(object):
             spi_device {int} -- The SPI device on the port that the neopixels are on.
         """
 
-        self.__pixel_count__ = pixel_count
+        super().__init__(pixel_count)
+
+        self.__leds__ = pixel_count
 
         if not local_debug.is_debug():
             # Specify a hardware SPI connection on /dev/spidev0.0:
-            self.__pixels__ = Adafruit_WS2801.WS2801Pixels(
+            self.__leds__ = Adafruit_WS2801.WS2801Pixels(
                 pixel_count,
                 spi=SPI.SpiDev(spi_port, spi_device))
 
             # Clear all the pixels to turn them off.
-            self.__pixels__.clear()
+            self.__leds__.clear()
 
             self.set_all((0, 0, 0))
 
@@ -53,14 +56,18 @@ class Ws2801Renderer(object):
         Args:
             color (list): The color we want to set all of the LEDs to.
         """
-        indices = range(self.__pixel_count__)
+        indices = range(self.pixel_count)
         ws2801_color = Adafruit_WS2801.RGB_to_color(
             color[0],
             color[1],
             color[2])
 
-        [self.__pixels__.set_pixel(index, ws2801_color)
+        [self.__leds__.set_pixel(index, ws2801_color)
             for index in indices]
+        
+        super().set_all(color)
+
+        self.show()
 
     def set_led(
         self,
@@ -78,20 +85,20 @@ class Ws2801Renderer(object):
         if (pixel_index < 0):
             return
 
-        if (pixel_index >= self.__pixel_count__):
+        if (pixel_index >= self.pixel_count):
             return
 
-        try:
-            self.__pixels__.set_pixel(
-                pixel_index,
-                Adafruit_WS2801.RGB_to_color(
-                    color[0],
-                    color[1],
-                    color[2]))
-        except:
-            pass
+        self.__leds__.set_pixel(
+            pixel_index,
+            Adafruit_WS2801.RGB_to_color(
+                color[0],
+                color[1],
+                color[2]))
+        
+        super().set_led(pixel_index, color)
 
     def show(
         self
     ):
-        self.__pixels__.show()
+        self.__leds__.show()
+        super().show()
