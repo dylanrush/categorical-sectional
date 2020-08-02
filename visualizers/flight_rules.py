@@ -15,6 +15,7 @@ from data_sources import weather
 from lib import safe_logging
 from lib.logger import Logger
 from lib.recurring_task import RecurringTask
+from visualizers.visualizer import Visualizer
 
 colors = configuration.get_colors()
 color_by_rules = {
@@ -331,12 +332,12 @@ def get_mix_and_color(
 # Error - Flashing white
 
 
-class FlightRulesVisualizer(object):
+class FlightRulesVisualizer(Visualizer):
     def __init__(
         self,
         logger: Logger
     ):
-        super().__init__()
+        super().__init__(logger)
 
         self.__logger__ = logger
 
@@ -346,15 +347,15 @@ class FlightRulesVisualizer(object):
         time_slice: float
     ):
         render_airport_displays(
-                renderer,
-                self.__logger__,
-                True)
+            renderer,
+            self.__logger__,
+            True)
 
         time.sleep(1.0)
 
         render_airport_displays(
-                renderer,
-                self.__logger__,
-                False)
+            renderer,
+            self.__logger__,
+            False)
 
         time.sleep(1.0)

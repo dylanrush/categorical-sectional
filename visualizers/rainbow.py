@@ -1,5 +1,6 @@
 from configuration import configuration
 from lib.logger import Logger
+from visualizers.visualizer import Visualizer
 
 
 def wheel(
@@ -26,14 +27,12 @@ def wheel(
     return (r, g, b)
 
 
-class LightCycleVisualizer(object):
+class LightCycleVisualizer(Visualizer):
     def __init__(
         self,
         logger: Logger
     ):
-        super().__init__()
-
-        self.__logger__ = logger
+        super().__init__(logger)
 
     def update(
         self,
@@ -53,14 +52,12 @@ class LightCycleVisualizer(object):
             renderer.set_all(color)
 
 
-class RainbowVisualizer(object):
+class RainbowVisualizer(Visualizer):
     def __init__(
         self,
         logger: Logger
     ):
-        super().__init__()
-
-        self.__logger__ = logger
+        super().__init__(logger)
 
     def update(
         self,
