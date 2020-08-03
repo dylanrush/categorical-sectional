@@ -1,5 +1,33 @@
 import copy
 
+RED = 'RED'
+GREEN = 'GREEN'
+BLUE = 'BLUE'
+GRAY = 'GRAY'
+YELLOW = 'YELLOW'
+DARK_YELLOW = 'DARK YELLOW'
+WHITE = 'WHITE'
+MAGENTA = "MAGENTA"
+OFF = "OFF"
+
+
+def get_colors():
+    """
+    Returns the RGB colors based on the config.
+    """
+
+    return {
+        RED: (255, 0, 0),
+        GREEN: (0, 255, 0),
+        BLUE: (0, 0, 255),
+        MAGENTA: (255, 0, 255),
+        OFF: (0, 0, 0),
+        GRAY: (50, 50, 50),
+        YELLOW: (255, 255, 0),
+        DARK_YELLOW: (20, 20, 0),
+        WHITE: (255, 255, 255)
+    }
+
 
 def clamp(
     minimum,

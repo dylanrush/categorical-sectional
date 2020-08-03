@@ -7,7 +7,7 @@ import time
 import lib.local_debug as local_debug
 from configuration import configuration
 from data_sources import weather
-from lib import safe_logging
+from lib import safe_logging, colors
 from lib.logger import Logger
 import renderer
 
@@ -23,7 +23,7 @@ if not local_debug.IS_PI:
     exit(0)
 
 airport_render_config = configuration.get_airport_configs()
-colors = configuration.get_colors()
+rgb_colors = colors.get_colors()
 
 renderer = renderer.get_renderer(airport_render_config)
 
@@ -34,21 +34,21 @@ if __name__ == '__main__':
 
     # Test LEDS on startup
     colors_to_test = (
-        weather.LOW,
-        weather.RED,
-        weather.YELLOW,
-        weather.GREEN,
-        weather.BLUE,
-        weather.WHITE,
-        weather.GRAY,
-        weather.DARK_YELLOW,
-        weather.OFF
+        colors.MAGENTA,
+        colors.RED,
+        colors.YELLOW,
+        colors.GREEN,
+        colors.BLUE,
+        colors.WHITE,
+        colors.GRAY,
+        colors.DARK_YELLOW,
+        colors.OFF
     )
 
     for color in colors_to_test:
         safe_logging.safe_log(LOGGER, "Setting to {}".format(color))
 
-        renderer.set_all(colors[color])
+        renderer.set_all(rgb_colors[color])
 
         time.sleep(0.5)
 
@@ -59,7 +59,7 @@ if __name__ == '__main__':
             led_index = airport_render_config[airport]
             renderer.set_led(
                 led_index,
-                colors[weather.GREEN])
+                rgb_colors[colors.GREEN])
 
             renderer.show()
 
@@ -71,6 +71,6 @@ if __name__ == '__main__':
 
             renderer.set_led(
                 airport_render_config[airport],
-                colors[weather.OFF])
+                rgb_colors[weather.OFF])
 
             renderer.show()

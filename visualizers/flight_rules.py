@@ -12,22 +12,22 @@ import lib.colors as colors_lib
 import lib.local_debug as local_debug
 from configuration import configuration
 from data_sources import weather
-from lib import safe_logging
+from lib import safe_logging, colors
 from lib.logger import Logger
 from lib.recurring_task import RecurringTask
 from visualizers.visualizer import Visualizer
 
-colors = configuration.get_colors()
+rgb_colors = colors.get_colors()
 color_by_rules = {
-    weather.IFR: colors[weather.RED],
-    weather.VFR: colors[weather.GREEN],
-    weather.MVFR: colors[weather.BLUE],
-    weather.LIFR: colors[weather.LOW],
-    weather.NIGHT: colors[weather.YELLOW],
-    weather.NIGHT_DARK: colors[weather.DARK_YELLOW],
-    weather.SMOKE: colors[weather.GRAY],
-    weather.INVALID: colors[weather.OFF],
-    weather.INOP: colors[weather.OFF]
+    weather.IFR: rgb_colors[colors.RED],
+    weather.VFR: rgb_colors[colors.GREEN],
+    weather.MVFR: rgb_colors[colors.BLUE],
+    weather.LIFR: rgb_colors[colors.MAGENTA],
+    weather.NIGHT: rgb_colors[colors.YELLOW],
+    weather.NIGHT_DARK: rgb_colors[colors.DARK_YELLOW],
+    weather.SMOKE: rgb_colors[colors.GRAY],
+    weather.INVALID: rgb_colors[colors.OFF],
+    weather.INOP: rgb_colors[colors.OFF]
 }
 
 airport_render_config = configuration.get_airport_configs()
@@ -195,7 +195,7 @@ def render_airport(
     now = datetime.utcnow()
 
     if blink and airport_flasher:
-        color_by_category = colors[weather.OFF]
+        color_by_category = rgb_colors[colors.OFF]
 
     proportions, color_to_render = get_mix_and_color(
         color_by_category,
@@ -211,7 +211,7 @@ def __get_rgb_night_color_to_render__(
     proportions
 ):
     target_night_color = colors_lib.get_color_mix(
-        colors[weather.OFF],
+        rgb_colors[colors.OFF],
         color_by_category,
         configuration.get_night_category_proportion())
 
@@ -256,7 +256,7 @@ def __get_night_color_to_render__(
 
     if proportions[0] <= 0.0 and proportions[1] <= 0.0:
         if configuration.get_night_populated_yellow():
-            color_to_render = colors[weather.DARK_YELLOW]
+            color_to_render = rgb_colors[colors.DARK_YELLOW]
         else:
             color_to_render = __get_rgb_night_color_to_render__(
                 color_by_category,
@@ -269,14 +269,14 @@ def __get_night_color_to_render__(
         if proportions[0] > 0.0 or proportions[1] < 1.0:
             color_to_render = color_by_rules[weather.NIGHT]
         elif proportions[0] <= 0.0 and proportions[1] <= 0.0:
-            color_to_render = colors[weather.DARK_YELLOW]
+            color_to_render = rgb_colors[colors.DARK_YELLOW]
     elif not configuration.get_night_populated_yellow():
         color_to_render = __get_rgb_night_color_to_render__(
             color_by_category,
             proportions)
     elif proportions[0] > 0.0:
         color_to_render = colors_lib.get_color_mix(
-            colors[weather.DARK_YELLOW],
+            rgb_colors[colors.DARK_YELLOW],
             color_by_rules[weather.NIGHT],
             proportions[0])
     elif proportions[1] > 0.0:

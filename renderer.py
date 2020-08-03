@@ -40,6 +40,9 @@ def get_renderer(
             gpio_pin,
             pixel_count))
 
-        return ws281x.Ws281xRenderer(pixel_count, gpio_pin)
+        return ws281x.Ws281xRenderer(
+            pixel_count,
+            gpio_pin,
+            configuration.get_pixel_order())
 
     return debug.DebugRenderer(configuration.CONFIG[configuration.PIXEL_COUNT_KEY])

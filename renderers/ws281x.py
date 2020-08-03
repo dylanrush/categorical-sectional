@@ -18,14 +18,16 @@ class Ws281xRenderer(DebugRenderer):
     def __init__(
         self,
         pixel_count,
-        gpio_pin
+        gpio_pin,
+        pixel_order
     ):
         """
         Create a new controller for the WS2801 based lights
 
         Arguments:
             pixel_count {int} -- The total number of neopixels.
-            gpio_pin -- The GPIO pin the WS281x data pin is on. This is IO addressing, NOT physical addressing.
+            gpio_pin {int} -- The GPIO pin the WS281x data pin is on. This is IO addressing, NOT physical addressing.
+            pixel_order {str} -- The RGB or GRB order that colors are provided in.
         """
 
         super().__init__(pixel_count)
@@ -37,7 +39,7 @@ class Ws281xRenderer(DebugRenderer):
                 Pin(gpio_pin),  # board.D18, #gpio_pin,
                 pixel_count,
                 auto_write=False,
-                pixel_order=neopixel.GRB)
+                pixel_order=pixel_order)
 
             # Clear all the pixels to turn them off.
             self.set_all((0, 0, 0))

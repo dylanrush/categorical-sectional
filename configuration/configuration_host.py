@@ -15,6 +15,7 @@ from http.server import BaseHTTPRequestHandler
 
 from configuration import configuration
 from data_sources import weather
+from visualizers.visualizers import VISUALIZERS
 
 VIEW_NAME_KEY = 'name'
 MEDIA_TYPE_KEY = 'media_type'
@@ -38,7 +39,12 @@ def get_settings(
     Handles a get-the-settings request.
     """
     if configuration.CONFIG is not None:
-        return configuration.CONFIG.copy()
+        result = configuration.CONFIG.copy()
+
+        result.update(
+            {"visualizer_name": VISUALIZERS[configuration.get_visualizer_index(VISUALIZERS)].get_name()})
+
+        return result
     else:
         return ERROR_JSON
 

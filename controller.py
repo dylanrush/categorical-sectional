@@ -39,21 +39,10 @@ import lib.local_debug as local_debug
 import renderer
 from configuration import configuration, configuration_server
 from data_sources import weather
-from lib import safe_logging
-from lib.logger import Logger
+from lib import safe_logging, colors
+from lib.logger import LOGGER, Logger
 from lib.recurring_task import RecurringTask
-from visualizers import flight_rules, rainbow
-
-python_logger = logging.getLogger("weathermap")
-python_logger.setLevel(logging.DEBUG)
-LOGGER = Logger(python_logger)
-HANDLER = logging.handlers.RotatingFileHandler(
-    "weathermap.log",
-    maxBytes=10485760,
-    backupCount=10)
-HANDLER.setFormatter(logging.Formatter(
-    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-python_logger.addHandler(HANDLER)
+from visualizers import flight_rules, rainbow, visualizers
 
 thread_lock_object = threading.Lock()
 
@@ -68,15 +57,9 @@ if not local_debug.is_debug():
         pass
 
 airport_render_config = configuration.get_airport_configs()
-colors = configuration.get_colors()
+rgb_colors = colors.get_colors()
 
 renderer = renderer.get_renderer(airport_render_config)
-
-VISUALIZERS = [
-    flight_rules.FlightRulesVisualizer(python_logger),
-    rainbow.RainbowVisualizer(python_logger),
-    rainbow.LightCycleVisualizer(python_logger)
-]
 
 
 def update_weather_for_all_stations():
@@ -126,7 +109,7 @@ def all_airports(
         of the color to set for ALL airports.
     """
 
-    [renderer.set_led(airport_render_config[airport], colors[color])
+    [renderer.set_led(airport_render_config[airport], rgb_colors[color])
         for airport in airport_render_config]
 
     renderer.show()
@@ -178,19 +161,14 @@ def render_thread():
 
             tic = time.perf_counter()
 
-            visualizer_index = configuration.get_visualizer_index()
-
-            if visualizer_index < 0:
-                visualizer_index = 0
-
-            if visualizer_index >= len(VISUALIZERS):
-                visualizer_index = 0
+            visualizer_index = configuration.get_visualizer_index(
+                visualizers.VISUALIZERS)
 
             if visualizer_index != last_visualizer:
                 renderer.clear()
                 last_visualizer = visualizer_index
 
-            VISUALIZERS[visualizer_index].update(
+            visualizers.VISUALIZERS[visualizer_index].update(
                 renderer,
                 delta_time)
 
@@ -238,26 +216,26 @@ def wait_for_all_airports():
 
 def __get_test_cycle_colors__() -> list:
     base_colors_test = [
-        weather.LOW,
-        weather.RED,
-        weather.BLUE,
-        weather.GREEN,
-        weather.YELLOW,
-        weather.WHITE,
-        weather.GRAY,
-        weather.DARK_YELLOW
+        colors.MAGENTA,
+        colors.RED,
+        colors.BLUE,
+        colors.GREEN,
+        colors.YELLOW,
+        colors.WHITE,
+        colors.GRAY,
+        colors.DARK_YELLOW
     ]
 
     colors_to_init = []
 
     for color in base_colors_test:
         is_global_dimming = configuration.get_brightness_proportion() < 1.0
-        color_to_cycle = colors[color]
+        color_to_cycle = rgb_colors[color]
         colors_to_init.append(color_to_cycle)
         if is_global_dimming:
             colors_to_init.append(__get_dimmed_color__(color_to_cycle))
 
-    colors_to_init.append(colors[weather.OFF])
+    colors_to_init.append(rgb_colors[colors.OFF])
 
     return colors_to_init
 

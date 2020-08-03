@@ -38,6 +38,8 @@ NIGHT_POPULATED_YELLOW_KEY = "night_populated_yellow"
 NIGHT_CATEGORY_PROPORTION_KEY = "night_category_proportion"
 BRIGHTNESS_PROPORTION_KEY = "brightness_proportion"
 VISUALIZER_INDEX_KEY = "visualizer"
+PIXEL_ORDER_KEY = "pixel_order"
+PIXEL_ORDER_DEFAULT = "GRB"
 
 __VALID_KEYS__ = [
     LED_MODE_KEY,
@@ -50,7 +52,13 @@ __VALID_KEYS__ = [
     NIGHT_POPULATED_YELLOW_KEY,
     NIGHT_CATEGORY_PROPORTION_KEY,
     BRIGHTNESS_PROPORTION_KEY,
-    VISUALIZER_INDEX_KEY
+    VISUALIZER_INDEX_KEY,
+    PIXEL_ORDER_KEY
+]
+
+__VALID_PIXEL_ORDERS__ = [
+    "RGB",
+    "GRB"
 ]
 
 __DEFAULT_CONFIG_FILE__ = '../data/config.json'
@@ -288,14 +296,51 @@ def get_mode():
     return CONFIG['mode']
 
 
-def get_visualizer_index():
+def get_visualizer_index(
+    visualizers: list = None
+) -> int:
     """
     Returns the index of the visualizer we will use.
+    Performs basic clamping on the index if a list is provided.
 
     Returns:
         int: The index of the visualizer to use.
     """
-    return int(__get_number_config_value__(VISUALIZER_INDEX_KEY, 0))
+    visualizer_index = int(__get_number_config_value__(VISUALIZER_INDEX_KEY, 0))
+
+    if visualizers is None:
+        return visualizer_index
+
+    num_visualizers = len(visualizers)
+
+    if visualizer_index < 0:
+        visualizer_index = num_visualizers - 1
+
+    if visualizer_index >= num_visualizers:
+        visualizer_index = 0
+
+    CONFIG[VISUALIZER_INDEX_KEY] = visualizer_index
+
+    return visualizer_index
+
+
+def get_pixel_order():
+    """
+    Get the pixel color order for WS281x/NeoPixel lights.
+    If the value is not in the configuration, then the default is returned.
+
+    Returns:
+        str: The pixel color order descriptor.
+    """
+    try:
+        value = CONFIG[PIXEL_ORDER_KEY]
+
+        if value not in __VALID_PIXEL_ORDERS__:
+            return PIXEL_ORDER_DEFAULT
+
+        return value
+    except:
+        return PIXEL_ORDER_DEFAULT
 
 
 def get_blink_station_if_old_data() -> bool:
@@ -393,24 +438,6 @@ def get_airport_file():
     """
 
     return CONFIG['airports_file']
-
-
-def get_colors():
-    """
-    Returns the RGB colors based on the config.
-    """
-
-    return {
-        weather.RED: (255, 0, 0),
-        weather.GREEN: (0, 255, 0),
-        weather.BLUE: (0, 0, 255),
-        weather.LOW: (255, 0, 255),
-        weather.OFF: (0, 0, 0),
-        weather.GRAY: (50, 50, 50),
-        weather.YELLOW: (255, 255, 0),
-        weather.DARK_YELLOW: (20, 20, 0),
-        weather.WHITE: (255, 255, 255)
-    }
 
 
 def get_airport_configs():
