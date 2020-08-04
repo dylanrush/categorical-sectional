@@ -52,6 +52,12 @@ def __set_visualizer_index__(
     return get_visualizer_response()
 
 
+def current_view(
+    handler
+) -> dict:
+    return get_visualizer_response()
+
+
 def next_view(
     handler
 ) -> dict:
@@ -109,7 +115,8 @@ class ConfigurationHost(BaseHTTPRequestHandler):
     ROUTES = {
         r'^/settings': {'GET': get_settings, 'PUT': set_settings, MEDIA_TYPE_KEY: MEDIA_TYPE_VALUE},
         r'^/view/next': {'GET': next_view, MEDIA_TYPE_KEY: MEDIA_TYPE_VALUE},
-        r'^/view/previous': {'GET': previous_view, MEDIA_TYPE_KEY: MEDIA_TYPE_VALUE}
+        r'^/view/previous': {'GET': previous_view, MEDIA_TYPE_KEY: MEDIA_TYPE_VALUE},
+        r'^/view': {'GET': current_view, MEDIA_TYPE_KEY: MEDIA_TYPE_VALUE}
     }
 
     def do_HEAD(
