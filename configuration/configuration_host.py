@@ -32,17 +32,48 @@ MEDIA_TYPE_VALUE = 'application/json'
 ERROR_JSON = {'success': False}
 
 
+def get_visualizer_response() -> dict:
+    return {
+        configuration.VISUALIZER_INDEX_KEY: configuration.get_visualizer_index(VISUALIZERS),
+        "visualizer_name": VISUALIZERS[configuration.get_visualizer_index(VISUALIZERS)].get_name(),
+        "visualizer_count": len(VISUALIZERS)
+    }
+
+
+def __set_visualizer_index__(
+    increment: int
+) -> dict:
+    configuration.update_configuration(
+        {
+            configuration.VISUALIZER_INDEX_KEY: configuration.get_visualizer_index() +
+            increment
+        })
+
+    return get_visualizer_response()
+
+
+def next_view(
+    handler
+) -> dict:
+    return __set_visualizer_index__(1)
+
+
+def previous_view(
+    handler
+) -> dict:
+    return __set_visualizer_index__(-1)
+
+
 def get_settings(
     handler
-):
+) -> dict:
     """
     Handles a get-the-settings request.
     """
     if configuration.CONFIG is not None:
         result = configuration.CONFIG.copy()
 
-        result.update(
-            {"visualizer_name": VISUALIZERS[configuration.get_visualizer_index(VISUALIZERS)].get_name()})
+        result.update(get_visualizer_response())
 
         return result
     else:
@@ -62,6 +93,7 @@ def set_settings(
         print(payload)
 
         response = configuration.update_configuration(payload)
+        response.update(get_visualizer_response())
 
         return response
     else:
@@ -75,7 +107,9 @@ class ConfigurationHost(BaseHTTPRequestHandler):
 
     HERE = os.path.dirname(os.path.realpath(__file__))
     ROUTES = {
-        r'^/settings': {'GET': get_settings, 'PUT': set_settings, MEDIA_TYPE_KEY: MEDIA_TYPE_VALUE}
+        r'^/settings': {'GET': get_settings, 'PUT': set_settings, MEDIA_TYPE_KEY: MEDIA_TYPE_VALUE},
+        r'^/view/next': {'GET': next_view, MEDIA_TYPE_KEY: MEDIA_TYPE_VALUE},
+        r'^/view/previous': {'GET': previous_view, MEDIA_TYPE_KEY: MEDIA_TYPE_VALUE}
     }
 
     def do_HEAD(
