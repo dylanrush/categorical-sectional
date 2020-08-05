@@ -77,8 +77,11 @@ def get_airport_category(
 
     try:
         try:
+            logger.log_info_message("Getting category for {}".format(airport))
             category = weather.get_category(airport, metar, logger=logger)
+            logger.log_info_message("{}={}".format(airport, category))
             twilight = weather.get_civil_twilight(airport, logger=logger)
+            logger.log_info_message("{} twilight={}".format(airport, twilight))
         except Exception as e:
             safe_logging.safe_log_warning(
                 logger,
