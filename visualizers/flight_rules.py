@@ -129,20 +129,20 @@ def get_color_from_condition(
     should_blink = is_old and configuration.get_blink_station_if_old_data()
 
     if category == weather.VFR:
-        return (weather.GREEN, should_blink)
+        return (colors.GREEN, should_blink)
     elif category == weather.MVFR:
-        return (weather.BLUE, should_blink)
+        return (colors.BLUE, should_blink)
     elif category == weather.IFR:
-        return (weather.RED, should_blink)
+        return (colors.RED, should_blink)
     elif category == weather.LIFR:
-        return (weather.LOW, should_blink)
+        return (colors.LOW, should_blink)
     elif category == weather.NIGHT:
-        return (weather.YELLOW, False)
+        return (colors.YELLOW, False)
     elif category == weather.SMOKE:
-        return (weather.GRAY, should_blink)
+        return (colors.GRAY, should_blink)
 
     # Error
-    return (weather.OFF, False)
+    return (colors.OFF, False)
 
 
 def get_airport_condition(
