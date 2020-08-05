@@ -13,6 +13,7 @@ from datetime import datetime, timedelta
 import requests
 
 from lib import safe_logging
+from lib.logger import Logger
 from lib.colors import clamp
 
 INVALID = 'INVALID'
@@ -578,7 +579,7 @@ def __is_station_ok_to_call__(
 
 def get_metars(
     airport_icao_codes,
-    logger=None
+    logger: Logger
 ):
     """
     Returns the (RAW) METAR for the given station
@@ -611,8 +612,15 @@ def get_metars(
         # Fall back to an "INVALID" if everything else failed.
         else:
             try:
+                safe_logging.safe_log(
+                    logger,
+                    "Getting WX for {}".format(identifier))
                 new_metars = get_metar_reports_from_web([identifier])
                 new_report = new_metars[identifier]
+
+                safe_logging.safe_log(
+                    logger,
+                    "New  WX for {}={}".format(identifier, new_report))
 
                 if new_report is None or len(new_report) < 1:
                     continue
