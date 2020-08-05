@@ -191,6 +191,8 @@ def render_airport(
 
     condition, blink = get_airport_condition(logger, airport)
     color_by_category = color_by_rules[condition]
+    logger.log_info_message("{}={},{}".format(airport, condition, color_by_category))
+
 
     now = datetime.utcnow()
 
@@ -200,6 +202,8 @@ def render_airport(
     proportions, color_to_render = get_mix_and_color(
         color_by_category,
         airport)
+
+    logger.log_info_message("{} adjusted to {}".format(airport, color_to_render))
 
     renderer.set_led(
         airport_render_config[airport],
