@@ -77,11 +77,11 @@ def get_airport_category(
 
     try:
         try:
-            logger.log_info_message("Getting category for {}".format(airport))
+            # logger.log_info_message("Getting category for {}".format(airport))
             category = weather.get_category(airport, metar, logger=logger)
-            logger.log_info_message("{}={}".format(airport, category))
+            # logger.log_info_message("{}={}".format(airport, category))
             twilight = weather.get_civil_twilight(airport, logger=logger)
-            logger.log_info_message("{} twilight={}".format(airport, twilight))
+            # logger.log_info_message("{} twilight={}".format(airport, twilight))
         except Exception as e:
             safe_logging.safe_log_warning(
                 logger,
@@ -166,9 +166,9 @@ def get_airport_condition(
     try:
         utc_offset = datetime.utcnow() - datetime.now()
         metar = weather.get_metar(airport)
-        logger.log_info_message("{}={}".format(airport, metar))
+        # logger.log_info_message("{}={}".format(airport, metar))
         category = get_airport_category(logger, airport, metar, utc_offset)
-        logger.log_info_message("{}={}".format(airport, category))
+        # logger.log_info_message("{}={}".format(airport, category))
         color, should_flash = get_color_from_condition(category, metar)
 
         return category, should_flash
@@ -196,8 +196,8 @@ def render_airport(
 
     condition, blink = get_airport_condition(logger, airport)
     color_by_category = color_by_rules[condition]
-    logger.log_info_message("{}={},{}".format(
-        airport, condition, color_by_category))
+    # logger.log_info_message("{}={},{}".format(
+    #     airport, condition, color_by_category))
 
     now = datetime.utcnow()
 
@@ -208,8 +208,8 @@ def render_airport(
         color_by_category,
         airport)
 
-    logger.log_info_message(
-        "{} adjusted to {}".format(airport, color_to_render))
+    # logger.log_info_message(
+    #     "{} adjusted to {}".format(airport, color_to_render))
 
     renderer.set_led(
         airport_render_config[airport],
