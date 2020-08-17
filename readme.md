@@ -105,6 +105,8 @@ This will install this software onto the Raspberry Pi.
 From a terminal on the Raspberry Pi
 
 ```bash
+sudo apt install rng-tools
+sudo apt install haveged
 cd ~/categorical-sectional
 sudo python3 setup.py develop
 ```
@@ -405,7 +407,7 @@ To run it at boot, perform the following steps:
 4. Enter the following text at the _bottom_ of the file:
 
   ```code
-  @reboot python3 /home/pi/categorical-sectional/controller.py &
+  @reboot sleep 60 && python3 /home/pi/categorical-sectional/controller.py &
   ```
 
 5. Save the file and exit.
