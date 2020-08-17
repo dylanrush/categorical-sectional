@@ -16,6 +16,7 @@ from lib import colors as colors_lib
 from lib import safe_logging
 from lib.logger import Logger
 from lib.recurring_task import RecurringTask
+from visualizers.flight_rules import get_mix_and_color
 from visualizers.visualizer import Visualizer
 
 airport_render_config = configuration.get_airport_configs()
@@ -134,10 +135,15 @@ def render_airport(
     metar = weather.get_metar(airport, logger)
     temperature = weather.get_temperature(metar)
     color_to_render = get_color_by_temperature_celsius(temperature)
+    color_to_render = get_mix_and_color(color_to_render, airport)
+    brightness_adjustment = configuration.get_brightness_proportion()
+    final_color = colors_lib.get_brightness_adjusted_color(
+        color_to_render,
+        brightness_adjustment)
 
     renderer.set_led(
         airport_render_config[airport],
-        color_to_render)
+        final_color)
 
 
 def render_airport_displays(
