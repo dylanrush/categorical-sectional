@@ -119,6 +119,19 @@ function handleJsonResponse(restRes, resolve, reject) {
         reject({ error: restRes.statusCode });
     }
 }
+function getWeatherMapView() {
+    return new Promise(function (resolve, reject) {
+        request_1.default
+            .get(getWeatherMapRequest("view"))
+            .on("error", function (err) {
+            console.log(err);
+            reject(err.message);
+        })
+            .on("response", function (response) {
+            handleJsonResponse(response, resolve, reject);
+        });
+    });
+}
 function getWeatherMapConfig() {
     return new Promise(function (resolve, reject) {
         request_1.default
@@ -131,6 +144,35 @@ function getWeatherMapConfig() {
             handleJsonResponse(response, resolve, reject);
         });
     });
+}
+function changeView(view) {
+    return new Promise(function (resolve, reject) {
+        request_1.default
+            .get(getWeatherMapRestUri() + "/view/" + view)
+            .on("error", function (err) {
+            console.log(err);
+            reject(err.message);
+        })
+            .on("response", function (response) {
+            resolve(response);
+        });
+    });
+}
+/**
+ * Signals to move to the next view
+ *
+ * @returns the JSON result from the call
+ */
+function nextView() {
+    return changeView("next");
+}
+/**
+ * Signals to move to the next view
+ *
+ * @returns the JSON result from the call
+ */
+function previousView() {
+    return changeView("previous");
 }
 function putConfig(url, updateHash) {
     return new Promise(function (resolve, reject) {
@@ -163,10 +205,39 @@ function renderPage(response, jsonConfig, page) {
         configJson: jsonConfig
     });
 }
+function mapViewRender(response) {
+    return getWeatherMapView()
+        .then(function (jsonConfig) {
+        renderPage(response, jsonConfig, "views");
+    })
+        .catch(function (error) {
+        renderRefused(response, error);
+    });
+}
 app.get("/", function (request, response) {
+    mapViewRender(response);
+});
+app.get("/views/previous", function (request, response) {
+    previousView()
+        .then(function (jsonConfig) {
+        response.redirect('/');
+    })
+        .catch(function (error) {
+        renderRefused(response, error);
+    });
+});
+app.get("/views/next", function (request, response) {
+    nextView().then(function (jsonConfig) {
+        response.redirect('/');
+    })
+        .catch(function (error) {
+        renderRefused(response, error);
+    });
+});
+app.get("/config", function (request, response) {
     getWeatherMapConfig()
         .then(function (jsonConfig) {
-        renderPage(response, jsonConfig);
+        renderPage(response, jsonConfig, "config");
     })
         .catch(function (error) {
         renderRefused(response, error);
@@ -186,6 +257,7 @@ app.post("/", function (request, response) {
     updateHash = mergeIntoHash(updateHash, "night_populated_yellow", getBoolean(request.body.night_populated_yellow));
     updateHash = mergeIntoHash(updateHash, "night_category_proportion", getNumber(request.body.night_category_proportion));
     updateHash = mergeIntoHash(updateHash, "brightness_proportion", getNumber(request.body.brightness_proportion));
+    updateHash = mergeIntoHash(updateHash, "visualizer", getNumber(request.body.visualizer));
     postWeatherMapConfig(updateHash);
     renderPage(response, updateHash);
 });

@@ -9,7 +9,7 @@ import bodyParser from "body-parser";
 import expressHandlebars from "express-handlebars";
 import ip from "ip";
 
-const isPi = require(`detect-rpi`)
+const isPi = require(`detect-rpi`);
 
 /**
  * Returns the address of the WeatherMap host.
@@ -27,7 +27,7 @@ function getAddress(): string {
  */
 function getWebServerPort(): number {
   if (isPi()) {
-    return 80
+    return 80;
   }
 
   return 3000;
@@ -150,6 +150,20 @@ function handleJsonResponse(
   }
 }
 
+function getWeatherMapView() {
+  return new Promise((resolve, reject) => {
+    request
+      .get(getWeatherMapRequest("view"))
+      .on("error", function (err) {
+        console.log(err);
+        reject(err.message);
+      })
+      .on("response", function (response) {
+        handleJsonResponse(response, resolve, reject);
+      });
+  });
+}
+
 function getWeatherMapConfig() {
   return new Promise((resolve, reject) => {
     request
@@ -162,6 +176,40 @@ function getWeatherMapConfig() {
         handleJsonResponse(response, resolve, reject);
       });
   });
+}
+
+function changeView(
+  view: string
+) {
+  return new Promise((resolve, reject) => {
+    request
+      .get(`${getWeatherMapRestUri()}/view/${view}`)
+      .on("error", function (err) {
+        console.log(err);
+        reject(err.message);
+      })
+      .on("response", function (response) {
+        resolve(response);
+      });
+  });
+}
+
+/**
+ * Signals to move to the next view
+ *
+ * @returns the JSON result from the call
+ */
+function nextView() {
+  return changeView("next");
+}
+
+/**
+ * Signals to move to the next view
+ *
+ * @returns the JSON result from the call
+ */
+function previousView() {
+  return changeView("previous");
 }
 
 function putConfig(
@@ -218,10 +266,45 @@ function renderPage(
   });
 }
 
+function mapViewRender(
+  response
+) {
+  return getWeatherMapView()
+    .then(function (jsonConfig) {
+      renderPage(response, jsonConfig, "views");
+    })
+    .catch(function (error) {
+      renderRefused(response, error);
+    });
+}
+
 app.get("/", (request, response) => {
+  mapViewRender(response);
+});
+
+app.get("/views/previous", (request, response) => {
+  previousView()
+    .then(function (jsonConfig) {
+      response.redirect('/');
+    })
+    .catch(function (error) {
+      renderRefused(response, error);
+    });
+});
+
+app.get("/views/next", (request, response) => {
+  nextView().then(function (jsonConfig) {
+    response.redirect('/');
+  })
+    .catch(function (error) {
+      renderRefused(response, error);
+    });
+});
+
+app.get("/config", (request, response) => {
   getWeatherMapConfig()
     .then(function (jsonConfig) {
-      renderPage(response, jsonConfig);
+      renderPage(response, jsonConfig, "config");
     })
     .catch(function (error) {
       renderRefused(response, error);
@@ -278,6 +361,11 @@ app.post("/", function (request, response) {
     updateHash,
     "brightness_proportion",
     getNumber(request.body.brightness_proportion)
+  );
+  updateHash = mergeIntoHash(
+    updateHash,
+    "visualizer",
+    getNumber(request.body.visualizer)
   );
 
   postWeatherMapConfig(updateHash);
