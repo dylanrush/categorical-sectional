@@ -866,6 +866,41 @@ def get_ceiling(
     return minimum_ceiling
 
 
+def get_temperature(
+    metar
+) -> int:
+    """
+    Returns the temperature (celsius) from the given metar string.
+
+    Args:
+        metar (string): The metar to extract the temperature reading from.
+
+    Returns:
+        int: The temperature in celsius.
+    """
+    if metar is None:
+        return None
+
+    components = metar.split('RMK')[0].split(' ')
+
+    for component in components:
+        if '/' in component \
+                and "SM" not in component \
+                and "R" not in component \
+                and "P" not in component \
+                and "U" not in component:
+            raw_temperature = component.split('/')[0]
+            is_below_zero = "M" in raw_temperature
+            temp = int(raw_temperature.replace("M", "", 0))
+
+            if is_below_zero:
+                temp = 0 - temp
+
+            return temp
+
+    return None
+
+
 def get_ceiling_category(
     ceiling
 ):
