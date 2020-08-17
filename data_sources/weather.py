@@ -612,15 +612,15 @@ def get_metars(
         # Fall back to an "INVALID" if everything else failed.
         else:
             try:
-                safe_logging.safe_log(
-                    logger,
-                    "Getting WX for {}".format(identifier))
+                # safe_logging.safe_log(
+                #     logger,
+                #     "Getting WX for {}".format(identifier))
                 new_metars = get_metar_reports_from_web([identifier])
                 new_report = new_metars[identifier]
 
-                safe_logging.safe_log(
-                    logger,
-                    "New  WX for {}={}".format(identifier, new_report))
+                # safe_logging.safe_log(
+                #     logger,
+                #     "New  WX for {}={}".format(identifier, new_report))
 
                 if new_report is None or len(new_report) < 1:
                     continue
