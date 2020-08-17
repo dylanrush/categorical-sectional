@@ -42,7 +42,7 @@ from data_sources import weather
 from lib import safe_logging, colors
 from lib.logger import LOGGER, Logger
 from lib.recurring_task import RecurringTask
-from visualizers import flight_rules, rainbow, visualizers
+from visualizers import visualizers
 
 thread_lock_object = threading.Lock()
 
