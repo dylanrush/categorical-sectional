@@ -321,17 +321,10 @@ def get_mix_and_color(
             color_by_category,
             proportions)
 
-    final_color = []
     brightness_adjustment = configuration.get_brightness_proportion()
-    for color in color_to_render:
-        reduced_color = float(color) * brightness_adjustment
-
-        # Some colors are floats, some are integers.
-        # Make sure we keep everything the same.
-        if isinstance(color, int):
-            reduced_color = int(reduced_color)
-
-        final_color.append(reduced_color)
+    final_color = colors_lib.get_brightness_adjusted_color(
+        color_to_render,
+        brightness_adjustment)
 
     return proportions, final_color
 
