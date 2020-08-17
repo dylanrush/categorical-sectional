@@ -177,6 +177,28 @@ def get_color_mix(
     return new_color
 
 
+def get_brightness_adjusted_color(
+    color_to_render: list,
+    brightness_adjustment: float
+):
+    if brightness_adjustment < 0.0:
+        brightness_adjustment = 0.0
+
+    final_color = []
+
+    for color in color_to_render:
+        reduced_color = float(color) * brightness_adjustment
+
+        # Some colors are floats, some are integers.
+        # Make sure we keep everything the same.
+        if isinstance(color, int):
+            reduced_color = int(reduced_color)
+
+        final_color.append(reduced_color)
+
+    return final_color
+
+
 if __name__ == '__main__':
     import doctest
 
