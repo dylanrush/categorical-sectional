@@ -135,7 +135,7 @@ def render_airport(
     metar = weather.get_metar(airport, logger)
     temperature = weather.get_temperature(metar)
     color_to_render = get_color_by_temperature_celsius(temperature)
-    color_to_render = get_mix_and_color(color_to_render, airport)
+    proportions, color_to_render = get_mix_and_color(color_to_render, airport)
     brightness_adjustment = configuration.get_brightness_proportion()
     final_color = colors_lib.get_brightness_adjusted_color(
         color_to_render,
