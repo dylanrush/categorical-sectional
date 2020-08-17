@@ -14,7 +14,6 @@ import urllib
 from http.server import BaseHTTPRequestHandler
 
 from configuration import configuration
-from data_sources import weather
 from visualizers.visualizers import VISUALIZERS
 
 VIEW_NAME_KEY = 'name'

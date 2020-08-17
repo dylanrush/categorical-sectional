@@ -7,7 +7,6 @@ import threading
 import unicodedata
 from pathlib import Path
 
-from data_sources import weather
 from lib import local_debug
 
 if local_debug.is_debug():
