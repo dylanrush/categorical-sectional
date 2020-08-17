@@ -13,8 +13,8 @@ from datetime import datetime, timedelta
 import requests
 
 from lib import safe_logging
-from lib.logger import Logger
 from lib.colors import clamp
+from lib.logger import Logger
 
 INVALID = 'INVALID'
 INOP = 'INOP'
