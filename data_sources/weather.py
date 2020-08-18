@@ -788,6 +788,26 @@ def get_metar_age(
         return None
 
 
+def is_lightning(
+    metar: str
+) -> bool:
+    """
+    Checks if the metar contains a report for lightning.
+
+    Args:
+        metar (str): The metar to see if it contains lightning.
+
+    Returns:
+        bool: True if the metar contains lightning.
+    """
+    if metar is None:
+        return False
+
+    contains_lightning = re.search('.* LTG.*', metar) is not None
+
+    return contains_lightning
+
+
 def get_visibility(
     metar
 ):

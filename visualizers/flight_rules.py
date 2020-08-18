@@ -196,8 +196,13 @@ def render_airport(
 
     condition, blink = get_airport_condition(logger, airport)
     color_by_category = color_by_rules[condition]
-    # logger.log_info_message("{}={},{}".format(
-    #     airport, condition, color_by_category))
+
+    if airport_flasher:
+        metar = weather.get_metar(airport, logger)
+        is_lightning = weather.is_lightning(metar)
+
+        if is_lightning:
+            color_by_category = rgb_colors[colors.YELLOW]
 
     now = datetime.utcnow()
 
@@ -207,9 +212,6 @@ def render_airport(
     proportions, color_to_render = get_mix_and_color(
         color_by_category,
         airport)
-
-    # logger.log_info_message(
-    #     "{} adjusted to {}".format(airport, color_to_render))
 
     renderer.set_led(
         airport_render_config[airport],
