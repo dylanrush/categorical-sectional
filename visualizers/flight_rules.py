@@ -138,7 +138,7 @@ def get_color_from_condition(
     elif category == weather.IFR:
         return (colors.RED, should_blink)
     elif category == weather.LIFR:
-        return (colors.LOW, should_blink)
+        return (colors.MAGENTA, should_blink)
     elif category == weather.NIGHT:
         return (colors.YELLOW, False)
     elif category == weather.SMOKE:
