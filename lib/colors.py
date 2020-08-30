@@ -3,7 +3,9 @@ import copy
 RED = 'RED'
 GREEN = 'GREEN'
 BLUE = 'BLUE'
+LIGHT_BLUE = "LIGHT BLUE"
 GRAY = 'GRAY'
+LIGHT_GRAY = 'LIGHT GRAY'
 YELLOW = 'YELLOW'
 DARK_YELLOW = 'DARK YELLOW'
 WHITE = 'WHITE'
@@ -22,9 +24,11 @@ def get_colors():
         RED: (255, 0, 0),
         GREEN: (0, 255, 0),
         BLUE: (0, 0, 255),
+        LIGHT_BLUE: (68, 85, 90),
         MAGENTA: (255, 0, 255),
         OFF: (0, 0, 0),
         GRAY: (50, 50, 50),
+        LIGHT_GRAY: (128, 128, 128),
         YELLOW: (255, 255, 0),
         DARK_YELLOW: (20, 20, 0),
         WHITE: (255, 255, 255),
