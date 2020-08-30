@@ -29,6 +29,12 @@ SMOKE = 'SMOKE'
 LOW = 'LOW'
 OFF = 'OFF'
 
+DRIZZLE = 'DRIZZLE'
+RAIN = 'RAIN'
+SNOW = 'SNOW'
+ICE = 'ICE'
+UNKNOWN = 'UNKNOWN'
+
 __cache_lock__ = threading.Lock()
 __rest_session__ = requests.Session()
 __daylight_cache__ = {}
@@ -850,6 +856,15 @@ def get_visibility(
     return VFR
 
 
+def get_main_metar_components(
+    metar: str
+) -> list:
+    if metar is None:
+        return None
+
+    return metar.split('RMK')[0].split(' ')[1:]
+
+
 def get_ceiling(
     metar,
     logger=None
@@ -867,7 +882,7 @@ def get_ceiling(
     # Exclude the remarks from being parsed as the current
     # condition as they normally are for events that
     # are in the past.
-    components = metar.split('RMK')[0].split(' ')
+    components = get_main_metar_components(metar)
     minimum_ceiling = 10000
     for component in components:
         if 'BKN' in component or 'OVC' in component:
@@ -887,7 +902,7 @@ def get_ceiling(
 
 
 def get_temperature(
-    metar
+    metar: str
 ) -> int:
     """
     Returns the temperature (celsius) from the given metar string.
@@ -901,7 +916,7 @@ def get_temperature(
     if metar is None:
         return None
 
-    components = metar.split('RMK')[0].split(' ')
+    components = get_main_metar_components(metar)
 
     for component in components:
         if '/' in component \
@@ -917,6 +932,33 @@ def get_temperature(
                 temp = 0 - temp
 
             return temp
+
+    return None
+
+
+def get_precipitation(
+    metar: str
+) -> bool:
+    if metar is None:
+        return None
+
+    components = get_main_metar_components(metar)
+
+    for component in components:
+        if 'DZ' in component:
+            return DRIZZLE
+
+        if 'RA' in component:
+            return RAIN
+
+        if 'SN' in component or 'SG' in component:
+            return SNOW
+
+        if 'GR' in component or 'GS' in component or 'IC' in component or 'PL' in component:
+            return ICE
+
+        if 'UP' in component:
+            return UNKNOWN
 
     return None
 
