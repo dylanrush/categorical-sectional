@@ -80,8 +80,6 @@ def get_airport_category(
             # logger.log_info_message("Getting category for {}".format(airport))
             category = weather.get_category(airport, metar, logger=logger)
             # logger.log_info_message("{}={}".format(airport, category))
-            twilight = weather.get_civil_twilight(airport, logger=logger)
-            # logger.log_info_message("{} twilight={}".format(airport, twilight))
         except Exception as e:
             safe_logging.safe_log_warning(
                 logger,
@@ -203,8 +201,6 @@ def render_airport(
 
         if is_lightning:
             color_by_category = rgb_colors[colors.YELLOW]
-
-    now = datetime.utcnow()
 
     if blink and airport_flasher:
         color_by_category = rgb_colors[colors.OFF]
