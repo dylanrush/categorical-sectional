@@ -61,7 +61,7 @@ def get_proportion_between_temperatures(
 
 def get_color_by_temperature_celsius(
     temperature_celsius: float
-):
+) -> list:
     colors_by_name = colors_lib.get_colors()
 
     if temperature_celsius is None:
@@ -120,53 +120,28 @@ def get_color_by_temperature_celsius(
     return colors_by_name[colors_lib.RED]
 
 
-def render_airport(
-    renderer,
-    logger: Logger,
-    airport
-):
-    """
-    Renders an airport.
+def get_color_by_precipitation(
+    precipitation: str
+) -> list:
+    colors_by_name = colors_lib.get_colors()
 
-    Arguments:
-        airport {string} -- The identifier of the station.
-    """
+    if precipitation is None:
+        return colors_by_name[colors_lib.YELLOW]
 
-    metar = weather.get_metar(airport, logger)
-    temperature = weather.get_temperature(metar)
-    color_to_render = get_color_by_temperature_celsius(temperature)
-    proportions, color_to_render = get_mix_and_color(color_to_render, airport)
-    brightness_adjustment = configuration.get_brightness_proportion()
-    final_color = colors_lib.get_brightness_adjusted_color(
-        color_to_render,
-        brightness_adjustment)
+    if precipitation is weather.DRIZZLE:
+        return colors_by_name[colors_lib.LIGHT_BLUE]
 
-    renderer.set_led(
-        airport_render_config[airport],
-        final_color)
+    if precipitation is weather.RAIN:
+        return colors_by_name[colors_lib.BLUE]
 
+    if precipitation is weather.SNOW:
+        return colors_by_name[colors_lib.WHITE]
 
-def render_airport_displays(
-    renderer,
-    logger: Logger
-):
-    """
-    Sets the LEDs for all of the airports based on their flight rules.
-    Does this independent of the LED type.
+    if precipitation is weather.ICE:
+        return colors_by_name[colors_lib.GRAY]
 
-    Arguments:
-        airport_flasher {bool} -- Is this on the "off" cycle of blinking.
-    """
-
-    for airport in airport_render_config:
-        try:
-            render_airport(renderer, logger, airport)
-        except Exception as ex:
-            safe_logging.safe_log_warning(
-                logger,
-                'Catch-all error in render_airport_displays of {} EX={}'.format(airport, ex))
-
-    renderer.show()
+    if precipitation is weather.UNKNOWN:
+        return colors_by_name[colors_lib.PURPLE]
 
 
 class TemperatureVisualizer(Visualizer):
@@ -178,12 +153,135 @@ class TemperatureVisualizer(Visualizer):
 
         self.__logger__ = logger
 
+    def render_airport(
+        self,
+        renderer,
+        logger: Logger,
+        airport
+    ):
+        """
+        Renders an airport.
+
+        Arguments:
+            airport {string} -- The identifier of the station.
+        """
+
+        metar = weather.get_metar(airport, logger)
+        temperature = weather.get_temperature(metar)
+        color_to_render = get_color_by_temperature_celsius(temperature)
+        proportions, color_to_render = get_mix_and_color(
+            color_to_render,
+            airport)
+        brightness_adjustment = configuration.get_brightness_proportion()
+        final_color = colors_lib.get_brightness_adjusted_color(
+            color_to_render,
+            brightness_adjustment)
+
+        renderer.set_led(
+            airport_render_config[airport],
+            final_color)
+
+    def render_airport_displays(
+        self,
+        renderer,
+        logger: Logger
+    ):
+        """
+        Sets the LEDs for all of the airports based on their flight rules.
+        Does this independent of the LED type.
+
+        Arguments:
+            airport_flasher {bool} -- Is this on the "off" cycle of blinking.
+        """
+
+        for airport in airport_render_config:
+            try:
+                self.render_airport(renderer, logger, airport)
+            except Exception as ex:
+                safe_logging.safe_log_warning(
+                    logger,
+                    'Catch-all error in render_airport_displays of {} EX={}'.format(airport, ex))
+
+        renderer.show()
+
     def update(
         self,
         renderer,
         time_slice: float
     ):
-        render_airport_displays(
+        self.render_airport_displays(
+            renderer,
+            self.__logger__)
+
+        time.sleep(1.0)
+
+
+class PrecipitationVisualizer(Visualizer):
+    def __init__(
+        self,
+        logger: Logger
+    ):
+        super().__init__(logger)
+
+        self.__logger__ = logger
+
+    def render_airport(
+        self,
+        renderer,
+        logger: Logger,
+        airport
+    ):
+        """
+        Renders an airport.
+
+        Arguments:
+            airport {string} -- The identifier of the station.
+        """
+
+        metar = weather.get_metar(airport, logger)
+        precipitation = weather.get_precipitation(metar)
+        color_to_render = get_color_by_precipitation(precipitation)
+        proportions, color_to_render = get_mix_and_color(
+            color_to_render,
+            airport)
+        brightness_adjustment = configuration.get_brightness_proportion()
+        final_color = colors_lib.get_brightness_adjusted_color(
+            color_to_render,
+            brightness_adjustment)
+
+        renderer.set_led(
+            airport_render_config[airport],
+            final_color)
+
+    def render_airport_displays(
+        self,
+        renderer,
+        logger: Logger
+    ):
+        """
+        Sets the LEDs for all of the airports based on their flight rules.
+        Does this independent of the LED type.
+
+        Arguments:
+            airport_flasher {bool} -- Is this on the "off" cycle of blinking.
+        """
+
+        for airport in airport_render_config:
+            try:
+                self.render_airport(renderer, logger, airport)
+            except Exception as ex:
+                safe_logging.safe_log_warning(
+                    logger,
+                    'Catch-all error in render_airport_displays of {} EX={}'.format(airport, ex))
+
+        renderer.show()
+
+    def update(
+        self,
+        renderer,
+        time_slice: float
+    ):
+        self.render_airport_displays(
             renderer,
             self.__logger__)
 
