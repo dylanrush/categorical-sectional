@@ -37,7 +37,7 @@ def render_airport_displays(
     renderer,
     logger: Logger,
     airport_flasher
-):
+) -> float:
     """
     Sets the LEDs for all of the airports based on their flight rules.
     Does this independent of the LED type.
@@ -45,6 +45,8 @@ def render_airport_displays(
     Arguments:
         airport_flasher {bool} -- Is this on the "off" cycle of blinking.
     """
+
+    start_time = datetime.utcnow()
 
     for airport in airport_render_config:
         try:
@@ -55,6 +57,10 @@ def render_airport_displays(
                 'Catch-all error in render_airport_displays of {} EX={}'.format(airport, ex))
 
     renderer.show()
+
+    runtime = datetime.utcnow() - start_time
+
+    return runtime.total_seconds()
 
 
 def get_airport_category(
@@ -351,16 +357,13 @@ class FlightRulesVisualizer(Visualizer):
         renderer,
         time_slice: float
     ):
-        render_airport_displays(
-            renderer,
-            self.__logger__,
-            True)
+        for blink in [True, False]:
+            seconds_run = render_airport_displays(
+                renderer,
+                self.__logger__,
+                blink)
 
-        time.sleep(1.0)
+            time_to_sleep = 1.0 - seconds_run
 
-        render_airport_displays(
-            renderer,
-            self.__logger__,
-            False)
-
-        time.sleep(1.0)
+            if time_to_sleep > 0.0:
+                time.sleep(time_to_sleep)
