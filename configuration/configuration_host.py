@@ -44,8 +44,8 @@ def __set_visualizer_index__(
 ) -> dict:
     configuration.update_configuration(
         {
-            configuration.VISUALIZER_INDEX_KEY: configuration.get_visualizer_index() +
-            increment
+            configuration.VISUALIZER_INDEX_KEY:
+            configuration.get_visualizer_index(VISUALIZERS) + increment
         })
 
     return get_visualizer_response()
