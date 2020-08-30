@@ -573,7 +573,7 @@ def __is_station_ok_to_call__(
         time_since_last_call = (delta_time.total_seconds()) / 60.0
 
         return time_since_last_call > 1.0
-    except:
+    except Exception:
         return True
 
 
@@ -966,6 +966,10 @@ def get_category(
 
     if metar_age is not None:
         metar_age_minutes = metar_age.total_seconds() / 60.0
+        is_inactive = metar_age_minutes > DEFAULT_METAR_STATION_INACTIVE
+
+        if is_inactive:
+            return INOP
     else:
         safe_logging.safe_log_warning(
             logger,

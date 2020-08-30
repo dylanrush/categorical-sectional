@@ -59,10 +59,9 @@ def render_airport_displays(
 
 def get_airport_category(
     logger: Logger,
-    airport,
-    metar,
-    utc_offset
-):
+    airport: str,
+    metar: str
+) -> str:
     """
     Gets the category of a single airport.
 
@@ -94,9 +93,8 @@ def get_airport_category(
 
 
 def get_color_from_condition(
-    category,
-    metar=None
-):
+    category: str
+) -> str:
     """
     From a condition, returns the color it should be rendered as, and if it should flash.
 
@@ -104,9 +102,29 @@ def get_color_from_condition(
         category {string} -- The weather category (VFR, IFR, et al.)
 
     Returns:
-        [tuple] -- The color (also a tuple) and if it should blink.
+        [str] -- The color name that should be displayed.
     """
 
+    if category == weather.VFR:
+        return colors.GREEN
+    elif category == weather.MVFR:
+        return colors.BLUE
+    elif category == weather.IFR:
+        return colors.RED
+    elif category == weather.LIFR:
+        return colors.MAGENTA
+    elif category == weather.NIGHT:
+        return colors.YELLOW
+    elif category == weather.SMOKE:
+        return colors.GRAY
+
+    # Error
+    return colors.OFF
+
+
+def should_station_flash(
+    metar: str
+) -> bool:
     is_old = False
     metar_age = None
 
@@ -125,31 +143,17 @@ def get_color_from_condition(
     # The default is to follow what ForeFlight and SkyVector
     # do and just turn it off.
     if is_inactive:
-        return (weather.INOP, False)
+        return False
 
     should_blink = is_old and configuration.get_blink_station_if_old_data()
 
-    if category == weather.VFR:
-        return (colors.GREEN, should_blink)
-    elif category == weather.MVFR:
-        return (colors.BLUE, should_blink)
-    elif category == weather.IFR:
-        return (colors.RED, should_blink)
-    elif category == weather.LIFR:
-        return (colors.MAGENTA, should_blink)
-    elif category == weather.NIGHT:
-        return (colors.YELLOW, False)
-    elif category == weather.SMOKE:
-        return (colors.GRAY, should_blink)
-
-    # Error
-    return (colors.OFF, False)
+    return should_blink
 
 
 def get_airport_condition(
     logger: Logger,
     airport: str
-):
+) -> str:
     """
     Sets the given airport to have the given flight rules category.
 
@@ -162,12 +166,11 @@ def get_airport_condition(
     """
 
     try:
-        utc_offset = datetime.utcnow() - datetime.now()
         metar = weather.get_metar(airport)
         # logger.log_info_message("{}={}".format(airport, metar))
-        category = get_airport_category(logger, airport, metar, utc_offset)
+        category = get_airport_category(logger, airport, metar)
         # logger.log_info_message("{}={}".format(airport, category))
-        color, should_flash = get_color_from_condition(category, metar)
+        should_flash = should_station_flash(metar)
 
         return category, should_flash
     except Exception as ex:
@@ -193,7 +196,8 @@ def render_airport(
     """
 
     condition, blink = get_airport_condition(logger, airport)
-    color_by_category = color_by_rules[condition]
+    color_name_by_category = get_color_from_condition(condition)
+    color_by_category = rgb_colors[color_name_by_category]
 
     if airport_flasher:
         metar = weather.get_metar(airport, logger)
