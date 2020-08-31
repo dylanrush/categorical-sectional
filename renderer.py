@@ -24,7 +24,7 @@ def get_renderer(
     """
 
     if local_debug.is_debug():
-        return debug.DebugRenderer(configuration.CONFIG[configuration.PIXEL_COUNT_KEY])
+        return debug.Renderer(configuration.CONFIG[configuration.PIXEL_COUNT_KEY])
 
     if configuration.get_mode() == configuration.WS2801:
         pixel_count = configuration.CONFIG[configuration.PIXEL_COUNT_KEY]
@@ -45,4 +45,4 @@ def get_renderer(
             gpio_pin,
             configuration.get_pixel_order())
 
-    return debug.DebugRenderer(configuration.CONFIG[configuration.PIXEL_COUNT_KEY])
+    return debug.Renderer(configuration.CONFIG[configuration.PIXEL_COUNT_KEY])

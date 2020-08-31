@@ -11,7 +11,7 @@ import time
 import lib.local_debug as local_debug
 
 
-class DebugRenderer(object):
+class Renderer(object):
     def __init__(
         self,
         pixel_count
@@ -34,7 +34,7 @@ class DebugRenderer(object):
         color: list
     ):
         """
-        Sets all of the leds to the same color.
+        Sets all of the LEDs to the same color.
 
         Args:
             color (list): The color we want to set all of the LEDs to.
@@ -71,4 +71,4 @@ class DebugRenderer(object):
     def clear(
         self
     ):
-        self.set_all((0, 0, 0))
+        self.set_all([0, 0, 0])

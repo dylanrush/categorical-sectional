@@ -12,10 +12,10 @@ import Adafruit_GPIO.SPI as SPI
 import Adafruit_WS2801
 # Import the WS2801 module.
 import lib.local_debug as local_debug
-from renderers.debug import DebugRenderer
+from renderers.debug import Renderer
 
 
-class Ws2801Renderer(DebugRenderer):
+class Ws2801Renderer(Renderer):
     def __init__(
         self,
         pixel_count,
@@ -44,7 +44,7 @@ class Ws2801Renderer(DebugRenderer):
             # Clear all the pixels to turn them off.
             self.__leds__.clear()
 
-            self.set_all((0, 0, 0))
+            self.set_all([0, 0, 0])
 
     def set_all(
         self,
@@ -64,7 +64,7 @@ class Ws2801Renderer(DebugRenderer):
 
         [self.__leds__.set_pixel(index, ws2801_color)
             for index in indices]
-        
+
         super().set_all(color)
 
         self.show()
@@ -94,7 +94,7 @@ class Ws2801Renderer(DebugRenderer):
                 color[0],
                 color[1],
                 color[2]))
-        
+
         super().set_led(pixel_index, color)
 
     def show(

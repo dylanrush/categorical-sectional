@@ -11,10 +11,10 @@ import time
 import board
 import lib.local_debug as local_debug
 import neopixel
-from renderers.debug import DebugRenderer
+from renderers.debug import Renderer
 
 
-class Ws281xRenderer(DebugRenderer):
+class Ws281xRenderer(Renderer):
     def __init__(
         self,
         pixel_count,
@@ -42,7 +42,7 @@ class Ws281xRenderer(DebugRenderer):
                 pixel_order=pixel_order)
 
             # Clear all the pixels to turn them off.
-            self.set_all((0, 0, 0))
+            self.set_all([0, 0, 0])
 
     def set_all(
         self,
