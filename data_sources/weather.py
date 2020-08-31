@@ -31,6 +31,7 @@ OFF = 'OFF'
 
 DRIZZLE = 'DRIZZLE'
 RAIN = 'RAIN'
+HEAVY_RAIN = f'HEAVY {RAIN}'
 SNOW = 'SNOW'
 ICE = 'ICE'
 UNKNOWN = 'UNKNOWN'
@@ -949,7 +950,7 @@ def get_precipitation(
             return DRIZZLE
 
         if 'RA' in component:
-            return RAIN
+            return HEAVY_RAIN if '+' in component else RAIN
 
         if 'SN' in component or 'SG' in component:
             return SNOW

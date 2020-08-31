@@ -16,6 +16,7 @@ from lib import colors as colors_lib
 from lib import safe_logging
 from lib.logger import Logger
 from lib.recurring_task import RecurringTask
+from renderers.debug import Renderer
 from visualizers.flight_rules import get_mix_and_color
 from visualizers.visualizer import Visualizer
 
@@ -122,26 +123,26 @@ def get_color_by_temperature_celsius(
 
 def get_color_by_precipitation(
     precipitation: str
-) -> list:
+) -> (list, bool):
     colors_by_name = colors_lib.get_colors()
 
     if precipitation is None:
-        return colors_by_name[colors_lib.YELLOW]
+        return (colors_by_name[colors_lib.GRAY], False)
 
     if precipitation is weather.DRIZZLE:
-        return colors_by_name[colors_lib.LIGHT_BLUE]
+        return (colors_by_name[colors_lib.LIGHT_BLUE], False)
 
-    if precipitation is weather.RAIN:
-        return colors_by_name[colors_lib.BLUE]
+    if weather.RAIN in precipitation:
+        return (colors_by_name[colors_lib.BLUE], precipitation is weather.HEAVY_RAIN)
 
     if precipitation is weather.SNOW:
-        return colors_by_name[colors_lib.WHITE]
+        return (colors_by_name[colors_lib.WHITE], False)
 
     if precipitation is weather.ICE:
-        return colors_by_name[colors_lib.GRAY]
+        return (colors_by_name[colors_lib.LIGHT_GRAY], True)
 
     if precipitation is weather.UNKNOWN:
-        return colors_by_name[colors_lib.PURPLE]
+        return (colors_by_name[colors_lib.PURPLE], False)
 
 
 class TemperatureVisualizer(Visualizer):
@@ -206,7 +207,7 @@ class TemperatureVisualizer(Visualizer):
 
     def update(
         self,
-        renderer,
+        renderer: Renderer,
         time_slice: float
     ):
         self.render_airport_displays(
@@ -229,7 +230,8 @@ class PrecipitationVisualizer(Visualizer):
         self,
         renderer,
         logger: Logger,
-        airport
+        airport: str,
+        is_blink: bool = False
     ):
         """
         Renders an airport.
@@ -240,7 +242,7 @@ class PrecipitationVisualizer(Visualizer):
 
         metar = weather.get_metar(airport, logger)
         precipitation = weather.get_precipitation(metar)
-        color_to_render = get_color_by_precipitation(precipitation)
+        color_to_render, blink = get_color_by_precipitation(precipitation)
         proportions, color_to_render = get_mix_and_color(
             color_to_render,
             airport)
@@ -249,6 +251,11 @@ class PrecipitationVisualizer(Visualizer):
             color_to_render,
             brightness_adjustment)
 
+        # Turn the LED off for the blink
+        if is_blink and blink:
+            final_color = colors_lib.get_brightness_adjusted_color(
+                final_color, 0.0)
+
         renderer.set_led(
             airport_render_config[airport],
             final_color)
@@ -256,8 +263,9 @@ class PrecipitationVisualizer(Visualizer):
     def render_airport_displays(
         self,
         renderer,
-        logger: Logger
-    ):
+        logger: Logger,
+        blink: bool = False
+    ) -> float:
         """
         Sets the LEDs for all of the airports based on their flight rules.
         Does this independent of the LED type.
@@ -266,9 +274,11 @@ class PrecipitationVisualizer(Visualizer):
             airport_flasher {bool} -- Is this on the "off" cycle of blinking.
         """
 
+        start_time = datetime.utcnow()
+
         for airport in airport_render_config:
             try:
-                self.render_airport(renderer, logger, airport)
+                self.render_airport(renderer, logger, airport, blink)
             except Exception as ex:
                 safe_logging.safe_log_warning(
                     logger,
@@ -276,13 +286,20 @@ class PrecipitationVisualizer(Visualizer):
 
         renderer.show()
 
+        return (datetime.utcnow() - start_time).total_seconds()
+
     def update(
         self,
-        renderer,
+        renderer: Renderer,
         time_slice: float
     ):
-        self.render_airport_displays(
-            renderer,
-            self.__logger__)
+        for is_blink in [True, False]:
+            render_time = self.render_airport_displays(
+                renderer,
+                self.__logger__,
+                is_blink)
 
-        time.sleep(1.0)
+            time_to_sleep = 1.0 - render_time
+
+            if time_to_sleep > 0.0:
+                time.sleep(time_to_sleep)
