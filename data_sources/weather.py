@@ -746,7 +746,7 @@ def get_metar(
 
     except Exception as e:
         safe_logging.safe_log(logger, 'get_metar got EX:{}'.format(e))
-        safe_logging.safe_log(logger, empty_return)
+        safe_logging.safe_log(logger, "")
 
         return None
 
@@ -946,20 +946,16 @@ def get_precipitation(
     components = get_main_metar_components(metar)
 
     for component in components:
-        if 'DZ' in component:
-            return DRIZZLE
-
-        if 'RA' in component:
-            return HEAVY_RAIN if '+' in component else RAIN
-
-        if 'SN' in component or 'SG' in component:
-            return SNOW
-
-        if 'GR' in component or 'GS' in component or 'IC' in component or 'PL' in component:
-            return ICE
-
         if 'UP' in component:
             return UNKNOWN
+        elif 'RA' in component:
+            return HEAVY_RAIN if '+' in component else RAIN
+        elif 'GR' in component or 'GS' in component or 'IC' in component or 'PL' in component:
+            return ICE
+        elif 'SN' in component or 'SG' in component:
+            return SNOW
+        elif 'DZ' in component:
+            return DRIZZLE
 
     return None
 
@@ -1045,7 +1041,7 @@ if __name__ == '__main__':
         'KVOK',
         'KVOK 251453Z 34004KT 10SM SCT008 OVC019 21/21 A2988 RMK AO2A SCT V BKN SLP119 53012')
 
-    metars = get_metars(airports_to_test)
+    metars = get_metars(airports_to_test, None)
     get_metar('KAWO', use_cache=False)
 
     light_times = get_civil_twilight('KAWO', starting_date_time)
