@@ -96,8 +96,8 @@ def safe_log(
             logger.log_info_message(indents + message)
         else:
             print('{} INFO: {}{}'.format(datetime.now(), indents, message))
-    except:
-        print(indents + message)
+    except Exception:
+        print('{}{}'.format(indents,  message))
 
 
 def safe_log_warning(
