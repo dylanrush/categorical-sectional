@@ -937,6 +937,36 @@ def get_temperature(
     return None
 
 
+def get_pressure(
+    metar: str
+) -> float:
+    """
+    Get the inches of mercury from a METAR.
+    This **DOES NOT** extract the Sea Level Pressure
+    from the remarks section.
+
+    Args:
+        metar (str): The metar to extract the pressure from.
+
+    Returns:
+        float: None if not found, otherwise the inches of mercury. EX:29.92
+    """
+    components = get_main_metar_components(metar)
+
+    try:
+        for component in components:
+            is_altimeter = re.search('A\d{4}', component) is not None
+
+            if is_altimeter:
+                inches_of_mercury = float(component.split('A')[1]) / 100.0
+
+                return inches_of_mercury
+    except Exception:
+        pass
+
+    return None
+
+
 def get_precipitation(
     metar: str
 ) -> bool:
