@@ -264,9 +264,9 @@ class PressureVisualizer(BlinkingVisualizer):
         metar = weather.get_metar(station, self.__logger__)
         pressure = weather.get_pressure(metar)
         color_to_render = get_color_by_pressure(pressure)
-        final_color = self.__get_brightness_adjusted_color__(
-            station,
-            color_to_render)
+        final_color = colors_lib.get_brightness_adjusted_color(
+            color_to_render,
+            configuration.get_brightness_proportion())
 
         self.__renderer__.set_led(
             self.__stations__[station],
