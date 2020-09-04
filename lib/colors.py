@@ -1,6 +1,5 @@
-import copy
-
 RED = 'RED'
+LIGHT_RED = 'LIGHT RED'
 GREEN = 'GREEN'
 BLUE = 'BLUE'
 LIGHT_BLUE = "LIGHT BLUE"
@@ -15,16 +14,17 @@ ORANGE = "ORANGE"
 OFF = "OFF"
 
 
-def get_colors():
+def get_colors() -> dict:
     """
     Returns the RGB colors based on the config.
     """
 
     return {
         RED: (255, 0, 0),
+        LIGHT_RED: (255, 105, 180),
         GREEN: (0, 255, 0),
         BLUE: (0, 0, 255),
-        LIGHT_BLUE: (68, 85, 90),
+        LIGHT_BLUE: (51, 255, 255),
         MAGENTA: (255, 0, 255),
         OFF: (0, 0, 0),
         GRAY: (50, 50, 50),
@@ -184,7 +184,7 @@ def get_color_mix(
 def get_brightness_adjusted_color(
     color_to_render: list,
     brightness_adjustment: float
-):
+) -> list:
     if brightness_adjustment < 0.0:
         brightness_adjustment = 0.0
 

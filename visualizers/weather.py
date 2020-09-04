@@ -130,37 +130,51 @@ def get_color_by_precipitation(
     return (colors_by_name[colors_lib.GRAY], False)
 
 
+# Standard pressure is 29.92,
+# so the upper limits were picked with
+# the standard value in the middle.
+#
+# The "high pressure" value was picked
+# based on what people perceive to be high pressure
+# and from that the low pressure value was picked.
+#
+# Per https://weather.com/sports-recreation/fishing/news/fishing-barometer-20120328
+
+HIGH_PRESSURE = 30.7
+STANDARD_PRESSURE = 29.92
+LOW_PRESSURE = STANDARD_PRESSURE - (HIGH_PRESSURE - STANDARD_PRESSURE)
+
+
 def get_color_by_pressure(
     inches_of_mercury: str
 ) -> list:
-    high_pressure = 31.2
-    # Standard pressure is 29.92,
-    # so the upper limits were picked with
-    # the standard value in the middle.
-    #
-    # The "high pressure" value was picked
-    # based on what people perceive to be high pressure
-    # and from that the low pressure value was picked.
-    low_pressure = 28.64
-
     colors_by_name = colors_lib.get_colors()
 
     if inches_of_mercury is None:
         return colors_by_name[colors_lib.OFF]
 
-    if inches_of_mercury < low_pressure:
+    if inches_of_mercury < LOW_PRESSURE:
         return colors_by_name[colors_lib.RED]
 
-    if inches_of_mercury > high_pressure:
+    if inches_of_mercury > HIGH_PRESSURE:
         return colors_by_name[colors_lib.BLUE]
+
+    if inches_of_mercury > STANDARD_PRESSURE:
+        return colors_lib.get_color_mix(
+            colors_by_name[colors_lib.LIGHT_BLUE],
+            colors_by_name[colors_lib.BLUE],
+            get_proportion_between_floats(
+                STANDARD_PRESSURE,
+                inches_of_mercury,
+                HIGH_PRESSURE))
 
     return colors_lib.get_color_mix(
         colors_by_name[colors_lib.RED],
-        colors_by_name[colors_lib.BLUE],
+        colors_by_name[colors_lib.LIGHT_RED],
         get_proportion_between_floats(
-            low_pressure,
+            LOW_PRESSURE,
             inches_of_mercury,
-            high_pressure))
+            STANDARD_PRESSURE))
 
 
 class TemperatureVisualizer(BlinkingVisualizer):
