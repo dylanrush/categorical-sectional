@@ -22,6 +22,7 @@ class VisualizerManager(object):
             flight_rules.FlightRulesVisualizer(renderer, stations, LOGGER),
             weather.TemperatureVisualizer(renderer, stations, LOGGER),
             weather.PrecipitationVisualizer(renderer, stations, LOGGER),
+            weather.PressureVisualizer(renderer, stations, LOGGER),
             rainbow.RainbowVisualizer(renderer, stations, LOGGER),
             rainbow.LightCycleVisualizer(renderer, stations, LOGGER)
         ]
