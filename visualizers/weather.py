@@ -138,11 +138,13 @@ def get_color_by_precipitation(
 # based on what people perceive to be high pressure
 # and from that the low pressure value was picked.
 #
-# Per https://weather.com/sports-recreation/fishing/news/fishing-barometer-20120328
+# Per:
+#   https://weather.com/sports-recreation/fishing/news/fishing-barometer-20120328
+#   https://www.quora.com/Is-30-a-high-barometric-pressure
 
-HIGH_PRESSURE = 30.7
+HIGH_PRESSURE = 30.2
 STANDARD_PRESSURE = 29.92
-LOW_PRESSURE = STANDARD_PRESSURE - (HIGH_PRESSURE - STANDARD_PRESSURE)
+LOW_PRESSURE = 29.8
 
 
 def get_color_by_pressure(
