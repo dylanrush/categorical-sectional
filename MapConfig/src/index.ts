@@ -267,7 +267,7 @@ function renderPage(
 }
 
 function mapViewRender(
-  response
+  response: any
 ) {
   return getWeatherMapView()
     .then(function (jsonConfig) {

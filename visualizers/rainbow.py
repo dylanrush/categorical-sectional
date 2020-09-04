@@ -1,5 +1,6 @@
 from configuration import configuration
 from lib.logger import Logger
+from renderers.debug import Renderer
 from visualizers.visualizer import Visualizer
 
 
@@ -30,13 +31,14 @@ def wheel(
 class LightCycleVisualizer(Visualizer):
     def __init__(
         self,
+        renderer: Renderer,
+        stations: dict,
         logger: Logger
     ):
-        super().__init__(logger)
+        super().__init__(renderer, stations, logger)
 
     def update(
         self,
-        renderer,
         time_slice: float
     ):
         pixel_count = configuration.CONFIG[configuration.PIXEL_COUNT_KEY]  # 1
@@ -49,19 +51,20 @@ class LightCycleVisualizer(Visualizer):
             # the % 96 is to make the wheel cycle around
             color = wheel(pixel_index & 255)
 
-            renderer.set_all(color)
+            self.__renderer__.set_all(color)
 
 
 class RainbowVisualizer(Visualizer):
     def __init__(
         self,
+        renderer: Renderer,
+        stations: dict,
         logger: Logger
     ):
-        super().__init__(logger)
+        super().__init__(renderer, stations, logger)
 
     def update(
         self,
-        renderer,
         time_slice: float
     ):
         pixel_count = configuration.CONFIG[configuration.PIXEL_COUNT_KEY]  # 1
@@ -75,6 +78,6 @@ class RainbowVisualizer(Visualizer):
                 # the % 96 is to make the wheel cycle around
                 color = wheel(pixel_index & 255)
 
-                renderer.set_led(i, color)
+                self.__renderer__.set_led(i, color)
 
-            renderer.show()
+            self.__renderer__.show()

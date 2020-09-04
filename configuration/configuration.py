@@ -305,7 +305,8 @@ def get_visualizer_index(
     Returns:
         int: The index of the visualizer to use.
     """
-    visualizer_index = int(__get_number_config_value__(VISUALIZER_INDEX_KEY, 0))
+    visualizer_index = int(
+        __get_number_config_value__(VISUALIZER_INDEX_KEY, 0))
 
     if visualizers is None:
         return visualizer_index
@@ -321,6 +322,18 @@ def get_visualizer_index(
     CONFIG[VISUALIZER_INDEX_KEY] = visualizer_index
 
     return visualizer_index
+
+
+def update_visualizer_index(
+    visualizers: list,
+    new_index: int
+) -> int:
+    __lock__.acquire()
+    CONFIG[VISUALIZER_INDEX_KEY] = new_index
+    wrapped_index = get_visualizer_index(visualizers)
+    __lock__.release()
+
+    return wrapped_index
 
 
 def get_pixel_order():

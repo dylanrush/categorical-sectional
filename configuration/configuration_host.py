@@ -2,19 +2,14 @@
 Module to run a RESTful server to set and get the configuration.
 """
 
-
-import datetime
 import json
 import os
 import re
 import shutil
-import socket
-import sys
-import urllib
 from http.server import BaseHTTPRequestHandler
 
 from configuration import configuration
-from visualizers.visualizers import VISUALIZERS
+from visualizers.visualizers import VisualizerManager
 
 VIEW_NAME_KEY = 'name'
 MEDIA_TYPE_KEY = 'media_type'
@@ -32,21 +27,28 @@ ERROR_JSON = {'success': False}
 
 
 def get_visualizer_response() -> dict:
+    visualizers = VisualizerManager.get_visualizers()
+
     return {
-        configuration.VISUALIZER_INDEX_KEY: configuration.get_visualizer_index(VISUALIZERS),
-        "visualizer_name": VISUALIZERS[configuration.get_visualizer_index(VISUALIZERS)].get_name(),
-        "visualizer_count": len(VISUALIZERS)
+        configuration.VISUALIZER_INDEX_KEY: configuration.get_visualizer_index(visualizers),
+        "visualizer_name": visualizers[configuration.get_visualizer_index(visualizers)].get_name(),
+        "visualizer_count": len(visualizers)
     }
 
 
 def __set_visualizer_index__(
     increment: int
 ) -> dict:
-    configuration.update_configuration(
-        {
-            configuration.VISUALIZER_INDEX_KEY:
-            configuration.get_visualizer_index(VISUALIZERS) + increment
-        })
+    visualizers = VisualizerManager.get_visualizers()
+    new_index = configuration.get_visualizer_index(visualizers) + increment
+    new_index = configuration.update_visualizer_index(visualizers, new_index)
+
+    update_package = {
+        configuration.VISUALIZER_INDEX_KEY:
+        new_index
+    }
+
+    configuration.update_configuration(update_package)
 
     return get_visualizer_response()
 
