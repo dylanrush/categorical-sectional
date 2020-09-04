@@ -109,6 +109,9 @@ def get_color_by_precipitation(
 ) -> (list, bool):
     colors_by_name = colors_lib.get_colors()
 
+    if precipitation is None:
+        return (colors_by_name[colors_lib.GRAY], False)
+
     if precipitation is weather.DRIZZLE:
         return (colors_by_name[colors_lib.LIGHT_BLUE], False)
 
