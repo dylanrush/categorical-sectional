@@ -153,7 +153,7 @@ class Visualizer(object):
         starting_color: list
     ) -> list:
         proportions, color_to_render = get_mix_and_color(
-            color_to_render,
+            starting_color,
             station)
         brightness_adjustment = configuration.get_brightness_proportion()
         final_color = colors_lib.get_brightness_adjusted_color(
