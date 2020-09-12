@@ -85,7 +85,7 @@ def should_station_flash(
     if metar_age is not None:
         metar_age_minutes = metar_age.total_seconds() / 60.0
         is_old = metar_age_minutes > weather.DEFAULT_METAR_INVALIDATE_MINUTES
-        is_inactive = metar_age_minutes > weather.DEFAULT_METAR_STATION_INACTIVE
+        is_inactive = metar_age_minutes > configuration.get_metar_station_inactive_minutes()
     else:
         is_inactive = True
 

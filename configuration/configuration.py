@@ -40,6 +40,9 @@ VISUALIZER_INDEX_KEY = "visualizer"
 PIXEL_ORDER_KEY = "pixel_order"
 PIXEL_ORDER_DEFAULT = "GRB"
 
+METAR_STATION_INACTIVE_MINUTES_KEY = "metar_station_inactive_minutes"
+DEFAULT_METAR_STATION_INACTIVE_MINUTES = 3 * 60
+
 __VALID_KEYS__ = [
     LED_MODE_KEY,
     PIXEL_COUNT_KEY,
@@ -52,7 +55,8 @@ __VALID_KEYS__ = [
     NIGHT_CATEGORY_PROPORTION_KEY,
     BRIGHTNESS_PROPORTION_KEY,
     VISUALIZER_INDEX_KEY,
-    PIXEL_ORDER_KEY
+    PIXEL_ORDER_KEY,
+    METAR_STATION_INACTIVE_MINUTES_KEY
 ]
 
 __VALID_PIXEL_ORDERS__ = [
@@ -259,10 +263,15 @@ def __get_number_config_value__(
         bool -- The value to use for the configuration.
     """
     try:
-        if CONFIG is not None and config_key in CONFIG:
+        is_config_ok = CONFIG is not None
+        is_in_config = is_config_ok and config_key in CONFIG
+
+        if is_in_config:
             return float(CONFIG[config_key])
     except Exception:
         return default
+
+    return default
 
 
 def __get_boolean_config_value__(
@@ -285,6 +294,8 @@ def __get_boolean_config_value__(
             return CONFIG[config_key]
     except Exception:
         return default
+
+    return default
 
 
 def get_mode():
@@ -364,6 +375,16 @@ def get_blink_station_if_old_data() -> bool:
     """
 
     return __get_boolean_config_value__('blink_old_stations', True)
+
+
+def get_metar_station_inactive_minutes() -> int:
+    """
+    How old can a METAR be and the station is still considered "Active"
+
+    Returns:
+        int: The number of minutes after which the station is considered inactive.
+    """
+    return __get_number_config_value__(METAR_STATION_INACTIVE_MINUTES_KEY, DEFAULT_METAR_STATION_INACTIVE_MINUTES)
 
 
 def get_night_lights():

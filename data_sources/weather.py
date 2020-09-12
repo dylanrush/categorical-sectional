@@ -15,6 +15,7 @@ import requests
 from lib import safe_logging
 from lib.colors import clamp
 from lib.logger import Logger
+from configuration import configuration
 
 INVALID = 'INVALID'
 INOP = 'INOP'
@@ -45,7 +46,6 @@ __station_last_called__ = {}
 DEFAULT_READ_SECONDS = 15
 DEFAULT_METAR_LIFESPAN_MINUTES = 60
 DEFAULT_METAR_INVALIDATE_MINUTES = DEFAULT_METAR_LIFESPAN_MINUTES * 1.5
-DEFAULT_METAR_STATION_INACTIVE = DEFAULT_METAR_LIFESPAN_MINUTES * 3
 
 
 def __load_airport_data__(
@@ -1035,7 +1035,8 @@ def get_category(
 
     if metar_age is not None:
         metar_age_minutes = metar_age.total_seconds() / 60.0
-        is_inactive = metar_age_minutes > DEFAULT_METAR_STATION_INACTIVE
+        metar_inactive_threshold = configuration.get_metar_station_inactive_minutes()
+        is_inactive = metar_age_minutes > metar_inactive_threshold
 
         if is_inactive:
             return INOP
