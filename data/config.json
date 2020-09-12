@@ -3,6 +3,7 @@
   "pixel_count": 50,
   "spi_port": 0,
   "spi_device": 0,
+  "metar_station_inactive_minutes": 180,
   "airports_file": "../data/kawo_to_kosh.json",
   "blink_old_stations": true,
   "night_lights": true,
