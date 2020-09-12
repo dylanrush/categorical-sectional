@@ -67,7 +67,7 @@ def get_color_from_condition(
     elif category == weather.NIGHT:
         return colors_lib.YELLOW
     elif category == weather.SMOKE:
-        return colors_lib.GRAY
+        return colors_lib.WHITE
 
     # Error
     return colors_lib.OFF
