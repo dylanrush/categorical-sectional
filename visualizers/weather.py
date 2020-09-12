@@ -9,6 +9,15 @@ from visualizers.visualizer import BlinkingVisualizer, rgb_colors
 def celsius_to_fahrenheit(
     temperature_celsius: float
 ):
+    """
+    Converts a temperature in celsius to fahrenheit.
+
+    Args:
+        temperature_celsius (float): A temperature in C
+
+    Returns:
+        [type]: The temperature converted to F
+    """
     if temperature_celsius is None:
         return 0
 
@@ -46,6 +55,19 @@ def get_proportion_between_floats(
 def get_color_by_temperature_celsius(
     temperature_celsius: float
 ) -> list:
+    """
+    Given a temperature (in Celsius), return the color
+    that should represent that temp on the map.
+
+    These colors were decided based on weather temperature maps
+    and thermometer markings.
+
+    Args:
+        temperature_celsius (float): A temperature in metric.
+
+    Returns:
+        list: The RGB color to show on the map.
+    """
     colors_by_name = colors_lib.get_colors()
 
     if temperature_celsius is None:
@@ -107,6 +129,17 @@ def get_color_by_temperature_celsius(
 def get_color_by_precipitation(
     precipitation: str
 ) -> (list, bool):
+    """
+    Given a precipitation category, return a color
+    to show on the map.
+
+    Args:
+        precipitation (str): The precipitation category.
+
+    Returns:
+        (list, bool): A tuple of the RGB color AND if the station should be blinking
+    """
+
     colors_by_name = colors_lib.get_colors()
 
     if precipitation is None:
@@ -148,8 +181,18 @@ LOW_PRESSURE = 29.8
 
 
 def get_color_by_pressure(
-    inches_of_mercury: str
+    inches_of_mercury: float
 ) -> list:
+    """
+    Given a barometer reading, return a RGB color to show on the map.
+
+    Args:
+        inches_of_mercury (float): The barometer reading from a metar in inHg.
+
+    Returns:
+        list: The RGB color to show on the map for the station.
+    """
+
     colors_by_name = colors_lib.get_colors()
 
     if inches_of_mercury is None:
