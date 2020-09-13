@@ -40,9 +40,17 @@ def get_visualizer_response() -> dict:
 def __set_visualizer_index__(
     increment: int
 ) -> dict:
+    safe_log("Moving visualizer index by {}".format(increment))
+
     visualizers = VisualizerManager.get_visualizers()
-    new_index = configuration.get_visualizer_index(visualizers) + increment
+    current_index = configuration.get_visualizer_index(visualizers)
+
+    safe_log("current_index={}".format(current_index))
+
+    new_index = current_index + increment
     new_index = configuration.update_visualizer_index(visualizers, new_index)
+
+    safe_log("new_index={}".format(new_index))
 
     update_package = {
         configuration.VISUALIZER_INDEX_KEY:
