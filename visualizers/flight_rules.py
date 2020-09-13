@@ -27,9 +27,10 @@ def get_airport_category(
 
     try:
         try:
-            # logger.log_info_message("Getting category for {}".format(airport))
-            category = weather.get_category(airport, metar, logger=logger)
-            # logger.log_info_message("{}={}".format(airport, category))
+            is_inop = weather.is_station_inoperative(metar)
+
+            category = weather.INOP if is_inop\
+                else weather.get_category(airport, metar, logger=logger)
         except Exception as e:
             safe_logging.safe_log_warning(
                 logger,
