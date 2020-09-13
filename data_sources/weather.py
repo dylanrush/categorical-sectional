@@ -751,6 +751,39 @@ def get_metar(
         return None
 
 
+def get_station_from_metar(
+    metar: str
+) -> str:
+    """
+    Given a METAR, extract the station identifier.
+
+    Args:
+        metar (str): The METAR to get the station name from.
+
+    Returns:
+        str: The name of the station if extracted and valid, otherwise None
+    """
+    if metar is None:
+        return None
+
+    try:
+        tokens = metar.split(' ')
+
+        if tokens is None or len(tokens) < 1:
+            return None
+
+        station = tokens[0]
+
+        if len(station) < 2 or len(station) > 8:
+            return None
+
+        return station
+    except Exception:
+        return None
+
+    return None
+
+
 def get_metar_age(
     metar
 ):
@@ -1012,11 +1045,40 @@ def get_ceiling_category(
     return VFR
 
 
+def is_station_inoperative(
+    metar: str
+) -> bool:
+    """
+    Tells you if the weather station is operative or inoperative.
+    Inoperative is mostly defined as not having an updated METAR
+    in the allowable time period.
+
+    Args:
+        metar (str): The METAR to check.
+
+    Returns:
+        bool: True if the station is INOPERATIVE. This means the METAR should be ignored.
+    """
+    if metar is None or metar == INVALID:
+        return True
+
+    metar_age = get_metar_age(metar)
+
+    if metar_age is not None:
+        metar_age_minutes = metar_age.total_seconds() / 60.0
+        metar_inactive_threshold = configuration.get_metar_station_inactive_minutes()
+        is_inactive = metar_age_minutes > metar_inactive_threshold
+
+        return is_inactive
+
+    return False
+
+
 def get_category(
-    airport_icao_code,
-    metar,
+    airport_icao_code: str,
+    metar: str,
     logger=None
-):
+) -> str:
     """
     Returns the flight rules classification based on the entire RAW metar.
 
@@ -1031,19 +1093,11 @@ def get_category(
     if metar is None or metar == INVALID:
         return INVALID
 
-    metar_age = get_metar_age(metar)
+    if airport_icao_code is None:
+        return INVALID
 
-    if metar_age is not None:
-        metar_age_minutes = metar_age.total_seconds() / 60.0
-        metar_inactive_threshold = configuration.get_metar_station_inactive_minutes()
-        is_inactive = metar_age_minutes > metar_inactive_threshold
-
-        if is_inactive:
-            return INOP
-    else:
-        safe_logging.safe_log_warning(
-            logger,
-            "{} - Unknown METAR age".format(airport_icao_code))
+    if len(metar) < 4:
+        return INVALID
 
     vis = get_visibility(metar)
     ceiling = get_ceiling_category(get_ceiling(metar, logger=logger))
