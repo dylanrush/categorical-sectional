@@ -271,7 +271,10 @@ class ConfigurationHost(BaseHTTPRequestHandler):
     def get_route(
         self
     ):
+        safe_log("REQ={}".format(self.path))
+
         for path, route in ConfigurationHost.ROUTES.items():
             if re.match(path, self.path):
+                safe_log("MATCHES:{}".format(path))
                 return route
         return None
