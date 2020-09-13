@@ -686,7 +686,7 @@ def get_metar(
     """
 
     if airport_icao_code is None or len(airport_icao_code) < 1:
-        safe_logging.safe_log('Invalid or empty airport code')
+        safe_log('Invalid or empty airport code')
 
     is_cache_valid, cached_metar = __is_cache_valid__(
         airport_icao_code,
@@ -704,14 +704,14 @@ def get_metar(
         metars = get_metars([airport_icao_code])
 
         if metars is None:
-            safe_logging.safe_log(
+            safe_log(
                 'Get a None while attempting to get METAR for {}'.format(
                     airport_icao_code))
 
             return None
 
         if airport_icao_code not in metars:
-            safe_logging.safe_log(
+            safe_log(
                 'Got a result, but {} was not in results package'.format(
                     airport_icao_code))
 
@@ -720,8 +720,8 @@ def get_metar(
         return metars[airport_icao_code]
 
     except Exception as e:
-        safe_logging.safe_log('get_metar got EX:{}'.format(e))
-        safe_logging.safe_log("")
+        safe_log('get_metar got EX:{}'.format(e))
+        safe_log("")
 
         return None
 
@@ -900,7 +900,7 @@ def get_ceiling(
                 if(ceiling < minimum_ceiling):
                     minimum_ceiling = ceiling
             except Exception as ex:
-                safe_logging.safe_log_warning(
+                safe_log_warning(
                     'Unable to decode ceiling component {} from {}. EX:{}'.format(
                         component,
                         metar,
