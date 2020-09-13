@@ -51,7 +51,7 @@ if not local_debug.is_debug():
     import RPi.GPIO as GPIO
     try:
         GPIO.setmode(GPIO.BOARD)
-    except:
+    except Exception:
         # ws281x causes an exception
         # when you try to set the board type
         pass
