@@ -6,6 +6,8 @@ import inspect
 import traceback
 from datetime import datetime, timedelta
 
+from lib.logger import LOGGER
+
 TAB_TEXT = ' ' * 4
 MODULE_NAME = '<module>'
 
@@ -38,7 +40,7 @@ def __get_callstack_indent_count(
             indents = 0
 
         return indents
-    except:
+    except Exception:
         return 0
 
 
@@ -79,7 +81,6 @@ def __get_indents(
 
 
 def safe_log(
-    logger,
     message: str
 ):
     """
@@ -92,8 +93,8 @@ def safe_log(
 
     try:
         indents = __get_indents(__get_callstack_indent_count())
-        if logger is not None:
-            logger.log_info_message(indents + message)
+        if LOGGER is not None:
+            LOGGER.log_info_message(indents + message)
         else:
             print('{} INFO: {}{}'.format(datetime.now(), indents, message))
     except Exception:
@@ -101,7 +102,6 @@ def safe_log(
 
 
 def safe_log_warning(
-    logger,
     message: str
 ):
     """
@@ -115,9 +115,9 @@ def safe_log_warning(
     try:
         indents = __get_indents(__get_callstack_indent_count())
 
-        if logger is not None:
-            logger.log_warning_message(indents + message)
+        if LOGGER is not None:
+            LOGGER.log_warning_message(indents + message)
         else:
             print('{} WARN: {}{}'.format(datetime.now(), indents, message))
-    except:
+    except Exception:
         print(indents + message)

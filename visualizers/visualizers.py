@@ -1,4 +1,3 @@
-from lib.logger import LOGGER
 from renderers.debug import Renderer
 from visualizers import flight_rules, rainbow, weather
 
@@ -19,12 +18,12 @@ class VisualizerManager(object):
             return
 
         VisualizerManager.__VISUALIZERS__ = [
-            flight_rules.FlightRulesVisualizer(renderer, stations, LOGGER),
-            weather.TemperatureVisualizer(renderer, stations, LOGGER),
-            weather.PrecipitationVisualizer(renderer, stations, LOGGER),
-            weather.PressureVisualizer(renderer, stations, LOGGER),
-            rainbow.RainbowVisualizer(renderer, stations, LOGGER),
-            rainbow.LightCycleVisualizer(renderer, stations, LOGGER)
+            flight_rules.FlightRulesVisualizer(renderer, stations),
+            weather.TemperatureVisualizer(renderer, stations),
+            weather.PrecipitationVisualizer(renderer, stations),
+            weather.PressureVisualizer(renderer, stations),
+            rainbow.RainbowVisualizer(renderer, stations),
+            rainbow.LightCycleVisualizer(renderer, stations)
         ]
 
         return VisualizerManager.__VISUALIZERS__

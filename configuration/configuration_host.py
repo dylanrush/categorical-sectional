@@ -9,6 +9,7 @@ import shutil
 from http.server import BaseHTTPRequestHandler
 
 from configuration import configuration
+from lib.safe_logging import safe_log, safe_log_warning
 from visualizers.visualizers import VisualizerManager
 
 VIEW_NAME_KEY = 'name'
@@ -56,18 +57,24 @@ def __set_visualizer_index__(
 def current_view(
     handler
 ) -> dict:
+    safe_log("current_view")
+
     return get_visualizer_response()
 
 
 def next_view(
     handler
 ) -> dict:
+    safe_log("next_view")
+
     return __set_visualizer_index__(1)
 
 
 def previous_view(
     handler
 ) -> dict:
+    safe_log("previous_view")
+
     return __set_visualizer_index__(-1)
 
 
@@ -77,6 +84,8 @@ def get_settings(
     """
     Handles a get-the-settings request.
     """
+    safe_log("get_settings")
+
     if configuration.CONFIG is not None:
         result = configuration.CONFIG.copy()
 
@@ -93,11 +102,12 @@ def set_settings(
     """
     Handles a set-the-settings request.
     """
+    safe_log("set_settings")
 
     if configuration.CONFIG is not None:
         payload = handler.get_payload()
-        print("settings/PUT:")
-        print(payload)
+        safe_log("settings/PUT:")
+        safe_log(payload)
 
         response = configuration.update_configuration(payload)
         response.update(get_visualizer_response())
@@ -155,9 +165,12 @@ class ConfigurationHost(BaseHTTPRequestHandler):
             if isinstance(payload, bytes):
                 payload = payload.decode(encoding="utf-8")
 
+            safe_log("Received payload={}".format(payload))
+
             payload = json.loads(payload)
             return payload
         except Exception as ex:
+            safe_log_warning("Error getting payload = {}".format(ex))
             return {"get_payload:ERROR": str(ex)}
 
     def __handle_invalid_route__(

@@ -12,10 +12,9 @@ from datetime import datetime, timedelta
 
 import requests
 
-from lib import safe_logging
-from lib.colors import clamp
-from lib.logger import Logger
 from configuration import configuration
+from lib.colors import clamp
+from lib.safe_logging import safe_log, safe_log_warning
 
 INVALID = 'INVALID'
 INOP = 'INOP'
@@ -233,8 +232,7 @@ def clear_daytime_cache():
 def get_civil_twilight(
     airport_icao_code,
     current_utc_time=None,
-    use_cache=True,
-    logger=None
+    use_cache=True
 ):
     """
     Gets the civil twilight time for the given airport
@@ -266,8 +264,7 @@ def get_civil_twilight(
             current_utc_time - cached_value[1]).total_seconds() / 3600
         if hours_since_sunrise > 24:
             is_cache_valid = False
-            safe_logging.safe_log_warning(
-                logger,
+            safe_log_warning(
                 "Twilight cache for {} had a HARD miss with delta={}".format(
                     airport_icao_code,
                     hours_since_sunrise))
@@ -295,8 +292,7 @@ def get_civil_twilight(
         json_result = __rest_session__.get(
             url, timeout=DEFAULT_READ_SECONDS).json()
     except Exception as ex:
-        safe_logging.safe_log_warning(
-            logger,
+        safe_log_warning(
             '~get_civil_twilight() => None; EX:{}'.format(ex))
         return []
 
@@ -585,8 +581,7 @@ def __is_station_ok_to_call__(
 
 
 def get_metars(
-    airport_icao_codes,
-    logger: Logger
+    airport_icao_codes
 ):
     """
     Returns the (RAW) METAR for the given station
@@ -619,15 +614,10 @@ def get_metars(
         # Fall back to an "INVALID" if everything else failed.
         else:
             try:
-                # safe_logging.safe_log(
-                #     logger,
-                #     "Getting WX for {}".format(identifier))
                 new_metars = get_metar_reports_from_web([identifier])
                 new_report = new_metars[identifier]
 
-                # safe_logging.safe_log(
-                #     logger,
-                #     "New  WX for {}={}".format(identifier, new_report))
+                safe_log("New  WX for {}={}".format(identifier, new_report))
 
                 if new_report is None or len(new_report) < 1:
                     continue
@@ -638,13 +628,10 @@ def get_metars(
                     new_report)
                 metars[identifier] = new_report
 
-                safe_logging.safe_log(
-                    logger,
-                    '{}:{}'.format(identifier, new_report))
+                safe_log('{}:{}'.format(identifier, new_report))
 
             except Exception as e:
-                safe_logging.safe_log_warning(
-                    logger,
+                safe_log_warning(
                     'get_metars, being set to INVALID EX:{}'.format(e))
 
                 metars[identifier] = INVALID
@@ -695,7 +682,6 @@ def get_metar_reports_from_web(
 
 def get_metar(
     airport_icao_code,
-    logger=None,
     use_cache=True
 ):
     """
@@ -709,7 +695,7 @@ def get_metar(
     """
 
     if airport_icao_code is None or len(airport_icao_code) < 1:
-        safe_logging.safe_log(logger, 'Invalid or empty airport code')
+        safe_logging.safe_log('Invalid or empty airport code')
 
     is_cache_valid, cached_metar = __is_cache_valid__(
         airport_icao_code,
@@ -724,11 +710,10 @@ def get_metar(
             return cached_metar
 
     try:
-        metars = get_metars([airport_icao_code], logger=logger)
+        metars = get_metars([airport_icao_code])
 
         if metars is None:
             safe_logging.safe_log(
-                logger,
                 'Get a None while attempting to get METAR for {}'.format(
                     airport_icao_code))
 
@@ -736,7 +721,6 @@ def get_metar(
 
         if airport_icao_code not in metars:
             safe_logging.safe_log(
-                logger,
                 'Got a result, but {} was not in results package'.format(
                     airport_icao_code))
 
@@ -745,8 +729,8 @@ def get_metar(
         return metars[airport_icao_code]
 
     except Exception as e:
-        safe_logging.safe_log(logger, 'get_metar got EX:{}'.format(e))
-        safe_logging.safe_log(logger, "")
+        safe_logging.safe_log('get_metar got EX:{}'.format(e))
+        safe_logging.safe_log("")
 
         return None
 
@@ -824,7 +808,7 @@ def get_metar_age(
 
         return current_time - metar_date
     except Exception as e:
-        print("Exception while getting METAR age:{}".format(e))
+        safe_log_warning("Exception while getting METAR age:{}".format(e))
         return None
 
 
@@ -900,8 +884,7 @@ def get_main_metar_components(
 
 
 def get_ceiling(
-    metar,
-    logger=None
+    metar
 ):
     """
     Returns the flight rules classification based on ceiling from a RAW metar.
@@ -927,7 +910,6 @@ def get_ceiling(
                     minimum_ceiling = ceiling
             except Exception as ex:
                 safe_logging.safe_log_warning(
-                    logger,
                     'Unable to decode ceiling component {} from {}. EX:{}'.format(
                         component,
                         metar,
@@ -1076,8 +1058,7 @@ def is_station_inoperative(
 
 def get_category(
     airport_icao_code: str,
-    metar: str,
-    logger=None
+    metar: str
 ) -> str:
     """
     Returns the flight rules classification based on the entire RAW metar.
@@ -1100,7 +1081,7 @@ def get_category(
         return INVALID
 
     vis = get_visibility(metar)
-    ceiling = get_ceiling_category(get_ceiling(metar, logger=logger))
+    ceiling = get_ceiling_category(get_ceiling(metar))
     if ceiling == INVALID or vis == INVALID:
         return INVALID
     if vis == SMOKE:
@@ -1116,7 +1097,7 @@ def get_category(
 
 
 if __name__ == '__main__':
-    safe_logging.safe_log(None, 'Starting self-test')
+    print('Starting self-test')
 
     airports_to_test = ['KW29', 'KMSN', 'KAWO', 'KOSH', 'KBVS', 'KDOESNTEXIST']
     starting_date_time = datetime.utcnow()
@@ -1126,7 +1107,7 @@ if __name__ == '__main__':
         'KVOK',
         'KVOK 251453Z 34004KT 10SM SCT008 OVC019 21/21 A2988 RMK AO2A SCT V BKN SLP119 53012')
 
-    metars = get_metars(airports_to_test, None)
+    metars = get_metars(airports_to_test)
     get_metar('KAWO', use_cache=False)
 
     light_times = get_civil_twilight('KAWO', starting_date_time)

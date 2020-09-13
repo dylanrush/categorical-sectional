@@ -1,6 +1,7 @@
 from http.server import HTTPServer
 
 from configuration import configuration_host
+from lib.safe_logging import safe_log
 
 CONFIGURATION_HOST_PORT = 8080
 
@@ -29,7 +30,7 @@ class WeatherMapServer(object):
         Starts the server.
         """
 
-        print("localhost = {}:{}".format(self.__local_ip__, self.__port__))
+        safe_log("localhost = {}:{}".format(self.__local_ip__, self.__port__))
 
         self.__httpd__.serve_forever()
 

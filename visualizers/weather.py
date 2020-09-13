@@ -1,7 +1,6 @@
 import lib.colors as colors_lib
 from configuration import configuration
 from data_sources import weather
-from lib.logger import Logger
 from renderers.debug import Renderer
 from visualizers.visualizer import BlinkingVisualizer, rgb_colors
 
@@ -226,10 +225,9 @@ class TemperatureVisualizer(BlinkingVisualizer):
     def __init__(
         self,
         renderer: Renderer,
-        stations: dict,
-        logger: Logger
+        stations: dict
     ):
-        super().__init__(renderer, stations, logger)
+        super().__init__(renderer, stations)
 
     def render_station(
         self,
@@ -243,7 +241,7 @@ class TemperatureVisualizer(BlinkingVisualizer):
             airport {string} -- The identifier of the station.
         """
 
-        metar = weather.get_metar(station, self.__logger__)
+        metar = weather.get_metar(station)
         temperature = weather.get_temperature(metar)
         color_to_render = get_color_by_temperature_celsius(temperature)
         final_color = self.__get_brightness_adjusted_color__(
@@ -260,10 +258,9 @@ class PrecipitationVisualizer(BlinkingVisualizer):
     def __init__(
         self,
         renderer: Renderer,
-        stations: dict,
-        logger: Logger
+        stations: dict
     ):
-        super().__init__(renderer, stations, logger)
+        super().__init__(renderer, stations)
 
     def render_station(
         self,
@@ -277,7 +274,7 @@ class PrecipitationVisualizer(BlinkingVisualizer):
             station {string} -- The identifier of the station.
         """
 
-        metar = weather.get_metar(station, self.__logger__)
+        metar = weather.get_metar(station)
         precipitation = weather.get_precipitation(metar)
         color_to_render, blink = get_color_by_precipitation(precipitation)
         final_color = self.__get_brightness_adjusted_color__(
@@ -303,10 +300,9 @@ class PressureVisualizer(BlinkingVisualizer):
     def __init__(
         self,
         renderer: Renderer,
-        stations: dict,
-        logger: Logger
+        stations: dict
     ):
-        super().__init__(renderer, stations, logger)
+        super().__init__(renderer, stations)
 
     def render_station(
         self,
@@ -320,7 +316,7 @@ class PressureVisualizer(BlinkingVisualizer):
             station {string} -- The identifier of the station.
         """
 
-        metar = weather.get_metar(station, self.__logger__)
+        metar = weather.get_metar(station)
         pressure = weather.get_pressure(metar)
         color_to_render = get_color_by_pressure(pressure)
         final_color = colors_lib.get_brightness_adjusted_color(

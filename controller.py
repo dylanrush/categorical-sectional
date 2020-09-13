@@ -40,8 +40,7 @@ import renderer
 from configuration import configuration, configuration_server
 from data_sources import weather
 from lib import colors as colors_lib
-from lib import safe_logging
-from lib.logger import LOGGER, Logger
+from lib import logger, safe_logging
 from lib.recurring_task import RecurringTask
 from visualizers import visualizers
 
@@ -69,7 +68,7 @@ def update_weather_for_all_stations():
     This does not update the conditions or category.
     """
 
-    weather.get_metars(stations.keys(), logger=LOGGER)
+    weather.get_metars(stations.keys())
 
 
 def __get_dimmed_color__(
@@ -146,9 +145,7 @@ def render_thread():
     Main logic loop for rendering the lights.
     """
 
-    safe_logging.safe_log(
-        LOGGER,
-        "Starting rendering thread")
+    safe_logging.safe_log("Starting rendering thread")
 
     tic = time.perf_counter()
     toc = time.perf_counter()
@@ -180,7 +177,7 @@ def render_thread():
             if show_debug_pixels:
                 for index in range(renderer.pixel_count):
                     station = get_station_by_led(index)
-                    LOGGER.log_info_message('[{}/{}]={}'.format(
+                    safe_logging.safe_log('[{}/{}]={}'.format(
                         station,
                         index,
                         renderer.pixels[index]))
@@ -191,9 +188,7 @@ def render_thread():
         except KeyboardInterrupt:
             quit()
         except Exception as ex:
-            safe_logging.safe_log(
-                LOGGER,
-                ex)
+            safe_logging.safe_log(ex)
 
 
 def wait_for_all_stations():
@@ -204,10 +199,9 @@ def wait_for_all_stations():
 
     for airport in stations:
         try:
-            weather.get_metar(airport, logger=LOGGER)
+            weather.get_metar(airport)
         except Exception as ex:
             safe_logging.safe_log_warning(
-                LOGGER,
                 "Error while initializing with airport={}, EX={}".format(airport, ex))
 
     return True
@@ -239,20 +233,13 @@ def __get_test_cycle_colors__() -> list:
     return colors_to_init
 
 
-def __test_all_leds__(
-    logger: Logger
-):
+def __test_all_leds__():
     """
     Test all of the LEDs, independent of the configuration
     to make sure the wiring is correct and that none have failed.
-
-    Arguments:
-        logger {Logger} -- The logger being used.
     """
     for color in __get_test_cycle_colors__():
-        safe_logging.safe_log(
-            logger,
-            "Setting to {}".format(color))
+        safe_logging.safe_log("Setting to {}".format(color))
         __all_leds_to_color__(color)
         time.sleep(0.5)
 
@@ -260,13 +247,11 @@ def __test_all_leds__(
 if __name__ == '__main__':
     # Start loading the METARs in the background
     # while going through the self-test
-    safe_logging.safe_log(
-        LOGGER,
-        "Initialize weather for all airports")
+    safe_logging.safe_log("Initialize weather for all airports")
 
-    weather.get_metars(stations.keys(), logger=LOGGER)
+    weather.get_metars(stations.keys())
 
-    __test_all_leds__(LOGGER)
+    __test_all_leds__()
 
     web_server = configuration_server.WeatherMapServer()
 
@@ -276,7 +261,7 @@ if __name__ == '__main__':
         "rest_host",
         0.1,
         web_server.run,
-        LOGGER,
+        logger.LOGGER,
         True)
 
     wait_for_all_stations()

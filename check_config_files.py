@@ -1,23 +1,17 @@
 # Self-Test file that makes sure all
 # off the station identifiers are OK.
 
-import logging
 import time
 
 from configuration import configuration
 from data_sources import weather
 from lib import safe_logging
-from lib.logger import Logger
-
-python_logger = logging.getLogger("check_config_files")
-python_logger.setLevel(logging.DEBUG)
-LOGGER = Logger(python_logger)
 
 
 def terminal_error(
     error_message
 ):
-    safe_logging.safe_log_warning(LOGGER, error_message)
+    safe_logging.safe_log_warning(error_message)
     exit(0)
 
 
@@ -33,9 +27,7 @@ if len(airport_render_config) == 0:
 stations_unable_to_fetch_weather = []
 
 for station_id in airport_render_config:
-    safe_logging.safe_log(
-        LOGGER,
-        'Checking configuration for {}'.format(station_id))
+    safe_logging.safe_log('Checking configuration for {}'.format(station_id))
 
     led_index = airport_render_config[station_id]
 
@@ -60,12 +52,11 @@ for station_id in airport_render_config:
                 e))
 
     # Validate that the station can have weather fetched
-    metar = weather.get_metar(station_id, logger=LOGGER)
+    metar = weather.get_metar(station_id)
 
     if metar is None or weather.INVALID in metar:
         stations_unable_to_fetch_weather.append(station_id)
         safe_logging.safe_log_warning(
-            LOGGER,
             'Unable to fetch weather for {}/{}'.format(
                 station_id,
                 led_index))
@@ -85,20 +76,17 @@ for station_id in airport_render_config:
                 station_id,
                 led_index))
 
-safe_logging.safe_log(LOGGER, '')
-safe_logging.safe_log(LOGGER, '')
-safe_logging.safe_log(LOGGER, '-------------------------')
+safe_logging.safe_log('')
+safe_logging.safe_log('')
+safe_logging.safe_log('-------------------------')
 safe_logging.safe_log(
-    LOGGER,
     'Finished testing configuration files. No fatal issues were found.')
-safe_logging.safe_log(LOGGER, '')
+safe_logging.safe_log('')
 safe_logging.safe_log(
-    LOGGER,
     'Unable to fetch the weather for the following stations:')
 
 for station in stations_unable_to_fetch_weather:
-    safe_logging.safe_log(LOGGER, '\t {}'.format(station))
+    safe_logging.safe_log('\t {}'.format(station))
 
 safe_logging.safe_log(
-    LOGGER,
     'Please check the station identifier. The station may be out of service, temporarily down, or may not exist.')

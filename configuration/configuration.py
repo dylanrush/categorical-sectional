@@ -8,6 +8,7 @@ import unicodedata
 from pathlib import Path
 
 from lib import local_debug
+from lib.safe_logging import safe_log, safe_log_warning
 
 if local_debug.is_debug():
     HIGH = 1
@@ -84,8 +85,8 @@ def __get_resolved_filepath__(
         str -- The fully resolved filepath
     """
 
-    print("Attempting to resolve '{}'".format(filename))
-    print("__file__='{}'".format(__file__))
+    safe_log("Attempting to resolve '{}'".format(filename))
+    safe_log("__file__='{}'".format(__file__))
 
     try:
         raw_path = filename
@@ -95,20 +96,21 @@ def __get_resolved_filepath__(
                 os.path.dirname(os.path.abspath(__file__)),
                 filename)
         else:
-            print("Attempting to expand user pathing.")
+            safe_log("Attempting to expand user pathing.")
             raw_path = Path(os.path.expanduser(filename))
 
             raw_path = str(raw_path)
 
-        print("Before normalization path='{}'".format(raw_path))
+        safe_log("Before normalization path='{}'".format(raw_path))
 
         normalized_path = os.path.normpath(raw_path)
 
-        print("Normalized path='{}'".format(raw_path))
+        safe_log("Normalized path='{}'".format(raw_path))
 
         return normalized_path
     except Exception as ex:
-        print("__get_resolved_filepath__:Attempted to resolve. got EX={}".format(ex))
+        safe_log(
+            "__get_resolved_filepath__:Attempted to resolve. got EX={}".format(ex))
         return None
 
 
@@ -141,7 +143,8 @@ def __load_config_file__(
 
             return configuration
     except Exception as ex:
-        print("Error while trying to load {}: EX={}".format(config_filename, ex))
+        safe_log_warning(
+            "Error while trying to load {}: EX={}".format(config_filename, ex))
         return {}
 
 
@@ -173,43 +176,43 @@ def __write_user_configuration__(
         bool -- True if the configuration was written to disk
     """
     try:
-        print("Starting to write file.")
+        safe_log("Starting to write file.")
 
         full_filename = None
 
         try:
             full_filename = __get_resolved_filepath__(__USER_CONFIG_FILE__)
-            print("full_filename=`{}`".format(full_filename))
+            safe_log("full_filename=`{}`".format(full_filename))
         except Exception:
             pass
 
         if full_filename is None:
-            print("Unable to resolve, using relative path + name instead.")
+            safe_log("Unable to resolve, using relative path + name instead.")
             full_filename = __USER_CONFIG_FILE__
 
         directory = os.path.dirname(full_filename)
-        print("directory=`{}`".format(directory))
+        safe_log("directory=`{}`".format(directory))
 
         if not os.path.exists(directory):
             try:
-                print("Attempting to create directory `{}`".format(directory))
+                safe_log("Attempting to create directory `{}`".format(directory))
                 os.mkdir(directory)
             except Exception as ex:
-                print("While attempting to create directory, EX={}".format(ex))
+                safe_log("While attempting to create directory, EX={}".format(ex))
 
         with open(str(full_filename), "w") as config_file:
-            print("Opened `{}` for write.".format(full_filename))
+            safe_log("Opened `{}` for write.".format(full_filename))
 
             config_text = json.dumps(config, indent=4, sort_keys=True)
-            print("config_text=`{}`".format(config_text))
+            safe_log("config_text=`{}`".format(config_text))
 
             config_file.write(config_text)
 
-            print("Finished writing file.")
+            safe_log("Finished writing file.")
 
             return True
     except Exception as ex:
-        print(
+        safe_log(
             "Error while trying to write {}: EX={}".format(
                 __USER_CONFIG_FILE__,
                 ex))

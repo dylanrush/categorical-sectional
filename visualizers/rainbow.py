@@ -1,5 +1,4 @@
 from configuration import configuration
-from lib.logger import Logger
 from renderers.debug import Renderer
 from visualizers.visualizer import Visualizer
 
@@ -32,10 +31,9 @@ class LightCycleVisualizer(Visualizer):
     def __init__(
         self,
         renderer: Renderer,
-        stations: dict,
-        logger: Logger
+        stations: dict
     ):
-        super().__init__(renderer, stations, logger)
+        super().__init__(renderer, stations)
 
     def update(
         self,
@@ -58,10 +56,9 @@ class RainbowVisualizer(Visualizer):
     def __init__(
         self,
         renderer: Renderer,
-        stations: dict,
-        logger: Logger
+        stations: dict
     ):
-        super().__init__(renderer, stations, logger)
+        super().__init__(renderer, stations)
 
     def update(
         self,

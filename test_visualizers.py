@@ -225,7 +225,7 @@ def test_get_condition_from_metar(
     'VFR'
     """
     station = weather.get_station_from_metar(metar)
-    return weather.get_category(station, metar, None)
+    return weather.get_category(station, metar)
 
 
 def test_get_color_from_condition(

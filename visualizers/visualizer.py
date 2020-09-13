@@ -4,7 +4,7 @@ from datetime import datetime
 from configuration import configuration
 from data_sources import weather
 from lib import colors as colors_lib
-from lib.logger import Logger
+from lib import safe_logging
 from renderers.debug import Renderer
 
 rgb_colors = colors_lib.get_colors()
@@ -138,14 +138,12 @@ class Visualizer(object):
     def __init__(
         self,
         renderer: Renderer,
-        stations: dict,
-        logger: Logger
+        stations: dict
     ):
         super().__init__()
 
         self.__renderer__ = renderer
         self.__stations__ = stations
-        self.__logger__ = logger
 
     def __get_brightness_adjusted_color__(
         self,
@@ -192,10 +190,9 @@ class BlinkingVisualizer(Visualizer):
     def __init__(
         self,
         renderer: Renderer,
-        stations: dict,
-        logger: Logger
+        stations: dict
     ):
-        super().__init__(renderer, stations, logger)
+        super().__init__(renderer, stations)
 
     def render_station(
         self,
@@ -209,7 +206,6 @@ class BlinkingVisualizer(Visualizer):
 
         Args:
             renderer (Renderer): [description]
-            logger (Logger): [description]
             airport (str): [description]
             is_blink (bool, optional): [description]. Defaults to False.
         """
@@ -235,9 +231,10 @@ class BlinkingVisualizer(Visualizer):
                     station,
                     is_blink)
             except Exception as ex:
-                if self.__logger__ is not None:
-                    self.__logger__.log_warning_message(
-                        'Catch-all error in render_station_displays of {} EX={}'.format(station, ex))
+                safe_logging.safe_log_warning(
+                    'Catch-all error in render_station_displays of {} EX={}'.format(
+                        station,
+                        ex))
 
         self.__renderer__.show()
 

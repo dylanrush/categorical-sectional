@@ -1,5 +1,6 @@
 import lib.local_debug as local_debug
 from configuration import configuration
+from lib.safe_logging import safe_log
 
 if local_debug.is_debug():
     from renderers import debug
@@ -36,7 +37,7 @@ def get_renderer(
         pixel_count = configuration.CONFIG[configuration.PIXEL_COUNT_KEY]
         gpio_pin = configuration.CONFIG[configuration.GPIO_PIN_KEY]
 
-        print("Setting up WS281x on Pin{} for {} lights".format(
+        safe_log("Setting up WS281x on Pin{} for {} lights".format(
             gpio_pin,
             pixel_count))
 

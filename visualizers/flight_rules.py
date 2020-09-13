@@ -3,13 +3,11 @@ from configuration import configuration
 from data_sources import weather
 from lib import colors as colors_lib
 from lib import safe_logging
-from lib.logger import Logger
 from renderers.debug import Renderer
 from visualizers.visualizer import BlinkingVisualizer, rgb_colors
 
 
 def get_airport_category(
-    logger: Logger,
     airport: str,
     metar: str
 ) -> str:
@@ -30,14 +28,12 @@ def get_airport_category(
             is_inop = weather.is_station_inoperative(metar)
 
             category = weather.INOP if is_inop\
-                else weather.get_category(airport, metar, logger=logger)
+                else weather.get_category(airport, metar)
         except Exception as e:
             safe_logging.safe_log_warning(
-                logger,
                 "Exception while attempting to categorize METAR:{} EX:{}".format(metar, e))
     except Exception as e:
         safe_logging.safe_log(
-            logger,
             "Captured EX while attempting to get category for {} EX:{}".format(airport, e))
         category = weather.INVALID
 
@@ -103,7 +99,6 @@ def should_station_flash(
 
 
 def get_airport_condition(
-    logger: Logger,
     airport: str
 ) -> str:
     """
@@ -119,13 +114,12 @@ def get_airport_condition(
 
     try:
         metar = weather.get_metar(airport)
-        category = get_airport_category(logger, airport, metar)
+        category = get_airport_category(airport, metar)
         should_flash = should_station_flash(metar)
 
         return category, should_flash
     except Exception as ex:
         safe_logging.safe_log_warning(
-            logger,
             'set_airport_display() - {} - EX:{}'.format(airport, ex))
 
         return weather.INOP, True
@@ -143,9 +137,8 @@ class FlightRulesVisualizer(BlinkingVisualizer):
         self,
         renderer: Renderer,
         stations: dict,
-        logger: Logger
     ):
-        super().__init__(renderer, stations, logger)
+        super().__init__(renderer, stations)
 
     def render_station(
         self,
@@ -159,16 +152,15 @@ class FlightRulesVisualizer(BlinkingVisualizer):
 
         Args:
             renderer (Renderer): [description]
-            logger (Logger): [description]
             airport (str): [description]
             is_blink (bool, optional): [description]. Defaults to False.
         """
-        condition, blink = get_airport_condition(self.__logger__, station)
+        condition, blink = get_airport_condition(station)
         color_name_by_category = get_color_from_condition(condition)
         color_by_category = rgb_colors[color_name_by_category]
 
         if is_blink:
-            metar = weather.get_metar(station, self.__logger__)
+            metar = weather.get_metar(station)
             is_lightning = weather.is_lightning(metar)
 
             if is_lightning:
