@@ -365,7 +365,7 @@ def get_pixel_order():
             return PIXEL_ORDER_DEFAULT
 
         return value
-    except:
+    except Exception:
         return PIXEL_ORDER_DEFAULT
 
 
