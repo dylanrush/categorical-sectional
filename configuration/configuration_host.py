@@ -135,7 +135,7 @@ class ConfigurationHost(BaseHTTPRequestHandler):
         r'^/settings': {'GET': get_settings, 'PUT': set_settings, MEDIA_TYPE_KEY: MEDIA_TYPE_VALUE},
         r'^/view/next': {'GET': next_view, MEDIA_TYPE_KEY: MEDIA_TYPE_VALUE},
         r'^/view/previous': {'GET': previous_view, MEDIA_TYPE_KEY: MEDIA_TYPE_VALUE},
-        r'^/view': {'GET': current_view, MEDIA_TYPE_KEY: MEDIA_TYPE_VALUE}
+        r'^/view$': {'GET': current_view, MEDIA_TYPE_KEY: MEDIA_TYPE_VALUE}
     }
 
     def do_HEAD(
@@ -268,13 +268,31 @@ class ConfigurationHost(BaseHTTPRequestHandler):
         else:
             self.__handle_request__(route, method)
 
+    @staticmethod
+    def get_matching_route(
+        request_path: str
+    ) -> dict:
+        """
+        Given a request path, 
+
+        Args:
+            request_path (str): [description]
+
+        Returns:
+            dict: [description]
+        """
+        safe_log("REQ={}".format(request_path))
+
+        if request_path is None or len(request_path) < 1:
+            return None
+
+        for path, route in ConfigurationHost.ROUTES.items():
+            safe_log("COMPARING '{}' with '{}'".format(path, request_path))
+            if re.match(path, request_path):
+                safe_log("MATCHES:{}".format(path))
+                return route
+
     def get_route(
         self
     ):
-        safe_log("REQ={}".format(self.path))
-
-        for path, route in ConfigurationHost.ROUTES.items():
-            if re.match(path, self.path):
-                safe_log("MATCHES:{}".format(path))
-                return route
-        return None
+        return ConfigurationHost.get_matching_route(self.path)
