@@ -3,15 +3,13 @@ Handles fetching and decoding weather.
 """
 
 import csv
-import json
 import os
 import re
 import threading
 import urllib.request
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import requests
-
 from configuration import configuration
 from lib.colors import clamp
 from lib.safe_logging import safe_log, safe_log_warning
@@ -103,8 +101,8 @@ __airport_locations__ = __load_airport_data__()
 
 
 def __get_utc_datetime__(
-    datetime_string
-):
+    datetime_string: str
+) -> datetime:
     """
     Parses the RFC format datetime into something we can use.
 
@@ -119,8 +117,8 @@ def __get_utc_datetime__(
 
 
 def __set_cache__(
-    airport_icao_code,
-    cache,
+    station_icao_code: str,
+    cache: dict,
     value
 ):
     """
@@ -135,16 +133,16 @@ def __set_cache__(
 
     __cache_lock__.acquire()
     try:
-        cache[airport_icao_code] = (datetime.utcnow(), value)
+        cache[station_icao_code] = (datetime.utcnow(), value)
     finally:
         __cache_lock__.release()
 
 
 def __is_cache_valid__(
-    airport_icao_code,
-    cache,
-    cache_life_in_minutes=8
-):
+    station_icao_code: str,
+    cache: dict,
+    cache_life_in_minutes: int = 8
+) -> bool:
     """
     Returns TRUE and the cached value if the cached value
     can still be used.
@@ -166,13 +164,13 @@ def __is_cache_valid__(
     now = datetime.utcnow()
 
     try:
-        if airport_icao_code in cache:
-            time_since_last_fetch = now - cache[airport_icao_code][0]
+        if station_icao_code in cache:
+            time_since_last_fetch = now - cache[station_icao_code][0]
 
             if time_since_last_fetch is not None and (((time_since_last_fetch.total_seconds()) / 60.0) < cache_life_in_minutes):
-                return (True, cache[airport_icao_code][1])
+                return (True, cache[station_icao_code][1])
             else:
-                return (False, cache[airport_icao_code][1])
+                return (False, cache[station_icao_code][1])
     except Exception:
         pass
     finally:
@@ -182,8 +180,8 @@ def __is_cache_valid__(
 
 
 def get_faa_csv_identifier(
-    airport_icao_code
-):
+    station_icao_code: str
+) -> str:
     """
     Checks to see if the given identifier is in the FAA CSV file.
     If it is not, then checks to see if it is one of the airports
@@ -197,10 +195,10 @@ def get_faa_csv_identifier(
         airport_icao_code {string} -- The full identifier of the airport.
     """
 
-    if airport_icao_code is None:
+    if station_icao_code is None:
         return None
 
-    normalized_icao_code = airport_icao_code.upper()
+    normalized_icao_code = station_icao_code.upper()
 
     if normalized_icao_code in __airport_locations__:
         return normalized_icao_code
@@ -221,10 +219,10 @@ def get_faa_csv_identifier(
 
 
 def get_civil_twilight(
-    airport_icao_code,
-    current_utc_time=None,
-    use_cache=True
-):
+    station_icao_code: str,
+    current_utc_time: datetime = datetime.utcnow().replace(tzinfo=timezone.utc),
+    use_cache: bool = True
+) -> list:
     """
     Gets the civil twilight time for the given airport
 
@@ -241,11 +239,8 @@ def get_civil_twilight(
         5 - when it is full dark
     """
 
-    if current_utc_time is None:
-        current_utc_time = datetime.utcnow()
-
     is_cache_valid, cached_value = __is_cache_valid__(
-        airport_icao_code,
+        station_icao_code,
         __daylight_cache__,
         4 * 60)
 
@@ -257,14 +252,14 @@ def get_civil_twilight(
             is_cache_valid = False
             safe_log_warning(
                 "Twilight cache for {} had a HARD miss with delta={}".format(
-                    airport_icao_code,
+                    station_icao_code,
                     hours_since_sunrise))
             current_utc_time += timedelta(hours=1)
 
     if is_cache_valid and use_cache:
         return cached_value
 
-    faa_code = get_faa_csv_identifier(airport_icao_code)
+    faa_code = get_faa_csv_identifier(station_icao_code)
 
     if faa_code is None:
         return None
@@ -306,7 +301,7 @@ def get_civil_twilight(
             sunset,
             sunset_end]
         __set_cache__(
-            airport_icao_code,
+            station_icao_code,
             __daylight_cache__,
             sunrise_and_sunset)
 
@@ -316,11 +311,11 @@ def get_civil_twilight(
 
 
 def is_daylight(
-    airport_icao_code,
-    light_times,
-    current_utc_time=None,
-    use_cache=True
-):
+    station_icao_code: str,
+    light_times: list,
+    current_utc_time: datetime = datetime.utcnow().replace(tzinfo=timezone.utc),
+    use_cache: bool = True
+) -> bool:
     """
     Returns TRUE if the airport is currently in daylight
 
@@ -331,9 +326,6 @@ def is_daylight(
         boolean -- True if the airport is currently in daylight.
     """
 
-    if current_utc_time is None:
-        current_utc_time = datetime.utcnow()
-
     if light_times is not None and len(light_times) == 6:
         # Deal with day old data...
         hours_since_sunrise = (
@@ -341,7 +333,9 @@ def is_daylight(
 
         if hours_since_sunrise < 0:
             light_times = get_civil_twilight(
-                airport_icao_code, current_utc_time - timedelta(hours=24), False)
+                station_icao_code,
+                current_utc_time - timedelta(hours=24),
+                use_cache)
 
         if hours_since_sunrise > 24:
             return True
@@ -357,11 +351,11 @@ def is_daylight(
 
 
 def is_night(
-    airport_icao_code,
-    light_times,
-    current_utc_time=None,
-    use_cache=True
-):
+    station_icao_code: str,
+    light_times: list,
+    current_utc_time: datetime = datetime.utcnow().replace(tzinfo=timezone.utc),
+    use_cache: bool = True
+) -> bool:
     """
     Returns TRUE if the airport is currently in night
 
@@ -372,9 +366,6 @@ def is_night(
         boolean -- True if the airport is currently in night.
     """
 
-    if current_utc_time is None:
-        current_utc_time = datetime.utcnow()
-
     if light_times is not None:
         # Deal with day old data...
         hours_since_sunrise = (
@@ -382,9 +373,9 @@ def is_night(
 
         if hours_since_sunrise < 0:
             light_times = get_civil_twilight(
-                airport_icao_code,
+                station_icao_code,
                 current_utc_time - timedelta(hours=24),
-                False)
+                use_cache)
 
         if hours_since_sunrise > 24:
             return False
@@ -399,7 +390,11 @@ def is_night(
     return False
 
 
-def get_proportion_between_times(start, current, end):
+def get_proportion_between_times(
+    start: datetime,
+    current: datetime,
+    end: datetime
+) -> float:
     """
     Gets the "distance" (0.0 to 1.0) between the start and the end where the current time is.
     IE:
@@ -416,6 +411,12 @@ def get_proportion_between_times(start, current, end):
     Returns:
         float -- The amount of interpolaton for Current between Start and End
     """
+
+    if current < start:
+        return 0.0
+
+    if current > end:
+        return 1.0
 
     total_delta = (end - start).total_seconds()
     time_in = (current - start).total_seconds()
@@ -572,8 +573,8 @@ def __is_station_ok_to_call__(
 
 
 def get_metars(
-    airport_icao_codes
-):
+    airport_icao_codes: list
+) -> list:
     """
     Returns the (RAW) METAR for the given station
 
@@ -631,8 +632,8 @@ def get_metars(
 
 
 def get_metar_reports_from_web(
-    airport_icao_codes
-):
+    airport_icao_codes: list
+) -> list:
     """
     Calls to the web an attempts to gets the METARs for the requested station list.
 
@@ -672,9 +673,9 @@ def get_metar_reports_from_web(
 
 
 def get_metar(
-    airport_icao_code,
-    use_cache=True
-):
+    airport_icao_code: str,
+    use_cache: bool = True
+) -> str:
     """
     Returns the (RAW) METAR for the given station
 
@@ -741,6 +742,9 @@ def get_station_from_metar(
     if metar is None:
         return None
 
+    if len(metar) < 3:
+        return None
+
     try:
         tokens = metar.split(' ')
 
@@ -756,24 +760,12 @@ def get_station_from_metar(
     except Exception:
         return None
 
-    return None
 
-
-def get_metar_age(
-    metar
-):
-    """
-    Returns the age of the METAR
-
-    Arguments:
-        metar {string} -- The METAR to get the age from.
-
-    Returns:
-        timedelta -- The age of the metar, None if it can not be determined.
-    """
-
+def get_metar_timestamp(
+    metar: str,
+    current_time: datetime = datetime.utcnow().replace(tzinfo=timezone.utc)
+) -> datetime:
     try:
-        current_time = datetime.utcnow()
         metar_date = current_time - timedelta(days=31)
 
         if metar is not None and metar != INVALID:
@@ -789,13 +781,36 @@ def get_metar_age(
                 current_time.month,
                 day_number,
                 hour,
-                minute)
+                minute,
+                tzinfo=timezone.utc)
 
             # Assume that the report is from the past, and work backwards.
             days_back = 0
             while metar_date.day != day_number and days_back <= 31:
                 metar_date -= timedelta(days=1)
                 days_back += 1
+
+        return metar_date
+    except Exception:
+        return None
+
+
+def get_metar_age(
+    metar: str,
+    current_time: datetime = datetime.utcnow().replace(tzinfo=timezone.utc)
+) -> timedelta:
+    """
+    Returns the age of the METAR
+
+    Arguments:
+        metar {string} -- The METAR to get the age from.
+
+    Returns:
+        timedelta -- The age of the metar, None if it can not be determined.
+    """
+
+    try:
+        metar_date = get_metar_timestamp(metar, current_time)
 
         return current_time - metar_date
     except Exception as e:
