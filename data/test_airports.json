@@ -1,0 +1,10 @@
+{
+    "ws2801": [
+        {
+            "KLAX": { "neopixel": 0 }
+        },
+        {
+            "KVBG": { "neopixel": 1 }
+        }
+    ]
+}
