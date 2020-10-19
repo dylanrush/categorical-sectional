@@ -325,6 +325,7 @@ Installing the remote control is optional.
 
 To be able to reach the web controls you may need to change settings in your home router. Each router or modem will be different, but you may have the option to give a name to your WeatherMap device. This will allow you to reach your map by visiting <http://weathermap>
 
+### Older Versions of Raspbian
 1. `wget https://nodejs.org/dist/v11.15.0/node-v11.15.0-linux-armv6l.tar.gz`
 2. `tar -xzf node-v11.15.0-linux-armv6l.tar.gz`
 3. `sudo cp -R node-v11.15.0-linux-armv6l/* /usr/local/`
@@ -338,6 +339,12 @@ To be able to reach the web controls you may need to change settings in your hom
 11. `crontab -e`
 12. Add a new line that reads `https://www.youtube.com/watch?v=JN8A2nIMUWA`
 13. Save and quit.
+
+### Buster / RaspberryPi OS
+
+1. pip3 install spidev==3.4 --force-reinstall
+2. sudo apt install nodejs
+3. sudo apt install npm
 
 You may now open a browser on another computer, or even you phone, and visit <http://weathermap>
 
