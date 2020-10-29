@@ -1,6 +1,7 @@
 import lib.local_debug as local_debug
 from configuration import configuration
 from lib.safe_logging import safe_log
+from renderers.debug import Renderer
 
 if local_debug.is_debug():
     from renderers import debug
@@ -12,9 +13,7 @@ else:
     from renderers import debug
 
 
-def get_renderer(
-    airport_render_config: dict
-):
+def get_renderer() -> Renderer:
     """
     Returns the renderer to use based on the type of
     LED lights given in the config.
@@ -25,7 +24,7 @@ def get_renderer(
     """
 
     if local_debug.is_debug():
-        return debug.Renderer(configuration.CONFIG[configuration.PIXEL_COUNT_KEY])
+        return Renderer(configuration.CONFIG[configuration.PIXEL_COUNT_KEY])
 
     if configuration.get_mode() == configuration.WS2801:
         pixel_count = configuration.CONFIG[configuration.PIXEL_COUNT_KEY]
@@ -46,4 +45,4 @@ def get_renderer(
             gpio_pin,
             configuration.get_pixel_order())
 
-    return debug.Renderer(configuration.CONFIG[configuration.PIXEL_COUNT_KEY])
+    return Renderer(configuration.CONFIG[configuration.PIXEL_COUNT_KEY])
