@@ -62,6 +62,21 @@ class Renderer(object):
 
         self.pixels[pixel_index] = color
         self.__is_dirty__ = True
+    
+    def set_leds(
+        self,
+        pixel_list: list,
+        color: list
+    ):
+        """
+        Sets all of the pixels in the given list to the given color.
+
+        Args:
+            pixel_list (list): A list of pixel indices to set.
+            color (list): The color to set the pixels to.
+        """
+        for pixel_index in pixel_list:
+            self.set_led(pixel_index, color)
 
     def show(
         self
