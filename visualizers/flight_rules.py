@@ -173,6 +173,6 @@ class FlightRulesVisualizer(BlinkingVisualizer):
             station,
             color_by_category)
 
-        self.__renderer__.set_led(
+        self.__renderer__.set_leds(
             self.__stations__[station],
             color_to_render)

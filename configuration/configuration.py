@@ -484,10 +484,10 @@ def get_airport_configs():
         dictionary -- Airport identifier keying lighting configuration.
     """
 
-    return __load_airport_ws2801__(get_airport_file())
+    return __load_station_config__(get_airport_file())
 
 
-def __load_airport_ws2801__(
+def __load_station_config__(
     config_file: str
 ) -> dict:
     """
@@ -503,14 +503,18 @@ def __load_airport_ws2801__(
     out_airport_map = {}
 
     json_config = __load_config_file__(config_file)
-    airports = json_config[WS2801]
+    stations = json_config[WS2801]
 
-    for airport_data in airports:
+    for airport_data in stations:
         keylist = []
         keylist.extend(iter(airport_data.keys()))
         airport_code = keylist[0]
         normalized_code = airport_code.upper()
 
-        out_airport_map[normalized_code] = airport_data[airport_code]['neopixel']
+        if normalized_code not in out_airport_map:
+            out_airport_map[normalized_code] = []
+
+        out_airport_map[normalized_code].append(
+            airport_data[airport_code]['neopixel'])
 
     return out_airport_map

@@ -24,14 +24,8 @@
 #
 
 
-import json
-import logging
-import logging.handlers
-import re
-import sys
 import threading
 import time
-import urllib
 from datetime import datetime
 
 import lib.colors as colors_lib
@@ -59,7 +53,7 @@ if not local_debug.is_debug():
 stations = configuration.get_airport_configs()
 rgb_colors = colors_lib.get_colors()
 
-renderer = renderer.get_renderer(stations)
+renderer = renderer.get_renderer()
 
 
 def update_weather_for_all_stations():
@@ -99,7 +93,7 @@ def __get_dimmed_color__(
 
 
 def all_stations(
-    color
+    color: list
 ):
     """
     Sets all of the airports to the given color
@@ -109,8 +103,8 @@ def all_stations(
         of the color to set for ALL airports.
     """
 
-    [renderer.set_led(stations[airport], rgb_colors[color])
-        for airport in stations]
+    [renderer.set_leds(stations[station], rgb_colors[color])
+        for station in stations]
 
     renderer.show()
 
@@ -133,9 +127,9 @@ def get_station_by_led(
     Returns:
         str: The identifier of the station.
     """
-    for station in stations:
-        if stations[station] == index:
-            return station
+    for station_identifier in stations.keys():
+        if index in stations[station_identifier]:
+            return station_identifier
 
     return "UNK"
 
