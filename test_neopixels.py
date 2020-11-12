@@ -1,8 +1,16 @@
 # Simple test for NeoPixels on Raspberry Pi
+
+import sys
 import time
+
+from lib.local_debug import IS_PI
+
+if not IS_PI:
+    print("This utility can only be run on the Raspberry Pi")
+    sys.exit()
+
 import board
 import neopixel
-
 
 # Choose an open pin connected to the Data In of the NeoPixel strip, i.e. board.D18
 # NeoPixels must be connected to D10, D12, D18 or D21 to work.
@@ -49,6 +57,7 @@ def rainbow_cycle(wait):
             pixels[i] = wheel(pixel_index & 255)
         pixels.show()
         time.sleep(wait)
+
 
 print("Starting primary color and dimming test")
 

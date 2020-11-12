@@ -19,7 +19,7 @@ if not local_debug.IS_PI:
 airport_render_config = configuration.get_airport_configs()
 rgb_colors = colors.get_colors()
 
-renderer = renderer.get_renderer(airport_render_config)
+renderer = renderer.get_renderer()
 
 if __name__ == '__main__':
     # Start loading the METARs in the background
@@ -62,7 +62,7 @@ if __name__ == '__main__':
 
             input("Press Enter to continue...")
 
-            renderer.set_led(
+            renderer.set_leds(
                 airport_render_config[airport],
                 rgb_colors[weather.OFF])
 

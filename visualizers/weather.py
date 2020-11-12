@@ -2,7 +2,8 @@ import lib.colors as colors_lib
 from configuration import configuration
 from data_sources import weather
 from renderers.debug import Renderer
-from visualizers.visualizer import BlinkingVisualizer, rgb_colors
+
+from visualizers.visualizer import BlinkingVisualizer
 
 
 def celsius_to_fahrenheit(
@@ -248,7 +249,7 @@ class TemperatureVisualizer(BlinkingVisualizer):
             station,
             color_to_render)
 
-        self.__renderer__.set_led(
+        self.__renderer__.set_leds(
             self.__stations__[station],
             final_color)
 
@@ -286,7 +287,7 @@ class PrecipitationVisualizer(BlinkingVisualizer):
             final_color = colors_lib.get_brightness_adjusted_color(
                 final_color, 0.0)
 
-        self.__renderer__.set_led(
+        self.__renderer__.set_leds(
             self.__stations__[station],
             final_color)
 
@@ -323,6 +324,6 @@ class PressureVisualizer(BlinkingVisualizer):
             color_to_render,
             configuration.get_brightness_proportion())
 
-        self.__renderer__.set_led(
+        self.__renderer__.set_leds(
             self.__stations__[station],
             final_color)
