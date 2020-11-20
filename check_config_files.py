@@ -29,14 +29,15 @@ stations_unable_to_fetch_weather = []
 for station_id in airport_render_config:
     safe_logging.safe_log('Checking configuration for {}'.format(station_id))
 
-    led_index = airport_render_config[station_id]
+    led_indices = airport_render_config[station_id]
 
     # Validate the index for the LED is within bounds
-    if led_index < 0:
-        terminal_error(
-            'Found {} has an LED at a negative position {}'.format(
-                station_id,
-                led_index))
+    for led_index in led_indices:
+        if led_index < 0:
+            terminal_error(
+                'Found {} has an LED at a negative position {}'.format(
+                    station_id,
+                    led_index))
 
     # Validate that the station is in the CSV file
     try:
@@ -59,7 +60,7 @@ for station_id in airport_render_config:
         safe_logging.safe_log_warning(
             'Unable to fetch weather for {}/{}'.format(
                 station_id,
-                led_index))
+                led_indices))
 
     # Validate that the station can have Sunrise/Sunset fetched
     day_night_info = weather.get_civil_twilight(station_id)
@@ -68,13 +69,13 @@ for station_id in airport_render_config:
         terminal_error(
             'Unable to fetch day/night info for {}/{}'.format(
                 station_id,
-                led_index))
+                led_indices))
 
     if len(day_night_info) != 6:
         terminal_error(
             'Unknown issue fetching day/night info for {}/{}'.format(
                 station_id,
-                led_index))
+                led_indices))
 
 safe_logging.safe_log('')
 safe_logging.safe_log('')
