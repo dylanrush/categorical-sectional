@@ -16,7 +16,7 @@ if not local_debug.is_debug():
 setup(
     name='cateorical-sectional',
     version='1.9',
-    python_requires='>=3.5',
+    python_requires='>=3.7',
     description='VFR weathermap supporting Adafruit WS2801 lights.',
     url='https://github.com/JohnMarzulli/categorical-sectional',
     author='John Marzulli',

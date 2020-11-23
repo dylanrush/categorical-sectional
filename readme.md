@@ -338,7 +338,7 @@ To be able to reach the web controls you may need to change settings in your hom
 9. "Network Options" -> "Hostname" -> "OK"
 10. Set the name to `weathermap`
 11. `crontab -e`
-12. Add a new line that reads `https://www.youtube.com/watch?v=JN8A2nIMUWA`
+12. Add a new line that reads `@reboot python3 /home/pi/categorical-sectional/controller.py`
 13. Save and quit.
 
 ### Buster / RaspberryPi OS
