@@ -326,6 +326,7 @@ Installing the remote control is optional.
 To be able to reach the web controls you may need to change settings in your home router. Each router or modem will be different, but you may have the option to give a name to your WeatherMap device. This will allow you to reach your map by visiting <http://weathermap>
 
 ### Older Versions of Raspbian
+
 1. `wget https://nodejs.org/dist/v11.15.0/node-v11.15.0-linux-armv6l.tar.gz`
 2. `tar -xzf node-v11.15.0-linux-armv6l.tar.gz`
 3. `sudo cp -R node-v11.15.0-linux-armv6l/* /usr/local/`
@@ -355,14 +356,15 @@ From there you may adjust the map's brightness, the night time behavior, and mor
 This project uses "standard" airport coloring for flight rules category, along with some unique colors.
 
 Flight Rule | Color
------------ | --------------
-VFR         | Solid green    |
-MVFR        | Solid blue     |
-IFR         | Solid red      |
-LIFR        | Solid magenta  |
-Smoke       | Solid gray     |
-Night       | Solid yellow   |
-Error       | Blinking white |
+----------- | -------------------
+VFR         | Solid green        |
+MVFR        | Solid blue         |
+IFR         | Solid red          |
+LIFR        | Solid magenta      |
+Lightining  | Alternating yellow |
+Smoke       | Solid gray         |
+Night       | Solid yellow       |
+Error       | Blinking white     |
 
 ## Apendix
 
