@@ -11,7 +11,7 @@ A full tutorial on how to install the Operating System is available at: <https:/
 3. Choose the WiFi network that will be used when the project is completed.
 4. Choose "Raspbian" as the operating system.
 5. When it is finished, login with the username:pi password:raspberry
- 
+
 ### Raspberry Pi OS - Buster
 
 For "Buster" versions, there is an issue with a key piece of communication software used for WS2801 based maps.

@@ -35,23 +35,23 @@ The parts manifest lists a Raspberry Pi Zero due to its size and lower power con
 
 #### WS2801 Build (50 Lights)
 
-Description                                  | Link
--------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Raspberry Pi Zero W                          | <https://www.amazon.com/CanaKit-Raspberry-Wireless-Starter-Official/dp/B06XJQV162/ref=sr_1_7?s=electronics&ie=UTF8&qid=1528557992&sr=1-7&keywords=raspberry+pi+zero+w>
-5 volt, 4 amp power supply                   | <https://www.amazon.com/gp/product/B00MRGKPH8/ref=oh_aui_detailpage_o06_s00?ie=UTF8&psc=1>
-Barrel jack adapters                         | <https://www.amazon.com/gp/product/B01M4RBARQ/ref=oh_aui_detailpage_o06_s01?ie=UTF8&psc=1>
-Individually addressable LEDs (WS2801 based) | <https://www.amazon.com/12mm-Diffused-Digital-Pixels-Strand/dp/B073MZWBYS/ref=sr_1_1?ie=UTF8&qid=1528558371&sr=8-1&keywords=adafruit+ws2801>
-4 Pin JST SM Plugs                           | <https://www.amazon.com/Visdoll-Pairs-Female-Connector-Cable/dp/B075K48BD9/ref=sr_1_8?ie=UTF8&qid=1528559351&sr=8-8&keywords=4+Pin+JST+SM+Plug>
+| Description                                  | Link                                                                                                                                                                   |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Raspberry Pi Zero W                          | <https://www.amazon.com/CanaKit-Raspberry-Wireless-Starter-Official/dp/B06XJQV162/ref=sr_1_7?s=electronics&ie=UTF8&qid=1528557992&sr=1-7&keywords=raspberry+pi+zero+w> |
+| 5 volt, 4 amp power supply                   | <https://www.amazon.com/gp/product/B00MRGKPH8/ref=oh_aui_detailpage_o06_s00?ie=UTF8&psc=1>                                                                             |
+| Barrel jack adapters                         | <https://www.amazon.com/gp/product/B01M4RBARQ/ref=oh_aui_detailpage_o06_s01?ie=UTF8&psc=1>                                                                             |
+| Individually addressable LEDs (WS2801 based) | <https://www.amazon.com/12mm-Diffused-Digital-Pixels-Strand/dp/B073MZWBYS/ref=sr_1_1?ie=UTF8&qid=1528558371&sr=8-1&keywords=adafruit+ws2801>                           |
+| 4 Pin JST SM Plugs                           | <https://www.amazon.com/Visdoll-Pairs-Female-Connector-Cable/dp/B075K48BD9/ref=sr_1_8?ie=UTF8&qid=1528559351&sr=8-8&keywords=4+Pin+JST+SM+Plug>                        |
 
 #### WS281x Build (Supports up to 150 Lights)
 
-Description                 | Link
---------------------------- | -----------------------------------------------------------------------------------------------------------------------------------------------
-Raspberry Pi 3B+ W          | <https://www.amazon.com/CanaKit-Raspberry-Power-Supply-Listed/dp/B07BC6WH7V/ref=sr_1_3?dchild=1&keywords=pi+3b%2B&qid=1600757525&sr=8-3>
-5 volt, 10 amp power supply | <https://www.amazon.com/gp/product/B07CMM2BBR/ref=ppx_yo_dt_b_asin_title_o03_s00?ie=UTF8&psc=1>
-Quad Level Logic Shifter    | <https://www.amazon.com/gp/product/B01M4RBARQ/ref=oh_aui_detailpage_o06_s01?ie=UTF8&psc=1>
-NeoPixel strands            | <https://www.adafruit.com/product/4560>
-4 Pin JST SM Plugs          | <https://www.amazon.com/Visdoll-Pairs-Female-Connector-Cable/dp/B075K48BD9/ref=sr_1_8?ie=UTF8&qid=1528559351&sr=8-8&keywords=4+Pin+JST+SM+Plug>
+| Description                 | Link                                                                                                                                            |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Raspberry Pi 3B+ W          | <https://www.amazon.com/CanaKit-Raspberry-Power-Supply-Listed/dp/B07BC6WH7V/ref=sr_1_3?dchild=1&keywords=pi+3b%2B&qid=1600757525&sr=8-3>        |
+| 5 volt, 10 amp power supply | <https://www.amazon.com/gp/product/B07CMM2BBR/ref=ppx_yo_dt_b_asin_title_o03_s00?ie=UTF8&psc=1>                                                 |
+| Quad Level Logic Shifter    | <https://www.amazon.com/gp/product/B01M4RBARQ/ref=oh_aui_detailpage_o06_s01?ie=UTF8&psc=1>                                                      |
+| NeoPixel strands            | <https://www.adafruit.com/product/4560>                                                                                                         |
+| 4 Pin JST SM Plugs          | <https://www.amazon.com/Visdoll-Pairs-Female-Connector-Cable/dp/B075K48BD9/ref=sr_1_8?ie=UTF8&qid=1528559351&sr=8-8&keywords=4+Pin+JST+SM+Plug> |
 
 ### Upgrade Instructions
 
@@ -106,7 +106,8 @@ You do not need to include ALL of these values. Any values provided in this file
   "night_lights": true,
   "night_populated_yellow": false,
   "night_category_proportion": 0.05,
-  "brightness_proportion": 1.0
+  "brightness_proportion": 1.0,
+  "visualizer": 0
 }
 ```
 
@@ -118,12 +119,20 @@ Here is an example of using overriding values:
 {
   "airports_file": "~/weather_map/puget_sound_region.json",
   "blink_old_stations": false,
-  "night_category_proportion": 0.10,
+  "night_category_proportion": 0.1,
   "brightness_proportion": 0.5
 }
 ```
 
 In this example we are using the file `puget_sound_region.json` to define our mapping. This file is expected to be in the `/home/pi/weather_map` folder. We are also reducing the overall brightness (ever during the day) by 50% of what the lights are capable of.
+
+#### visualizer
+
+This tells the WeatherMap which pluggin to use to show the weather data. This allows the same weather data to be shown in different ways.
+
+The value of `0` is the default and shows you the "Flight Rules" visualization.
+
+Valid values are from 0 to 5 (inclusive)
 
 #### blink_old_stations
 
@@ -179,11 +188,11 @@ You may need to adjust `night_category_proportion` if you use this value. A low 
 
 This controls which type of LED system to use for controlling the lights.
 
-Value  | Description
------- | ----------------------------------------------------------------------------------
-ws2801 | Use WS2801 based light strands like those from AdaFruit
-ws281x | Use WS2811, WS2812, or WS2812B LEDs. These are branded as "NeoPixels" by AdaFruit.
-led    | Use standard LEDs that have a positive wire for each color and a common ground.
+| Value  | Description                                                                        |
+| ------ | ---------------------------------------------------------------------------------- |
+| ws2801 | Use WS2801 based light strands like those from AdaFruit                            |
+| ws281x | Use WS2811, WS2812, or WS2812B LEDs. These are branded as "NeoPixels" by AdaFruit. |
+| led    | Use standard LEDs that have a positive wire for each color and a common ground.    |
 
 #### pixel_count
 
@@ -307,85 +316,132 @@ To run it at boot, perform the following steps:
 1. Log into the device as the user "pi" with password "raspberry".
 2. Type "crontab -e"
 3. Select "Nano" (Option 1)
-4. Enter the following text at the _bottom_ of the file:
-
-  ```code
-  @reboot sleep 60 && python3 /home/pi/categorical-sectional/controller.py &
-  ```
-
+4. Enter the following text at the _bottom_ of the file: `@reboot sleep 60 && python3 /home/pi/categorical-sectional/controller.py &`
 5. Save the file and exit.
-
 6. sudo reboot now
 
 Capitalization counts. The map lights should come on with each boot now.
 
 ## Installing Node & Optional Config Server
 
-Installing the remote control is optional.
+Installing the remote control softyware is optional.
 
-To be able to reach the web controls you may need to change settings in your home router. Each router or modem will be different, but you may have the option to give a name to your WeatherMap device. This will allow you to reach your map by visiting <http://weathermap>
+For instructions, please read <media/remote_control.md>
 
-### Older Versions of Raspbian
+## Visualizers
 
-1. `wget https://nodejs.org/dist/v11.15.0/node-v11.15.0-linux-armv6l.tar.gz`
-2. `tar -xzf node-v11.15.0-linux-armv6l.tar.gz`
-3. `sudo cp -R node-v11.15.0-linux-armv6l/* /usr/local/`
-4. `sudo ln -s /usr/local/bin/node /usr/bin/node`
-5. `cd ~/categorical-sectional/MapConfig`
-6. `npm install`
-7. `node /home/pi/categorical-sectional/MapConfig/build/index.js`
-8. `sudo raspi-config`
-9. "Network Options" -> "Hostname" -> "OK"
-10. Set the name to `weathermap`
-11. `crontab -e`
-12. Add a new line that reads `@reboot python3 /home/pi/categorical-sectional/controller.py`
-13. Save and quit.
+### Flight Rules
 
-### Buster / RaspberryPi OS
+This is the default visualizer, and indicates the flight rules for a station based on the METAR.
 
-1. pip3 install spidev==3.4 --force-reinstall
-2. sudo apt install nodejs
-3. sudo apt install npm
+The color set uses the standard base, but with some extensions.
 
-You may now open a browser on another computer, or even you phone, and visit <http://weathermap>
+![!Flight Rules](./media/visualizer_flight_rules.jpg)
 
-From there you may adjust the map's brightness, the night time behavior, and more.
-
-## Colors
+#### Colors
 
 This project uses "standard" airport coloring for flight rules category, along with some unique colors.
 
-Flight Rule | Color
------------ | -------------------
-VFR         | Solid green        |
-MVFR        | Solid blue         |
-IFR         | Solid red          |
-LIFR        | Solid magenta      |
-Lightining  | Alternating yellow |
-Smoke       | Solid gray         |
-Night       | Solid yellow       |
-Error       | Blinking white     |
+| Flight Rule | Color          |
+| ----------- | -------------- |
+| VFR         | Solid green    |
+| MVFR        | Solid blue     |
+| IFR         | Solid red      |
+| LIFR        | Solid magenta  |
+| Smoke       | Solid gray     |
+| Night       | Solid yellow   |
+| Error       | Blinking white |
+
+This visualizer additional can indicate lightning.
+
+This is done by blinking the flight rule color with yellow on a one second interval.
+
+Please note that this visualizer DOES dim stations based on sunrise/sunset IF that mode is enabled.
+
+### Temperature
+
+This shows you the temperatures of the stations. Colors are blended from one decisions point to the next to give you a better idea of the temperature.
+
+| Temperature    | Color  |
+| -------------- | ------ |
+| None           | Off    |
+| 0F or colder   | Purple |
+| 20F            | Blue   |
+| 40F            | Green  |
+| 60F            | Yellow |
+| 80F            | Orange |
+| 100F or hotter | Red    |
+
+Please note that this visualizer DOES dim stations based on sunrise/sunset IF that mode is enabled.
+
+![Temperature](./media/visualizer_temperature.jpg)
+
+### Precipitation
+
+This shows you what the precipitation is for each station (if available)
+
+| Condition | Color      |
+| --------- | ---------- |
+| None      | Gray       |
+| Drizzle   | Light Blue |
+| Rain      | Blue       |
+| Snow      | White      |
+| Ice       | Light Gray |
+| Unknown   | Purple     |
+
+Please note that this visualizer DOES dim stations based on sunrise/sunset IF that mode is enabled.
+
+![Precipitation](./media/visualizer_precipitation.jpg)
+
+### Pressure
+
+This shows you the pressure (by inches of mercury) for the station if available.
+
+| Condition            | Color      |
+| -------------------- | ---------- |
+| Pressure unavailable | OFF        |
+| 29.8inHg or less     | Red        |
+| 29.92inHg            | Light Blue |
+| 30.2inHg or higher   | Blue       |
+
+The visualizer will blend colors between any of the thresholds to show the gradient across the map.
+
+![Pressure](./media/visualizer_pressure.jpg)
+
+### Rainbow
+
+This could also be called "Party Mode". It ignores all weather data and cycles the lights through a rainbow. Each light will be a slightly different color and will cycle on its own.
+
+![Rainbow](./media/visualizer_rainbow.jpg)
+
+### Light Cycle
+
+This mode cycles all of the stations through the spectrum, but all stations shift color in unison.
+
+![Light Cycle](./media/visualizer_light_cycle.jpg)
 
 ## Apendix
 
-<https://learn.adafruit.com/12mm-led-pixels/wiring> <https://tutorials-raspberrypi.com/how-to-control-a-raspberry-pi-ws2801-rgb-led-strip/> <https://www.raspberrypi.org/documentation/linux/usage/cron.md>
+<https://learn.adafruit.com/12mm-led-pixels/wiring>
+<https://tutorials-raspberrypi.com/how-to-control-a-raspberry-pi-ws2801-rgb-led-strip/>
+<https://www.raspberrypi.org/documentation/linux/usage/cron.md>
 
 ## Version History
 
-Version | Change
-------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-2.0     | Add a remote control app that allows for brightness, night effects, and more to be changed on the fly. Add support for WS2811 and WS2812 based lights. Major performance improvements for adressable RGB LEDs. Selectable visualizers. Removed support for hard wired GPIO based LEDs.
-1.10    | Add service that allows the configuration to be updated remotely without using the command line.
-1.9     | Add documentation about the upgrade process for existing installations. Add configuration to control if old data causes a light to blink or not.
-1.8     | Use the configuration files provided as a default base, and then source user configuration from the user directory.
-1.7     | Allow for the brightness of the lights to be dimmed. This affects both the daytime and nighttime colors.
-1.6     | Updated documentation, wiring self-check file that uses the configuration to exercise each weather station for all colors.
-1.5     | New options that expand the day/night lighting cycle. Allows for dimmed category colors to be used instead of "night yellow.
-1.4     | Changes to map initialization to help with bad airport identifiers. Improve handling of mismatch between four and three letter long identifiers when determining day/night cycle.
-1.3     | Performance improvements.
-1.2     | Migrated to Python 3.x
-1.1     | Day / Night cycle.
-1.0     | First release with addressable lights.
+| Version | Change                                                                                                                                                                                                                                                                                 |
+| ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.0     | Add a remote control app that allows for brightness, night effects, and more to be changed on the fly. Add support for WS2811 and WS2812 based lights. Major performance improvements for adressable RGB LEDs. Selectable visualizers. Removed support for hard wired GPIO based LEDs. |
+| 1.10    | Add service that allows the configuration to be updated remotely without using the command line.                                                                                                                                                                                       |
+| 1.9     | Add documentation about the upgrade process for existing installations. Add configuration to control if old data causes a light to blink or not.                                                                                                                                       |
+| 1.8     | Use the configuration files provided as a default base, and then source user configuration from the user directory.                                                                                                                                                                    |
+| 1.7     | Allow for the brightness of the lights to be dimmed. This affects both the daytime and nighttime colors.                                                                                                                                                                               |
+| 1.6     | Updated documentation, wiring self-check file that uses the configuration to exercise each weather station for all colors.                                                                                                                                                             |
+| 1.5     | New options that expand the day/night lighting cycle. Allows for dimmed category colors to be used instead of "night yellow.                                                                                                                                                           |
+| 1.4     | Changes to map initialization to help with bad airport identifiers. Improve handling of mismatch between four and three letter long identifiers when determining day/night cycle.                                                                                                      |
+| 1.3     | Performance improvements.                                                                                                                                                                                                                                                              |
+| 1.2     | Migrated to Python 3.x                                                                                                                                                                                                                                                                 |
+| 1.1     | Day / Night cycle.                                                                                                                                                                                                                                                                     |
+| 1.0     | First release with addressable lights.                                                                                                                                                                                                                                                 |
 
 ## Credits
 
