@@ -1,23 +1,17 @@
 # Self-Test file that makes sure all
 # off the station identifiers are OK.
 
-import logging
 import time
 
 from configuration import configuration
 from data_sources import weather
-from lib.logger import Logger
-from safe_logging import safe_log, safe_log_warning
-
-python_logger = logging.getLogger("check_config_files")
-python_logger.setLevel(logging.DEBUG)
-LOGGER = Logger(python_logger)
+from lib import safe_logging
 
 
 def terminal_error(
     error_message
 ):
-    safe_log_warning(LOGGER, error_message)
+    safe_logging.safe_log_warning(error_message)
     exit(0)
 
 
@@ -33,18 +27,17 @@ if len(airport_render_config) == 0:
 stations_unable_to_fetch_weather = []
 
 for station_id in airport_render_config:
-    safe_log(
-        LOGGER,
-        'Checking configuration for {}'.format(station_id))
+    safe_logging.safe_log('Checking configuration for {}'.format(station_id))
 
-    led_index = airport_render_config[station_id]
+    led_indices = airport_render_config[station_id]
 
     # Validate the index for the LED is within bounds
-    if led_index < 0:
-        terminal_error(
-            'Found {} has an LED at a negative position {}'.format(
-                station_id,
-                led_index))
+    for led_index in led_indices:
+        if led_index < 0:
+            terminal_error(
+                'Found {} has an LED at a negative position {}'.format(
+                    station_id,
+                    led_index))
 
     # Validate that the station is in the CSV file
     try:
@@ -60,15 +53,14 @@ for station_id in airport_render_config:
                 e))
 
     # Validate that the station can have weather fetched
-    metar = weather.get_metar(station_id, logger=LOGGER)
+    metar = weather.get_metar(station_id)
 
     if metar is None or weather.INVALID in metar:
         stations_unable_to_fetch_weather.append(station_id)
-        safe_log_warning(
-            LOGGER,
+        safe_logging.safe_log_warning(
             'Unable to fetch weather for {}/{}'.format(
                 station_id,
-                led_index))
+                led_indices))
 
     # Validate that the station can have Sunrise/Sunset fetched
     day_night_info = weather.get_civil_twilight(station_id)
@@ -77,22 +69,25 @@ for station_id in airport_render_config:
         terminal_error(
             'Unable to fetch day/night info for {}/{}'.format(
                 station_id,
-                led_index))
+                led_indices))
 
     if len(day_night_info) != 6:
         terminal_error(
             'Unknown issue fetching day/night info for {}/{}'.format(
                 station_id,
-                led_index))
+                led_indices))
 
-safe_log(LOGGER, '')
-safe_log(LOGGER, '')
-safe_log(LOGGER, '-------------------------')
-safe_log(LOGGER, 'Finished testing configuration files. No fatal issues were found.')
-safe_log(LOGGER, '')
-safe_log(LOGGER, 'Unable to fetch the weather for the following stations:')
+safe_logging.safe_log('')
+safe_logging.safe_log('')
+safe_logging.safe_log('-------------------------')
+safe_logging.safe_log(
+    'Finished testing configuration files. No fatal issues were found.')
+safe_logging.safe_log('')
+safe_logging.safe_log(
+    'Unable to fetch the weather for the following stations:')
 
 for station in stations_unable_to_fetch_weather:
-    safe_log(LOGGER, '\t {}'.format(station))
+    safe_logging.safe_log('\t {}'.format(station))
 
-safe_log(LOGGER, 'Please check the station identifier. The station may be out of service, temporarily down, or may not exist.')
+safe_logging.safe_log(
+    'Please check the station identifier. The station may be out of service, temporarily down, or may not exist.')

@@ -1,4 +1,40 @@
-import copy
+RED = 'RED'
+LIGHT_RED = 'LIGHT RED'
+GREEN = 'GREEN'
+BLUE = 'BLUE'
+LIGHT_BLUE = "LIGHT BLUE"
+GRAY = 'GRAY'
+LIGHT_GRAY = 'LIGHT GRAY'
+YELLOW = 'YELLOW'
+DARK_YELLOW = 'DARK YELLOW'
+WHITE = 'WHITE'
+MAGENTA = "MAGENTA"
+PURPLE = "PURPLE"
+ORANGE = "ORANGE"
+OFF = "OFF"
+
+
+def get_colors() -> dict:
+    """
+    Returns the RGB colors based on the config.
+    """
+
+    return {
+        RED: (255, 0, 0),
+        LIGHT_RED: (255, 105, 180),
+        GREEN: (0, 255, 0),
+        BLUE: (0, 0, 255),
+        LIGHT_BLUE: (51, 255, 255),
+        MAGENTA: (255, 0, 255),
+        OFF: (0, 0, 0),
+        GRAY: (50, 50, 50),
+        LIGHT_GRAY: (128, 128, 128),
+        YELLOW: (255, 255, 0),
+        DARK_YELLOW: (20, 20, 0),
+        WHITE: (255, 255, 255),
+        PURPLE: (148, 0, 211),
+        ORANGE: (255, 126, 0)
+    }
 
 
 def clamp(
@@ -63,19 +99,19 @@ def interpolate(
     >>> interpolate(20, 10, 0.5)
     15
     >>> interpolate(255, 0, 0.0)
-    0
+    255
     >>> interpolate(255, 0, 0)
-    0
+    255
     >>> interpolate(255, 0, 1)
-    255
-    >>> interpolate(255, 0, 1.5)
-    255
-    >>> interpolate(255, 0, -0.5)
     0
+    >>> interpolate(255, 0, 1.5)
+    0
+    >>> interpolate(255, 0, -0.5)
+    255
     >>> interpolate(255, 0, 0.1)
-    25
-    >>> interpolate(255, 0, 0.9)
     229
+    >>> interpolate(255, 0, 0.9)
+    25
 
     Returns:
         float -- The number that is the given amount between the left and right.
@@ -84,11 +120,6 @@ def interpolate(
     left_value = clamp(0.0, left_value, 255.0)
     right_value = clamp(0.0, right_value, 255.0)
     proportion = clamp(0.0, proportion, 1.0)
-
-    if right_value < left_value:
-        swap = left_value
-        left_value = right_value
-        right_value = swap
 
     return clamp(
         0,
@@ -148,6 +179,28 @@ def get_color_mix(
         proportion)) for index in indices]
 
     return new_color
+
+
+def get_brightness_adjusted_color(
+    color_to_render: list,
+    brightness_adjustment: float
+) -> list:
+    if brightness_adjustment < 0.0:
+        brightness_adjustment = 0.0
+
+    final_color = []
+
+    for color in color_to_render:
+        reduced_color = float(color) * brightness_adjustment
+
+        # Some colors are floats, some are integers.
+        # Make sure we keep everything the same.
+        if isinstance(color, int):
+            reduced_color = int(reduced_color)
+
+        final_color.append(reduced_color)
+
+    return final_color
 
 
 if __name__ == '__main__':

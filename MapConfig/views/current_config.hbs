@@ -1,0 +1,54 @@
+<h2>NEW CONFIG</h2>
+<p>
+<form action="/" method="POST">
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Value</th>
+        </tr>
+        <tr>
+            <td>Light Mode</td>
+            <td>{{configJson.mode}}</td>
+        </tr>
+        <tr>
+            <td>Pixel Count</td>
+            <td>{{configJson.pixel_count}}</td>
+        </tr>
+        <tr>
+            <td>SPI Device</td>
+            <td>{{configJson.spi_device}}</td>
+        </tr>
+        <tr>
+            <td>SPI Port</td>
+            <td>{{configJson.spi_port}}</td>
+        </tr>
+        <tr>
+            <td>Airports File</td>
+            <td>{{configJson.airports_file}}</td>
+        </tr>
+        <tr>
+            <td>Blink Stations With Old Data</td>
+            <td>{{configJson.blink_old_stations}}</td>
+        </tr>
+        <tr>
+            <td>Civil Twilight / Night Effects</td>
+            <td>{{configJson.night_lights}}</td>
+        </tr>
+        <tr>
+            <td>Fade Stations To "Night Populated Yellow"</td>
+            <td>{{configJson.night_populated_yellow}}</td>
+        </tr>
+        <tr>
+            <td>Night Time Dimming Proportion</td>
+            <td>{{configJson.night_category_proportion}}</td>
+        </tr>
+        <tr>
+            <td>Overall Brightness Adjustment</td>
+            <td>{{configJson.brightness_proportion}}</td>
+        </tr>
+    </table>
+    <br>
+</form>
+</p>
+<br>
+<p>Page load at {{time}}</p>

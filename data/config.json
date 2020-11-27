@@ -1,13 +1,14 @@
 {
   "mode": "ws2801",
   "pixel_count": 50,
-  "spi_device": 0,
   "spi_port": 0,
-  "pwm_frequency": 100,
+  "spi_device": 0,
+  "metar_station_inactive_minutes": 180,
   "airports_file": "../data/kawo_to_kosh.json",
   "blink_old_stations": true,
   "night_lights": true,
   "night_populated_yellow": false,
-  "night_category_proportion": 0.05,
-  "brightness_proportion": 1.0
+  "night_category_proportion": 0.1,
+  "brightness_proportion": 0.6,
+  "visualizer": 0
 }
