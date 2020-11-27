@@ -292,7 +292,7 @@ You may use it from a bash command-line:
 ```bash
 cd ~
 cd categorical-sectional
-python3 check_config_files_wiring.py
+python3 check_config_files.py
 ```
 
 This tool may be also run from a Windows, Linux, or Mac based machine.
