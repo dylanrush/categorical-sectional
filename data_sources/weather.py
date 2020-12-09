@@ -1024,11 +1024,11 @@ def get_ceiling_category(
         string -- The flight rules classification.
     """
 
-    if ceiling < 500:
+    if ceiling <= 500:
         return LIFR
-    if ceiling < 1000:
+    if ceiling <= 1000:
         return IFR
-    if ceiling < 3000:
+    if ceiling <= 3000:
         return MVFR
     return VFR
 
