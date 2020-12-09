@@ -314,11 +314,14 @@ Not being able to fetch a weather report is not considered a fatal error if othe
 To run it at boot, perform the following steps:
 
 1. Log into the device as the user "pi" with password "raspberry".
-2. Type "crontab -e"
-3. Select "Nano" (Option 1)
-4. Enter the following text at the _bottom_ of the file: `@reboot sleep 60 && python3 /home/pi/categorical-sectional/controller.py &`
-5. Save the file and exit.
-6. sudo reboot now
+1. `sudo apt install rng-tools`
+1. `systemctl enable rng-tools`
+1. `systemctl start rng-tools`
+1. `crontab -e`
+1. Select "Nano" (Option 1)
+1. Enter the following text at the _bottom_ of the file: `@reboot sleep 90 && python3 /home/pi/categorical-sectional/controller.py &`
+1. Save the file and exit.
+1. sudo reboot now
 
 Capitalization counts. The map lights should come on with each boot now.
 
