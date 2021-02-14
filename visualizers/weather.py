@@ -1,3 +1,4 @@
+import random
 from datetime import datetime
 from typing import Tuple
 
@@ -129,6 +130,12 @@ def get_color_by_temperature_celsius(
     return colors_by_name[colors_lib.RED]
 
 
+def get_twinkle_proportion() -> float:
+    value = random.random()
+
+    return value
+
+
 def get_pulse_interval_proportion(
     current_time: datetime,
     pulse_interval: float
@@ -182,9 +189,14 @@ def get_color_by_precipitation(
         # So lets interpolate the color
         # between "nothing" and snow
         # such that we use the seconds
-        proportion = get_pulse_interval_proportion(
-            datetime.utcnow(),
-            pulse_interval)
+        if configuration.get_snow_twinkle():
+            proportion = get_twinkle_proportion()
+        elif configuration.get_snow_pulse():
+            proportion = get_pulse_interval_proportion(
+                datetime.utcnow(),
+                pulse_interval)
+        else:
+            proportion = 1.0
 
         color = colors_lib.get_color_mix(
             no_precip,

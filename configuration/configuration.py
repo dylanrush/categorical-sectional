@@ -33,6 +33,8 @@ SPI_PORT_KEY = "spi_port"
 GPIO_PIN_KEY = "gpio_pin"
 AIRPORTS_FILE_KEY = "airports_file"
 BLINK_OLD_STATIONS_KEY = "blink_old_stations"
+SNOW_PULSE_KEY = "snow_pulse"
+SNOW_TWINKLE_KEY = "snow_twinkle"
 NIGHT_LIGHTS_KEY = "night_lights"
 NIGHT_POPULATED_YELLOW_KEY = "night_populated_yellow"
 NIGHT_CATEGORY_PROPORTION_KEY = "night_category_proportion"
@@ -389,6 +391,12 @@ def get_metar_station_inactive_minutes() -> int:
     """
     return __get_number_config_value__(METAR_STATION_INACTIVE_MINUTES_KEY, DEFAULT_METAR_STATION_INACTIVE_MINUTES)
 
+
+def get_snow_pulse():
+    return __get_boolean_config_value__(SNOW_PULSE_KEY, False)
+
+def get_snow_twinkle():
+    return __get_boolean_config_value__(SNOW_TWINKLE_KEY, True)
 
 def get_night_lights():
     """
