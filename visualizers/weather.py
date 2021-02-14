@@ -130,7 +130,8 @@ def get_color_by_temperature_celsius(
 
 
 def get_color_by_precipitation(
-    precipitation: str
+    precipitation: str,
+    pulse_interval: float = 4.0
 ) -> Tuple[list, bool]:
     """
     Given a precipitation category, return a color
@@ -162,8 +163,15 @@ def get_color_by_precipitation(
         # So lets interpolate the color
         # between "nothing" and snow
         # such that we use the seconds
+        half_interval = pulse_interval / 2.0
         seconds = (datetime.utcnow().microsecond / 1000000.0)
-        proportion = (seconds % 3)
+        mod_proportion = (seconds % pulse_interval)
+        proportion = 1.0
+
+        if mod_proportion >= half_interval:
+            proportion = (mod_proportion - half_interval) / half_interval
+        else:
+            proportion = mod_proportion / half_interval
 
         color = colors_lib.get_color_mix(
             no_precip,
