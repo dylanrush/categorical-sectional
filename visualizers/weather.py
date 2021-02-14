@@ -150,7 +150,7 @@ def get_pulse_interval_proportion(
 
 def get_color_by_precipitation(
     precipitation: str,
-    pulse_interval: float = 4.0
+    pulse_interval: float = 2.0
 ) -> Tuple[list, bool]:
     """
     Given a precipitation category, return a color
