@@ -309,6 +309,12 @@ class PrecipitationVisualizer(BlinkingVisualizer):
             self.__stations__[station],
             final_color)
 
+    def __get_update_interval__(
+        self
+    ) -> float:
+        # Immediate update
+        return 0.0
+
 
 class PressureVisualizer(BlinkingVisualizer):
     """
