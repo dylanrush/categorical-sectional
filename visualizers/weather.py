@@ -129,6 +129,25 @@ def get_color_by_temperature_celsius(
     return colors_by_name[colors_lib.RED]
 
 
+def get_pulse_interval_proportion(
+    current_time: datetime,
+    pulse_interval: float
+) -> float:
+    seconds = current_time.second + (current_time.microsecond / 1000000.0)
+    seconds_in_interval = seconds % pulse_interval
+    half_interval = pulse_interval / 2.0
+
+    proportion = seconds_in_interval / half_interval
+
+    if proportion >= 1.0:
+        # 1.2 to 0.2
+        proportion = proportion - 1.0
+        # 0.2 to 0.8
+        proportion = 1.0 - proportion
+
+    return proportion
+
+
 def get_color_by_precipitation(
     precipitation: str,
     pulse_interval: float = 4.0
@@ -163,15 +182,9 @@ def get_color_by_precipitation(
         # So lets interpolate the color
         # between "nothing" and snow
         # such that we use the seconds
-        half_interval = pulse_interval / 2.0
-        seconds = (datetime.utcnow().microsecond / 1000000.0)
-        mod_proportion = (seconds % pulse_interval)
-        proportion = 1.0
-
-        if mod_proportion >= half_interval:
-            proportion = (mod_proportion - half_interval) / half_interval
-        else:
-            proportion = mod_proportion / half_interval
+        proportion = get_pulse_interval_proportion(
+            datetime.utcnow(),
+            pulse_interval)
 
         color = colors_lib.get_color_mix(
             no_precip,
