@@ -393,10 +393,18 @@ def get_metar_station_inactive_minutes() -> int:
 
 
 def get_snow_pulse():
+    """
+    Do stations with snow in the precipitation pulse?
+    """
     return __get_boolean_config_value__(SNOW_PULSE_KEY, False)
 
+
 def get_snow_twinkle():
+    """
+    Do stations with snow in the precipitation view twinkle?
+    """
     return __get_boolean_config_value__(SNOW_TWINKLE_KEY, True)
+
 
 def get_night_lights():
     """
