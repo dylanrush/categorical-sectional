@@ -105,6 +105,8 @@ You do not need to include ALL of these values. Any values provided in this file
   "blink_old_stations": true,
   "night_lights": true,
   "night_populated_yellow": false,
+  "snow_pulse": false,
+  "snow_twinkle": true,
   "night_category_proportion": 0.05,
   "brightness_proportion": 1.0,
   "visualizer": 0
@@ -159,6 +161,19 @@ Set this to `true` if you would like the day/night transition to show stations t
 This will transition/fade into yellow from the standard category color.
 
 Setting this to `false` will result in the category color fading. The amount the category fades is determined by `night_category_proportion`
+
+
+#### snow_pulse
+
+Set this to `true` if you would like stations that are reporting snow to pulse between a low light and white while using the Precipitation visualizer. This is overriden by the twinkle option.
+
+Defaults to `false`.
+
+#### snow_twinkle
+
+Set this to `true` if you would like stations that are reporting snow to twinkle between a low light and white while using the Precipitation visualizer.
+
+Defaults to `true`.
 
 #### night_category_proportion
 
@@ -391,6 +406,9 @@ This shows you what the precipitation is for each station (if available)
 | Snow      | White      |
 | Ice       | Light Gray |
 | Unknown   | Purple     |
+
+Please note that if you have `snow_twinkle` enabled, then stations with snow will twinkle white.
+If you have `snow_pulse` enabled, then snow stations will transition from the None color to white in a pulsing manner.
 
 Please note that this visualizer DOES dim stations based on sunrise/sunset IF that mode is enabled.
 
