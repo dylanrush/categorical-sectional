@@ -131,6 +131,12 @@ def get_color_by_temperature_celsius(
 
 
 def get_twinkle_proportion() -> float:
+    """
+    Get a random proportion to cause likes to twinkle.
+
+    Returns:
+        float: A value between 0.0 and 1.0
+    """
     value = random.random()
 
     return value
@@ -140,6 +146,16 @@ def get_pulse_interval_proportion(
     current_time: datetime,
     pulse_interval: float
 ) -> float:
+    """
+    Get a value that causes the snow to pulse bright to dim.
+
+    Args:
+        current_time (datetime): The current time. Used to figure out where in the pulse we are.
+        pulse_interval (float): How long a complete pulse takes.
+
+    Returns:
+        float: A value between 0.2 and 1.0
+    """
     seconds = current_time.second + (current_time.microsecond / 1000000.0)
     seconds_in_interval = seconds % pulse_interval
     half_interval = pulse_interval / 2.0
