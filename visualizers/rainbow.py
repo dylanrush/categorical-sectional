@@ -1,5 +1,8 @@
+from datetime import datetime
+
 from configuration import configuration
 from renderers.debug import Renderer
+
 from visualizers.visualizer import Visualizer
 
 
@@ -78,3 +81,35 @@ class RainbowVisualizer(Visualizer):
                 self.__renderer__.set_led(i, color)
 
             self.__renderer__.show()
+
+
+class HolidayLights(Visualizer):
+    def __init__(
+        self,
+        renderer: Renderer,
+        stations: dict
+    ):
+        self.__red__ = [255, 0, 0]
+        self.__green__ = [0, 255, 0]
+        super().__init__(renderer, stations)
+
+    def update(
+        self,
+        time_slice: float
+    ):
+        current_seconds = datetime.utcnow().second
+        pixel_count = configuration.CONFIG[configuration.PIXEL_COUNT_KEY]  # 1
+
+        for i in range(pixel_count):
+            is_even_second = (current_seconds % 2) is 0
+            is_even_pixel = (i % 2) is 0
+            color = self.__green__
+
+            if is_even_pixel:
+                color = self.__red__ if is_even_second else self.__green__
+            else:
+                color = self.__red__ if not is_even_second else self.__green__
+
+            self.__renderer__.set_led(i, color)
+
+        self.__renderer__.show()

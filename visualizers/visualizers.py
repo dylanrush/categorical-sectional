@@ -23,7 +23,8 @@ class VisualizerManager(object):
             weather.PrecipitationVisualizer(renderer, stations),
             weather.PressureVisualizer(renderer, stations),
             rainbow.RainbowVisualizer(renderer, stations),
-            rainbow.LightCycleVisualizer(renderer, stations)
+            rainbow.LightCycleVisualizer(renderer, stations),
+            rainbow.HolidayLights(renderer, stations),
         ]
 
         return VisualizerManager.__VISUALIZERS__
