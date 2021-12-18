@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from configuration import configuration
+from lib import colors as colors_lib
 from renderers.debug import Renderer
 
 from visualizers.visualizer import Visualizer
@@ -99,6 +100,13 @@ class HolidayLights(Visualizer):
     ):
         current_seconds = datetime.utcnow().second
         pixel_count = configuration.CONFIG[configuration.PIXEL_COUNT_KEY]  # 1
+        brightness_adjustment = configuration.get_brightness_proportion()
+        red = colors_lib.get_brightness_adjusted_color(
+            self.__red__,
+            brightness_adjustment)
+        green = colors_lib.get_brightness_adjusted_color(
+            self.__green__,
+            brightness_adjustment)
 
         for i in range(pixel_count):
             is_even_second = (current_seconds % 2) is 0
@@ -106,9 +114,9 @@ class HolidayLights(Visualizer):
             color = self.__green__
 
             if is_even_pixel:
-                color = self.__red__ if is_even_second else self.__green__
+                color = red if is_even_second else green
             else:
-                color = self.__red__ if not is_even_second else self.__green__
+                color = red if not is_even_second else green
 
             self.__renderer__.set_led(i, color)
 
