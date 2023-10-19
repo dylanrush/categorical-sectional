@@ -646,28 +646,23 @@ def get_metar_reports_from_web(
 
     metars = {}
     metar_list = "%20".join(airport_icao_codes)
-    request_url = 'http://www.aviationweather.gov/metar/data?ids={}&format=raw&hours=0&taf=off&layout=off&date=0'.format(
-        metar_list)
+    request_url = 'https://aviationweather.gov/cgi-bin/data/metar.php?ids={}&hours=0&order=id%2C-obs&sep=true'.format(metar_list)
     stream = urllib.request.urlopen(request_url, timeout=2)
-    data_found = False
+
     stream_lines = stream.readlines()
     stream.close()
     for line in stream_lines:
         line_as_string = line.decode("utf-8")
-        if '<!-- Data starts here -->' in line_as_string:
-            data_found = True
-        elif '<!-- Data ends here -->' in line_as_string:
-            break
-        elif data_found:
-            identifier, metar = get_metar_from_report_line(line_as_string)
 
-            if identifier is None:
-                continue
+        identifier, metar = get_metar_from_report_line(line_as_string)
 
-            # If we get a good report, go ahead and shove it into the results.
-            if metar is not None:
-                metars[identifier] = metar
-                __station_last_called__[identifier] = datetime.utcnow()
+        if identifier is None:
+            continue
+
+        # If we get a good report, go ahead and shove it into the results.
+        if metar is not None:
+            metars[identifier] = metar
+            __station_last_called__[identifier] = datetime.utcnow()
 
     return metars
 
