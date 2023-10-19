@@ -8,7 +8,9 @@ from sys import platform, version_info
 from sys import platform as os_platform
 import platform
 
-REQUIRED_PYTHON_VERSION = 3.5
+REQUIRED_PYTHON_MAJOR_VERSION = 3
+REQUIRED_PYTHON_REVISION_VERSION = 5
+
 IS_LINUX = 'linux' in os_platform
 DETECTED_CPU = platform.machine()
 IS_PI = "arm" in DETECTED_CPU
@@ -22,14 +24,17 @@ def validate_python_version():
         Exception -- If the  version of Python is not new enough.
     """
 
-    python_version = float('{}.{}'.format(
-        version_info.major, version_info.minor))
-    error_text = 'Requires Python {}'.format(REQUIRED_PYTHON_VERSION)
+    error_text = None
 
-    if python_version < REQUIRED_PYTHON_VERSION:
+    if REQUIRED_PYTHON_MAJOR_VERSION != version_info.major:
+        error_text = 'Requires Python 3.x, found {}.x'.format(version_info.major)
+
+    if REQUIRED_PYTHON_REVISION_VERSION > version_info.minor:
+        error_text = 'Requires Python 3.5 or newer, found 3.{}'.format(version_info.minor)
+
+    if error_text != None:
         print(error_text)
         raise Exception(error_text)
-
 
 def is_debug():
     """
