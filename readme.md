@@ -451,7 +451,7 @@ This mode cycles all of the stations through the spectrum, but all stations shif
 
 | Version | Change                                                                                                                                                                                                                                                                                 |
 | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2.1.1   | Fix issue where newer versions of Python would not let the code to run. Update to newer NOAA source.
+| 2.1.1   | Fix issue where newer versions of Python would not let the code to run. Update to newer NOAA source. Show name of visualizer.
 | 2.1     | Change precipitation visualizer to pulse the snow color to make it distinct from "nothing"
 | 2.0.1   | Minor tweak to ceiling categorization.                                                                                                                                                                                                                                                 |
 | 2.0     | Add a remote control app that allows for brightness, night effects, and more to be changed on the fly. Add support for WS2811 and WS2812 based lights. Major performance improvements for adressable RGB LEDs. Selectable visualizers. Removed support for hard wired GPIO based LEDs. |
