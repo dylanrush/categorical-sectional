@@ -1,0 +1,8 @@
+*.pyc
+.*swp
+weathermap.log
+weathermap.log.*
+cateorical_sectional.egg-info
+MapConfig/node_modules/*
+.vscode/*
+.vscode/settings.json

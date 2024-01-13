@@ -1,179 +1,270 @@
-# Free for personal use. Prohibited from commercial use without consent.
-import RPi.GPIO as GPIO
+# Live Sectional Map controller
+# Dylan Rush 2017
+# Additional modifications:
+#   2018-2020, John Marzulli
+# dylanhrush.com
+# Uses RPi.GPIO library: https://sourceforge.net/p/raspberry-gpio-python/wiki/BasicUsage/
+# Free for personal use. Prohibited for commercial without consent
+#
+# pip install Adafruit-GPIO
+# pip install RPi-GPIO
+# pip install pytest
+# pip install Adafruit_WS2801
+#
+# Raspberry Pi
+# Run 'raspi-config' and enable the SPI bus under Advanced
+#
+# Wiring the WS2801 :
+# https://learn.adafruit.com/12mm-led-pixels/wiring
+# https://tutorials-raspberrypi.com/how-to-control-a-raspberry-pi-ws2801-rgb-led-strip/
+# Blue -> 5V Minus AND Pi GND (Physical Pi 25)
+# Red -> 5V Plus
+# Yellow -> Pin 19(Physical)/SPI MOSI
+# Green -> Pin 23(Physical)/SCLK/SPI
+#
+
+
+import threading
 import time
-import urllib
-import re
-from threading import Thread
+from datetime import datetime
 
-def get_metar(airport):
-  try:
-    stream = urllib.urlopen('http://www.aviationweather.gov/metar/data?ids='+airport+'&format=raw&hours=0&taf=off&layout=off&date=0');
-    for line in stream:
-      if '<!-- Data starts here -->' in line:
-        return re.sub('<[^<]+?>', '', stream.readline())
-    return 'INVALID'
-  except Exception, e:
-    print str(e);
-    return 'INVALID'
-  finally:
-    stream.close();
-def get_vis(metar):
-  components = metar.split(' ');
-  for component in components:
-    if 'SM' in component:
-      return re.sub('SM', '', component)
-  return 'INVALID'
-def get_vis_category(vis):
-  if vis == 'INVALID':
-    return 'INVALID'
-  if '/' in vis:
-    return 'LIFR'
-  vis_int = int(vis)
-  if vis < 3:
-    return 'IFR'
-  if vis <= 5:
-    return 'MVFR'
-  return 'VFR'
-def get_ceiling(metar):
-  components = metar.split(' ' );
-  minimum_ceiling = 10000
-  for component in components:
-    if 'BKN' in component or 'OVC' in component:
-      ceiling = int(filter(str.isdigit,component)) * 100
-      if(ceiling < minimum_ceiling):
-        minimum_ceiling = ceiling
-  return minimum_ceiling
-def get_ceiling_category(ceiling):
-  if ceiling < 500:
-    return 'LIFR'
-  if ceiling < 1000:
-    return 'IFR'
-  if ceiling < 3000:
-    return 'MVFR'
-  return 'VFR'
-def get_category(metar):
-  vis = get_vis_category(get_vis(metar))
-  ceiling = get_ceiling_category(get_ceiling(metar))
-  if(vis == 'INVALID' or ceiling == 'INVALID'):
-    return 'INVALID'
-  if(vis == 'LIFR' or ceiling == 'LIFR'):
-    return 'LIFR'
-  if(vis == 'IFR' or ceiling == 'IFR'):
-    return 'IFR'
-  if(vis == 'MVFR' or ceiling == 'MVFR'):
-    return 'MVFR'
-  return 'VFR'
+import lib.colors as colors_lib
+import lib.local_debug as local_debug
+import renderer
+from configuration import configuration, configuration_server
+from data_sources import weather
+from lib import colors as colors_lib
+from lib import logger, safe_logging
+from lib.recurring_task import RecurringTask
+from visualizers import visualizers
 
-airport_pins = {'KRNT':(3,5,7),
-        'KSEA':(11,13,15),
-        'KPLU':(19,21,23),
-        'KOLM':(29,31,33),
-        'KTIW':(32,35,37),
-        'KPWT':(36,38,40),
-        'KSHN':(8,10,12)}
-
-overrides = {'KOLM':'VFR',
-             'KTIW':'MVFR',
-             'KPWT':'INVALID'}
-
-colors = {'RED':(GPIO.HIGH, GPIO.LOW, GPIO.LOW),
-'GREEN':(GPIO.LOW, GPIO.HIGH, GPIO.LOW),
-'BLUE':(GPIO.LOW, GPIO.LOW, GPIO.HIGH),
-'LOW':(GPIO.LOW, GPIO.LOW, GPIO.LOW)}
-
-airport_should_flash = {}
-airport_color = {}
-
-for airport in airport_pins:
-  airport_should_flash[airport] = True
-  airport_color[airport] = 'BLUE'
-
-def set_airport_display(airport, category):
-  if category == 'VFR':
-    airport_should_flash[airport] = False
-    airport_color[airport] = 'GREEN'
-  elif category == 'MVFR':
-    airport_should_flash[airport] = False
-    airport_color[airport] = 'BLUE'
-  elif category == 'IFR':
-    airport_should_flash[airport] = False
-    airport_color[airport] = 'RED'
-  elif category == 'LIFR':
-    airport_should_flash[airport] = True
-    airport_color[airport] = 'RED'
-  else:
-    airport_should_flash[airport] = True
-    airport_color[airport] = 'BLUE'
-
-def refresh_airport_displays():
-  for airport in airport_pins:
-    print "Retrieving METAR for "+airport
-    metar = get_metar(airport)
-    print "METAR for "+airport+" = "+metar
-    category = get_category(metar)
-    if airport in overrides:
-      category = overrides[airport]
-    print "Category for "+airport+" = "+category
-    set_airport_display(airport, category)
-
-def render_airport_displays(airport_flasher):
-  for airport in airport_pins:
-    if airport_should_flash[airport] and airport_flasher:
-      setLed(airport_pins[airport], 'LOW')
-    else:
-      setLed(airport_pins[airport], airport_color[airport])
-
-#VFR - Green
-#MVFR - Blue
-#IFR - Red
-#LIFR - Flashing red
-#Error - Flashing blue
+thread_lock_object = threading.Lock()
 
 
+if not local_debug.is_debug():
+    import RPi.GPIO as GPIO
+    try:
+        GPIO.setmode(GPIO.BOARD)
+    except Exception:
+        # ws281x causes an exception
+        # when you try to set the board type
+        pass
 
-def setLed(pins, color):
-  GPIO.output(pins, colors[color])
-def all_airports(color):
-  for airport in airport_pins:
-    print str(airport_pins[airport])
-    GPIO.setup(airport_pins[airport], GPIO.OUT)
-    setLed(airport_pins[airport], color)
+stations = configuration.get_airport_configs()
+rgb_colors = colors_lib.get_colors()
+
+renderer = renderer.get_renderer()
+
+
+def update_weather_for_all_stations():
+    """
+    Updates the weather for all of the stations.
+    This does not update the conditions or category.
+    """
+
+    weather.get_metars(stations.keys())
+
+
+def __get_dimmed_color__(
+    starting_color: list
+) -> list:
+    """
+    Given a starting color, get the version that is dimmed.
+
+    Arguments:
+        starting_color {list} -- The starting color that will be dimmed.
+
+    Returns:
+        list -- The color with the dimming adjustment.
+    """
+    dimmed_color = []
+    brightness_adjustment = configuration.get_brightness_proportion()
+    for color in starting_color:
+        reduced_color = float(color) * brightness_adjustment
+
+        # Some colors are floats, some are integers.
+        # Make sure we keep everything the same.
+        if isinstance(color, int):
+            reduced_color = int(reduced_color)
+
+        dimmed_color.append(reduced_color)
+
+    return dimmed_color
+
+
+def all_stations(
+    color: list
+):
+    """
+    Sets all of the airports to the given color
+
+    Arguments:
+        color {triple} -- Three integer tuple(triple?) of the RGB values
+        of the color to set for ALL airports.
+    """
+
+    [renderer.set_leds(stations[station], rgb_colors[color])
+        for station in stations]
+
+    renderer.show()
+
+
+def __all_leds_to_color__(
+    color: list
+):
+    renderer.set_all(color)
+
+
+def get_station_by_led(
+    index: int
+) -> str:
+    """
+    Given an LED, find the station it is representing.
+
+    Args:
+        index (int): [description]
+
+    Returns:
+        str: The identifier of the station.
+    """
+    for station_identifier in stations.keys():
+        if index in stations[station_identifier]:
+            return station_identifier
+
+    return "UNK"
+
 
 def render_thread():
-  print "Starting rendering thread"
-  while(True):
-    print "render"
-    render_airport_displays(True)
-    time.sleep(1)
-    render_airport_displays(False)
-    time.sleep(1)
+    """
+    Main logic loop for rendering the lights.
+    """
 
-def refresh_thread():
-  print "Starting refresh thread"
-  while(True):
-    print "Refreshing categories"
-    refresh_airport_displays()
-    time.sleep(60)
+    safe_logging.safe_log("Starting rendering thread")
+
+    tic = time.perf_counter()
+    toc = time.perf_counter()
+    debug_pixels_timer = None
+
+    loaded_visualizers = visualizers.VisualizerManager.initialize_visualizers(
+        renderer,
+        stations)
+    last_visualizer = 0
+
+    while True:
+        try:
+            delta_time = toc - tic
+
+            tic = time.perf_counter()
+
+            visualizer_index = configuration.get_visualizer_index(
+                loaded_visualizers)
+
+            if visualizer_index != last_visualizer:
+                renderer.clear()
+                last_visualizer = visualizer_index
+
+            loaded_visualizers[visualizer_index].update(delta_time)
+
+            show_debug_pixels = debug_pixels_timer is None or (
+                datetime.utcnow() - debug_pixels_timer).total_seconds() > 60.0
+
+            if show_debug_pixels:
+                for index in range(renderer.pixel_count):
+                    station = get_station_by_led(index)
+                    safe_logging.safe_log('[{}/{}]={}'.format(
+                        station,
+                        index,
+                        renderer.pixels[index]))
+
+                debug_pixels_timer = datetime.utcnow()
+
+            toc = time.perf_counter()
+        except KeyboardInterrupt:
+            quit()
+        except Exception as ex:
+            safe_logging.safe_log(ex)
 
 
+def wait_for_all_stations():
+    """
+    Waits for all of the airports to have been given a chance to initialize.
+    If an airport had an error, then that still counts.
+    """
 
-GPIO.setmode(GPIO.BOARD)
-# Test LEDS on startup
-all_airports('GREEN')
+    for airport in stations:
+        try:
+            weather.get_metar(airport)
+        except Exception as ex:
+            safe_logging.safe_log_warning(
+                "Error while initializing with airport={}, EX={}".format(airport, ex))
 
-time.sleep(2)
+    return True
 
-all_airports('LOW')
 
-time.sleep(2)
+def __get_test_cycle_colors__() -> list:
+    base_colors_test = [
+        colors_lib.MAGENTA,
+        colors_lib.RED,
+        colors_lib.BLUE,
+        colors_lib.GREEN,
+        colors_lib.YELLOW,
+        colors_lib.WHITE,
+        colors_lib.GRAY,
+        colors_lib.DARK_YELLOW
+    ]
 
-thread1 = Thread(target = render_thread)
-thread2 = Thread(target = refresh_thread)
-thread1.start()
-thread2.start()
+    colors_to_init = []
 
-thread1.join()
-thread2.join()
+    for color in base_colors_test:
+        is_global_dimming = configuration.get_brightness_proportion() < 1.0
+        color_to_cycle = rgb_colors[color]
+        colors_to_init.append(color_to_cycle)
+        if is_global_dimming:
+            colors_to_init.append(__get_dimmed_color__(color_to_cycle))
 
-GPIO.cleanup()
+    colors_to_init.append(rgb_colors[colors_lib.OFF])
 
+    return colors_to_init
+
+
+def __test_all_leds__():
+    """
+    Test all of the LEDs, independent of the configuration
+    to make sure the wiring is correct and that none have failed.
+    """
+    for color in __get_test_cycle_colors__():
+        safe_logging.safe_log("Setting to {}".format(color))
+        __all_leds_to_color__(color)
+        time.sleep(0.5)
+
+
+if __name__ == '__main__':
+    # Start loading the METARs in the background
+    # while going through the self-test
+    safe_logging.safe_log("Initialize weather for all airports")
+
+    weather.get_metars(stations.keys())
+
+    __test_all_leds__()
+
+    web_server = configuration_server.WeatherMapServer()
+
+    all_stations(weather.OFF)
+
+    RecurringTask(
+        "rest_host",
+        0.1,
+        web_server.run,
+        logger.LOGGER,
+        True)
+
+    wait_for_all_stations()
+
+    while True:
+        try:
+            render_thread()
+        except KeyboardInterrupt:
+            break
+
+    if not local_debug.is_debug():
+        GPIO.cleanup()
